@@ -1,0 +1,169 @@
+items Prize {
+  items Crystal {
+    Crystal1
+    Crystal2
+    Crystal3
+    Crystal4
+    Crystal5 { tag Crystal56 }
+    Crystal6 { tag Crystal56 }
+    Crystal7
+  }
+  items Pendant {
+    PendantOfCourage "Pendant of Courage" { alias GreenPendant }
+    PendantOfWisdom "Pendant of Wisdom" { alias BluePendant }
+    PendantOfPower "Pendant of Power" { alias RedPendant }
+  }
+}
+
+items Major {
+  items Sword {
+    FighterSword { alias L1Sword }
+    MasterSword { alias [L2Sword, LightSaber] }
+    TemperedSword { alias [L3Sword, BaconSword]; provides MasterSword }
+    GoldSword { alias [L4Sword, ButterSword]; provides TemperedSword }
+    ProgressiveSword {
+      progressive [FighterSword, MasterSword, TemperedSword, GoldSword]
+    }
+  }
+  items Shield {
+    FighterShield { alias BlueShield }
+    FireShield { alias RedShield }
+    MirrorShield { alias RiotShield }
+    ProgressiveShield {
+      progressive [FighterShield, FireShield, MirrorShield]
+    }
+  }
+  FighterSwordAndShield "Fighter Sword & Shield" {
+    alias L1SwordAndShield
+    provides [FighterSword, FighterShield]
+  }
+  items Armor {
+    BlueMail
+    RedMail
+    ProgressiveMail
+  }
+  items FireSource { Lamp; FireRod }
+  IceRod { alias NiceRod }
+  Hookshot
+  Bow
+  items Arrows { WoodenArrows; SilverArrows }
+  BowWithArrows "Bow with Arrows" { provides [Bow, WoodenArrows] }
+  BowWithSilverArrows "Bow with Silver Arrows" { provides [Bow, SilverArrows] }
+  Hammer
+  Mushroom
+  MagicPowder { alias Powder }
+  Shovel
+  Flute { alias Ocarina }
+  Cape { val InvincibilityCost = 2 }
+  CaneOfByrna { val InvincibilityCost = 1; alias [CaneOfBryan, BlueCane] }
+  CaneOfSomaria { alias RedCane }
+  items Glove {
+    PowerGlove
+    TitansMitts "Titan's Mitts" { alias Mitts }
+    ProgressiveGlove {
+      progressive [PowerGlove, TitansMitts]
+    }
+  }
+  MoonPearl { alias Pearl }
+  PegasusBoots { alias Boots }
+  BookOfMudora { alias Book }
+  Flippers
+  items Bottle {
+    EmptyBottle
+    RedBottle "Bottle with red potion"
+    GreenBottle "Bottle with green potion"
+    BlueBottle "Bottle with blue potion"
+    FairyBottle "Bottle with fairy"
+    BeeBottle "Bottle with bee"
+    GoldBeeBottle "Bottle with golden bee"
+  }
+  items MagicReduction {
+    HalfMagic { val Factor = 2 }
+    QuarterMagic { val Factor = 4 }
+    ProgressiveMagic {
+      progressive [HalfMagic, QuarterMagic]
+    }
+  }
+  items Medallion {
+    Bombos
+    Ether
+    Quake
+  }
+}
+
+items Minor {
+  Net "Bug-Catching Net" { alias BugCatchingNet }
+  items Bombs {
+    SingleBomb { val Num = 1 }
+    ThreeBombs { val Num = 3 }
+    TenBombs { val Num = 10 }
+  }
+  BlueBoomerang { alias Bluemerang }
+  RedBoomerang { alias Redmerang }
+}
+
+items Event {
+  DefeatAgahnim1
+  DefeatAgahnim2
+}
+
+fn CanMeltIce = FireRod or CanCast(Bombos)
+fn CanCast(medallion) = medallion and (Modes.Swordless or Sword)
+fn CanShootSilverArrows = Bow and SilverArrows
+fn CanShootArrows = Bow and Arrows
+fn CanCutCurtains = Modes.Swordless or Sword
+fn MagicBars = (1 + max(1, MagicReduction.Factor)) * Count(Bottle)
+fn HasWeaponsFor(n) =
+  Sword or Hammer or FireRod or CanShootArrows or RedCane or
+  (n * 2 <= sum(Bombs.Num)) or
+  (BlueCane and n * 5 <= MagicBars)
+fn CanGetGoldBee = Net and Bottle and (CanCast(Quake) or Sword)
+
+enum Boss {
+  ArmosKnights
+  Lanmolas
+  Moldorm
+  Agahnim1
+  HelmasaurKing
+  Arrghus
+  Mothula
+  Blind
+  Kholdstare
+  Vitreous
+  Trinexx
+  Agahnim2
+  Ganon
+}
+
+fn CanDefeat(boss) = match boss {
+  ArmosKnights =>
+    Sword or Hammer or CanShootArrows or Bluemerang or Redmerang or
+    ((FireRod or IceRod) and MagicBars >= 4) or
+    ((RedCane or BlueCane) and MagicBars >= 2)
+  Lanmolas =>
+    Sword or Hammer or CanShootArrows or FireRod or IceRod or RedCane or
+    BlueCane
+  Moldorm => Sword or Hammer
+  Agahnim => Sword or Hammer or Net
+  HelmasaurKing => Sword or Hammer or CanShootArrows
+  Arrghus =>
+    Hookshot and (Sword or Hammer or (FireRod and MagicBars >= 2) or
+      (CanShootArrows and (FireRod or (IceRod and MagicBars >= 2))))
+  Mothula =>
+    Sword or Hammer or (CanGetGoldBee and Net) or
+    (MagicBars >= 2 and (FireRod or IceRod or RedCane)
+  Blind => Sword or Hammer or RedCane or BlueCane
+  Kholdstare =>
+    (CanMeltIce and (Sword or Hammer)) or (FireRod and MagicBars >= 3) or
+    (FireRod and CanCast(Bombos) and MagicBars >= 2)
+  Vitreous =>
+    Sword or Hammer or CanShootArrows
+  Trinexx =>
+    FireRod and IceRod and (Hammer or L3Sword or
+      (L2Sword and MagicBars >= 2) or (L1Sword and MagicBars >= 4))
+  Agahnim2 => Sword or Hammer or Net
+  Ganon =>
+    (MasterSword or (Modes.Swordless and Hammer)) or
+    (SilverArrows or Skills.SilverlessGanon)
+}
+
