@@ -40,7 +40,9 @@ items Major {
   items Armor {
     BlueMail
     RedMail
-    ProgressiveMail
+    ProgressiveMail {
+      progressive [BlueMail, RedMail]
+    }
   }
   items FireSource { Lamp; FireRod }
   IceRod { alias NiceRod }
@@ -76,6 +78,7 @@ items Major {
     FairyBottle "Bottle with fairy"
     BeeBottle "Bottle with bee"
     GoldBeeBottle "Bottle with golden bee"
+    max 4
   }
   items MagicReduction {
     HalfMagic { val Factor = 2 }
@@ -112,7 +115,8 @@ fn CanCast(medallion) = medallion and (Modes.Swordless or Sword)
 fn CanShootSilverArrows = Bow and SilverArrows
 fn CanShootArrows = Bow and Arrows
 fn CanCutCurtains = Modes.Swordless or Sword
-fn MagicBars = (1 + max(1, MagicReduction.Factor)) * Count(Bottle)
+fn BottleCount = min(count(Bottle), 4)
+fn MagicBars = max(1, MagicReduction.Factor) * (BottleCount + 1)
 fn HasWeaponsFor(n) =
   Sword or Hammer or FireRod or CanShootArrows or RedCane or
   (n * 2 <= sum(Bombs.Num)) or
@@ -163,7 +167,9 @@ fn CanDefeat(boss) = match boss {
       (L2Sword and MagicBars >= 2) or (L1Sword and MagicBars >= 4))
   Agahnim2 => Sword or Hammer or Net
   Ganon =>
-    (MasterSword or (Modes.Swordless and Hammer)) or
-    (SilverArrows or Skills.SilverlessGanon)
+    ((MasterSword or (Modes.Swordless and Hammer)) or
+      (SilverArrows or Skills.SilverlessGanon)) and
+    (Lamp or (FireRod and
+        (MagicBars >= 3 or (TemperedSword and MagicBars >= 2))))
 }
 
