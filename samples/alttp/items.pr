@@ -16,7 +16,7 @@ items Prize {
 }
 
 items Major {
-  items Sword {
+  items [Sword, Weapon] {
     FighterSword { alias L1Sword }
     MasterSword { alias [L2Sword, LightSaber] }
     TemperedSword { alias [L3Sword, BaconSword]; provides MasterSword }
@@ -44,21 +44,32 @@ items Major {
       progressive [BlueMail, RedMail]
     }
   }
-  items FireSource { Lamp; FireRod }
+  Lamp { tag FireSource }
+  FireRod { tag [FireSource, Weapon] }
   IceRod { alias NiceRod }
   Hookshot
   Bow
   items Arrows { WoodenArrows; SilverArrows }
-  BowWithArrows "Bow with Arrows" { provides [Bow, WoodenArrows] }
-  BowWithSilverArrows "Bow with Silver Arrows" { provides [Bow, SilverArrows] }
-  Hammer
+  BowWithArrows "Bow with Arrows" {
+    provides [Bow, WoodenArrows]
+    tag Weapon
+  }
+  BowWithSilverArrows "Bow with Silver Arrows" {
+    provides [Bow, SilverArrows]
+    tag Weapon
+  }
+  Hammer { tag Weapon }
   Mushroom
   MagicPowder { alias Powder }
   Shovel
   Flute { alias Ocarina }
   Cape { val InvincibilityCost = 2 }
-  CaneOfByrna { val InvincibilityCost = 1; alias [CaneOfBryan, BlueCane] }
-  CaneOfSomaria { alias RedCane }
+  CaneOfByrna {
+    val InvincibilityCost = 1
+    alias [CaneOfBryan, BlueCane]
+    tag Weapon
+  }
+  CaneOfSomaria { alias RedCane; tag Weapon }
   items Glove {
     PowerGlove
     TitansMitts "Titan's Mitts" { alias Mitts }
@@ -99,7 +110,7 @@ items Minor {
   items Bombs {
     SingleBomb { val Num = 1 }
     ThreeBombs { val Num = 3 }
-    TenBombs { val Num = 10 }
+    TenBombs { val Num = 10; tag Weapon }
   }
   BlueBoomerang { alias Bluemerang }
   RedBoomerang { alias Redmerang }
@@ -111,10 +122,10 @@ items Event {
 }
 
 fn CanMeltIce = FireRod or CanCast(Bombos)
-fn CanCast(medallion) = medallion and (Modes.Swordless or Sword)
+fn CanCast(medallion) = medallion and (Modes.Swords == Modes.Swordless or Sword)
 fn CanShootSilverArrows = Bow and SilverArrows
 fn CanShootArrows = Bow and Arrows
-fn CanCutCurtains = Modes.Swordless or Sword
+fn CanCutCurtains = Modes.Swords == Modes.Swordless or Sword
 fn BottleCount = min(count(Bottle), 4)
 fn MagicBars = max(1, MagicReduction.Factor) * (BottleCount + 1)
 fn HasWeaponsFor(n) =
@@ -167,7 +178,7 @@ fn CanDefeat(boss) = match boss {
       (L2Sword and MagicBars >= 2) or (L1Sword and MagicBars >= 4))
   Agahnim2 => Sword or Hammer or Net
   Ganon =>
-    ((MasterSword or (Modes.Swordless and Hammer)) or
+    ((MasterSword or (Modes.Swords == Modes.Swordless and Hammer)) or
       (SilverArrows or Skills.SilverlessGanon)) and
     (Lamp or (FireRod and
         (MagicBars >= 3 or (TemperedSword and MagicBars >= 2))))

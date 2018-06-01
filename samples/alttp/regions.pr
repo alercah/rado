@@ -1,0 +1,94 @@
+region LightWorld {
+  region SecretPassage {
+    link from [LightWorld, LinksHouse]
+    link to HyruleCastle
+    locations {
+      Uncle "Link's Uncle"
+      Chest
+    }
+
+    if Modes.State == Modes.Standard {
+      restrict Uncle to Weapon
+    }
+    if Modes.Swords == Modes.UncleAssured {
+      restrict Uncle to Sword
+    }
+  }
+
+  region HyruleCastle {
+    items {
+      BigKey
+      Map
+      SmallKey { consumable }
+    }
+    items Event {
+      FetchZelda
+      RescueZelda
+    }
+
+    if not Modes.KeySanity {
+      restrict [BigKey, Map, SmallKey] to HyruleCastle
+    }
+    if Modes.State == Modes.Open {
+      start with [FetchZelda, RescueZelda]
+    }
+
+    link with LightWorld {
+      requires RescueZelda and not DefeatAgahnim1
+    }
+    link to DarkWorld.Eastern {
+      requires RescueZelda and DefeatAgahnim1
+    }
+
+    location MapChest
+    avail SmallKey
+
+    region Basement {
+      region Upper {
+        link with HyruleCastle { unlock SmallKey }
+        location BoomerangChest
+        avail SmallKey
+      }
+      region Lower {
+        link with Upper { unlock SmallKey }
+        location ZeldasCell "Zelda's Cell"
+        avail FetchZelda
+      }
+    }
+    region Sewers {
+      region Front {
+        requires Lamp
+        link with HyruleCastle { requires FetchZelda }
+        location Chest
+      }
+      region Mid {
+        requires Lamp
+        link with Front { unlock SmallKey }
+        avail SmallKey
+      }
+      region Back {
+        link with Mid { unlock SmallKey }
+        link to LightWorld { grants RescueZelda }
+        link from LightWorld { requires Gloves }
+        location SideRoom { qty 3 }
+      }
+    }
+  }
+  region LinksHouse "Link's House" {
+    link with LightWorld { requires RescueZelda }
+    location Chest
+  }
+
+  location LumberjackCave {
+    requires DefeatAgahnim1 and Boots
+    visible always
+  }
+  // etc.
+}
+
+if Modes.State == Modes.Standard {
+  start in LightWorld.SecretPassage
+}
+if Modes.State == Modes.Open {
+  start in LightWorld
+}
