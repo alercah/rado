@@ -1,0 +1,40 @@
+module Modes {
+  config State : enum {
+    Standard
+    Open
+  } default Standard
+
+  config Swords : enum {
+    Swordless
+    UncleAssured
+    RandomSwords
+  } default Swords
+
+  config Keysanity : bool default false
+  
+  config Difficulty : enum {
+    Easy
+    Normal
+    Hard
+    Elite
+    Insane
+  } default Normal
+}
+
+module Skills {
+  configs : bool {
+    WaterWalk default False
+    BombJumps default False
+    DarkRooms default False
+    SuperBunny default False
+    Hover default False
+  }
+
+  configset MinorGlitches {
+    WaterWalk = true
+    BombJumps = true
+    DarkRooms = true
+    SuperBunny = true
+    Hover = true
+  }
+}

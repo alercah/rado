@@ -57,12 +57,12 @@ region LightWorld {
     }
     region Sewers {
       region Front {
-        requires Lamp
+        requires Lamp or Modes.State == Modes.Standard or Modes.DarkRooms
         link with HyruleCastle { requires FetchZelda }
         location Chest
       }
       region Mid {
-        requires Lamp
+        requires Lamp or Modes.State == Modes.Standard or Modes.DarkRooms
         link with Front { unlock SmallKey }
         avail SmallKey
       }
