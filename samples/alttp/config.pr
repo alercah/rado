@@ -1,4 +1,6 @@
-module Modes {
+region Modes {
+  requires false
+
   config State : enum {
     Standard
     Open
@@ -21,13 +23,15 @@ module Modes {
   } default Normal
 }
 
-module Skills {
+region Skills {
+  requires false
+
   configs : bool {
-    WaterWalk default False
-    BombJumps default False
-    DarkRooms default False
-    SuperBunny default False
-    Hover default False
+    WaterWalk default false
+    BombJumps default false
+    DarkRooms default false
+    SuperBunny default false
+    Hover default false
   }
 
   configset MinorGlitches {

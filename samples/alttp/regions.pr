@@ -1,6 +1,6 @@
 region LightWorld {
   region SecretPassage {
-    link from [LightWorld, LinksHouse]
+    link from LightWorld, LinksHouse
     link to HyruleCastle
     locations {
       Uncle "Link's Uncle"
@@ -8,10 +8,14 @@ region LightWorld {
     }
 
     if Modes.State == Modes.Standard {
-      restrict Uncle to Weapon
+      modify location Uncle {
+        restrict to Weapon
+      }
     }
     if Modes.Swords == Modes.UncleAssured {
-      restrict Uncle to Sword
+      modify location Uncle {
+        restrict to Sword
+      }
     }
   }
 
@@ -27,10 +31,14 @@ region LightWorld {
     }
 
     if not Modes.KeySanity {
-      restrict [BigKey, Map, SmallKey] to HyruleCastle
+      modify items {
+        BigKey { restrict to HyruleCastle }
+        Map { restrict to HyruleCastle }
+        SmallKey { restrict to HyruleCastle }
+      }
     }
     if Modes.State == Modes.Open {
-      start with [FetchZelda, RescueZelda]
+      start with FetchZelda, RescueZelda
     }
 
     link with LightWorld {
@@ -81,7 +89,7 @@ region LightWorld {
 
   location LumberjackCave {
     requires DefeatAgahnim1 and Boots
-    visible always
+    visible true
   }
   // etc.
 }

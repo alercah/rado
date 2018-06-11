@@ -16,13 +16,13 @@ items Prize {
 }
 
 items Major {
-  items [Sword, Weapon] {
+  items Sword, Weapon {
     FighterSword { alias L1Sword }
-    MasterSword { alias [L2Sword, LightSaber] }
-    TemperedSword { alias [L3Sword, BaconSword]; provides MasterSword }
-    GoldSword { alias [L4Sword, ButterSword]; provides TemperedSword }
+    MasterSword { alias L2Sword, LightSaber }
+    TemperedSword { alias L3Sword, BaconSword; provides MasterSword }
+    GoldSword { alias L4Sword, ButterSword; provides TemperedSword }
     ProgressiveSword {
-      progressive [FighterSword, MasterSword, TemperedSword, GoldSword]
+      progressive FighterSword, MasterSword, TemperedSword, GoldSword
     }
   }
   items Shield {
@@ -30,32 +30,32 @@ items Major {
     FireShield { alias RedShield }
     MirrorShield { alias RiotShield }
     ProgressiveShield {
-      progressive [FighterShield, FireShield, MirrorShield]
+      progressive FighterShield, FireShield, MirrorShield
     }
   }
   FighterSwordAndShield "Fighter Sword & Shield" {
     alias L1SwordAndShield
-    provides [FighterSword, FighterShield]
+    provides FighterSword, FighterShield
   }
   items Armor {
     BlueMail
     RedMail
     ProgressiveMail {
-      progressive [BlueMail, RedMail]
+      progressive BlueMail, RedMail
     }
   }
   Lamp { tag FireSource }
-  FireRod { tag [FireSource, Weapon] }
+  FireRod { tag FireSource, Weapon }
   IceRod { alias NiceRod }
   Hookshot
   Bow
   items Arrows { WoodenArrows; SilverArrows }
   BowWithArrows "Bow with Arrows" {
-    provides [Bow, WoodenArrows]
+    provides Bow, WoodenArrows
     tag Weapon
   }
   BowWithSilverArrows "Bow with Silver Arrows" {
-    provides [Bow, SilverArrows]
+    provides Bow, SilverArrows
     tag Weapon
   }
   Hammer { tag Weapon }
@@ -66,7 +66,7 @@ items Major {
   Cape { val InvincibilityCost = 2 }
   CaneOfByrna {
     val InvincibilityCost = 1
-    alias [CaneOfBryan, BlueCane]
+    alias CaneOfBryan, BlueCane
     tag Weapon
   }
   CaneOfSomaria { alias RedCane; tag Weapon }
@@ -74,7 +74,7 @@ items Major {
     PowerGlove
     TitansMitts "Titan's Mitts" { alias Mitts }
     ProgressiveGlove {
-      progressive [PowerGlove, TitansMitts]
+      progressive PowerGlove, TitansMitts
     }
   }
   MoonPearl { alias Pearl }
@@ -95,7 +95,7 @@ items Major {
     HalfMagic { val Factor = 2 }
     QuarterMagic { val Factor = 4 }
     ProgressiveMagic {
-      progressive [HalfMagic, QuarterMagic]
+      progressive HalfMagic, QuarterMagic
     }
   }
   items Medallion {
