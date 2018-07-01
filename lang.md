@@ -119,9 +119,9 @@ Some kinds of declarations can be modified or overridden in conditional blocks,
 as described below. Restrictions are noted on each kind of declaration are noted
 in the section for that declaration.
 
-Tag and alias statements also declare names, but tags share a global namespace
-rather than being explicitly declared, and aliases only give new names to
-already-existing things.
+Tags, values, and alias statements also declare names, but tags implicitly live
+in the global namespace rather than being explicitly declared, values have their
+own namespace, and aliases only give new names to already-existing things.
 
 ### Region Declaration
 
@@ -192,7 +192,7 @@ into a modifying or overriding declaration.
 
 ### Function Declaration
 
-> Syntax: `fn` *identifier* (*string-literal*)? (`(` list(*identifier* (`:` *type*)?) `)`)? (`:` *type*) = *expression*
+> Syntax: `fn` *identifier* (*string-literal*)? (`(` list(*identifier* (`:` *type*)?) `)`)? (`->` *type*) = *expression*
 
 A function declaration introduces a new function which can be used in
 expressions. A function can have an argument list, or it can be omitted.
@@ -330,7 +330,7 @@ replaces the previous list entirely.
 
 Property statements inside modifying declarations usually behave similarly, with
 those accepting lists allowing both modifying and overriding lists, and other
-kinds always overriding the originald statement. Exceptions are specifically
+kinds always overriding the original statement. Exceptions are specifically
 noted.
 
 ### Deleting Declarations
@@ -435,8 +435,8 @@ Progressive statements cannot be modified, but can be overridden.
 > Syntax: `val` *identifier* (`:` *type*) = *expression*
 
 A value statement sets a named value on an item. It can be referred to similarly
-to a compound name, by writing `Item.Value`. It can also be used on a list of
-items (often a tag) to get a list of the values present, such as `Tag.Value`.
+to a compound name, by writing `Item.Value`. All declarations of the values with
+the same name must have the same type, but values live in their own namespace.
 
 A value statement looks sort of like a declaration, but semantically it does not
 actually behave as one, because it does not really declare a name. It is more
@@ -507,12 +507,13 @@ this is not optional, even if the player does not want it.
 
 ### Quantity Statement
 
-> Can appear in: locations
+> Can appear in: items, locations
 
 > Syntax: `qty` *integer*
 
-A quantity statement specifies that a location contains the given number of
-items instead of just 1.
+A quantity statement specifies either that a location contains the given number
+of items instead of just 1, or that a certain number of an item exist in the
+game to be randomized.
 
 ### Start With Statement
 
@@ -530,3 +531,70 @@ A start with statement indicates that a player starts with the items listed.
 
 A start in statement declares the starting location of the player for the
 logic's purposes.
+
+## Types
+
+Peri has the following types:
+
+* `num`: arbitrary-precision rational numbers
+* `item`: a declared item or tag
+* `bool`: a boolean
+* `fn (A1, A2, ...) -> T`: a function
+* lists: `[T]` is a list of `T`s
+* enums: for any declared enum `E`, `E` is the type of that enum
+
+Most of these types are quite straightforward, except for `Item`. `Item`
+represents an item or tag, and refers to the player's possessions at the time
+the expression is evaluated. It may refer to multiple copies of the same item or
+to multiple different items. `Item` coerces to `Bool`, and functions accepting
+and returning `Bool` or `Item` coerce similarly. The coercion means "Does the
+player have any of this item?".
+
+There are no function types without arguments as in `fn () -> T`; because
+functions are stateless, this is equivalent to a `T`.
+
+`num`, `item`, and `bool` are keywords and can't be redeclared.
+
+## Expressions
+
+Expressions are fairly straightforward in Peri. The following are supported, in
+order of precedence:
+
+1.  Literals and values (`foo`, `3`, etc.)
+1.  Explicit list creation (`[a, b, c]`)
+1.  Value access (`i.Val`)
+1.  Function calls (`fn(...)`)
+1.  Addition and subtraction for numbers (`+` and `-`)
+1.  Multiplication, division, and modulus (`\*`, `/`, and `%`)
+1.  Comparison (`==`, `!=`, `<`, `<=`, `>`, `>=`)
+1.  Boolean negation (`not`)
+1.  Boolean conjunction and disjunction (`and` and `or`)
+1.  `if A { B } else { C }`
+1.  `match E { V => R; V => R; ... }`
+
+Because arithmetic is infinitely precise, assocativity of most arithmetic binary
+operations doesn't matter. In order to reduce errors and avoid having to decide
+associativity otherwise, `and` and `or` do not associate with each other; one
+must be parenthesized. Similarly `%` does not associate with `\*` or `/`.
+
+If a function has a single argument that is a list `[T]`, then it can also be
+called with any number of `T` arguments, and a list is implicitly created.
+
+Value access is written `i.V`; it evaluates to a list of all values `V` on items
+`i` that the player possesses. If any of the items that `i` could possibly refer
+to (that is, `i` if it is a single item, or all items tagged with `i` if it is a
+tag) 
+
+`match` expressions are used on enums only right now; each arm must be either an
+enumerator value or `_` to mean "anything". `_` must come last.
+
+### Built-in functions
+
+The following functions are built-in; their names are keywords and cannot be
+redeclared:
+
+* `min(...)` and `max(...)` take a list of numeric expressions and return the
+  least or greatest value, respectively.
+* `count(i)` returns the current count of items `i` possessed by the player at
+  evaluation time.
+
