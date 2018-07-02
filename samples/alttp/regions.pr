@@ -78,7 +78,7 @@ region LightWorld {
         link with Mid { unlock SmallKey }
         link to LightWorld { grants RescueZelda }
         link from LightWorld { requires Gloves }
-        location SideRoom { qty 3 }
+        location SideRoom { count 3 }
       }
     }
   }

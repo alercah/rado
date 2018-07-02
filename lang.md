@@ -141,7 +141,7 @@ declarations.
 
 ### Link Declaration
 
-> Syntax: `link` (*identifier* (*string-literal*))? (`with` | `to` | `from`) list(*identifier*) (*block*)?
+> Syntax: `link` (*identifier* (*string-literal*))? (`with` | `to` | `from`) list(*name*) (*block*)?
 
 A link declaration declares a link between two regions. The logic uses links to
 work out how the player can move around in the game. A link declares a
@@ -163,10 +163,10 @@ logic assumes that items are randomized among their locations.
 
 #### Multi-Item Declaration
 
-> Syntax: `items` list(*name*) *block*
+> Syntax: `items` list(*identifier*) *block*
 
 A multi-item declaration is a shortcut for declaring multiple items. Inside its
-block, only item declarations are allowed, but they can omit the leading `item`
+block, only item declarations are allowed, but they must omit the leading `item`
 keyword. The list of names in the declaration is a list of tags which are
 declared on every item inside.
 
@@ -458,9 +458,12 @@ possess. Above this limit, more instances of the item cannot be acquired.
 > Syntax: `consumable`
 
 A consumable statement declares an item to be consumable. It cannot be
-referenced in most expressions, but can be referred to in unlock statements.
+referenced in most expressions (either directly or via one of its tags), but can
+be referred to in unlock statements.
 
 Consumable statements cannot be modified, added, or removed from an item.
+
+The restrictions on consumable items may be relaxed in the future.
 
 ### Restrict Statement
 
@@ -505,13 +508,13 @@ A grants statement declares that entering a region or travelling along a link
 grants or removes a specified item or items. Unlike an availability statement,
 this is not optional, even if the player does not want it.
 
-### Quantity Statement
+### Count Statement
 
 > Can appear in: items, locations
 
-> Syntax: `qty` *integer*
+> Syntax: `count` *integer*
 
-A quantity statement specifies either that a location contains the given number
+A count statement specifies either that a location contains the given number
 of items instead of just 1, or that a certain number of an item exist in the
 game to be randomized.
 
@@ -561,15 +564,15 @@ Expressions are fairly straightforward in Peri. The following are supported, in
 order of precedence:
 
 1.  Literals and values (`foo`, `3`, etc.)
+    1.  Value access (`i.Val`)
 1.  Explicit list creation (`[a, b, c]`)
-1.  Value access (`i.Val`)
 1.  Function calls (`fn(...)`)
 1.  Addition and subtraction for numbers (`+` and `-`)
 1.  Multiplication, division, and modulus (`\*`, `/`, and `%`)
 1.  Comparison (`==`, `!=`, `<`, `<=`, `>`, `>=`)
 1.  Boolean negation (`not`)
 1.  Boolean conjunction and disjunction (`and` and `or`)
-1.  `if A { B } else { C }`
+1.  `if A then B else C`
 1.  `match E { V => R; V => R; ... }`
 
 Because arithmetic is infinitely precise, assocativity of most arithmetic binary
@@ -583,7 +586,8 @@ called with any number of `T` arguments, and a list is implicitly created.
 Value access is written `i.V`; it evaluates to a list of all values `V` on items
 `i` that the player possesses. If any of the items that `i` could possibly refer
 to (that is, `i` if it is a single item, or all items tagged with `i` if it is a
-tag) 
+tag) don't have a value `V`, it's an error. Syntactically, value access is
+indistinguisable from a named access.
 
 `match` expressions are used on enums only right now; each arm must be either an
 enumerator value or `_` to mean "anything". `_` must come last.
