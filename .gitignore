@@ -12,3 +12,9 @@ Cargo.lock
 # Editor temporary files
 .*.sw*
 *~
+
+/target/
+**/*.rs.bk
+
+/target/
+**/*.rs.bk
