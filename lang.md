@@ -57,26 +57,20 @@ and consequently a tag's name cannot be reused for anything else.
 ## General Syntax
 
 A Peri specification is composed of several files (usual extension `.pr`) put
-together. Each file is a series of *statements*, which usually start with a
-keyword indicating the type of statement and always end with either a semicolon
-or a new line.  A statement can also span multiple lines. In order to resolve
-ambiguity, a line that ends with `{`, `=>`, or a binary operator is treated as
-continuing the statement onto the next line, and otherwise the statement ends on
-that line.
+together. Each file is a series of *statements*, which always start with a
+keyword indicating the type of statement. A statement can span multiple lines,
+and multiple statements can appear on the same line. Semicolons are permitted
+between statements, but are not necessary; the starting keyword is enough to
+disambiguate. They are encouraged when multiple statements appear on a single
+line. Many statements include a *block*, which is a series of statements inside
+a pair of braces `{ }`.
 
-Many statements include a *block*, which is a series of statements inside a pair
-of braces `{ }`. Thus, statements can be nested. Some statements can include
-other constructs inside `{ }`, such as a `match` expression. Strictly speaking,
-the contents are not statements, but they follow the same rules about being
-separated by `;` or newlines, and so they will be referred to as such where it
-is convenient.
-
-Peri's expression syntax supports basic arithmetic operators (`+`, `-`, `*`, and
-`/`), comparison operators (`<`, `<=`, `>`, `>=`, `==`, and `!=`), and logical
-operators (`and`, `or`, `not`), as well as function calls (`f()`). For
+Peri's expression syntax supports basic arithmetic operators (`+`, `-`, `*`,
+`/`, and `%`), comparison operators (`<`, `<=`, `>`, `>=`, `==`, and `!=`), and
+logical operators (`and`, `or`, `not`), as well as function calls (`f()`). For
 conditional evaluation, `if ... then ... else ...` can be used, or a `match`
 expression can be used to perform a rudimentary switch-case operation on an
-enumeration (`match val { Foo => ...; Bar => ... }`). Expressions can be grouped
+enumeration (`match val { Foo => ..., Bar => ... }`). Expressions can be grouped
 in parentheses to disambiguate `( ... )` precedence, which is mostly like in `C`
 except that it is an error to try to associate `and` and `or` without nesting
 one operator or the other in parentheses.
@@ -573,7 +567,7 @@ order of precedence:
 1.  Boolean negation (`not`)
 1.  Boolean conjunction and disjunction (`and` and `or`)
 1.  `if A then B else C`
-1.  `match E { V => R; V => R; ... }`
+1.  `match E { V => R, V => R, ... }`
 
 Because arithmetic is infinitely precise, assocativity of most arithmetic binary
 operations doesn't matter. In order to reduce errors and avoid having to decide
@@ -590,7 +584,10 @@ tag) don't have a value `V`, it's an error. Syntactically, value access is
 indistinguisable from a named access.
 
 `match` expressions are used on enums only right now; each arm must be either an
-enumerator value or `_` to mean "anything". `_` must come last.
+enumerator value or `_` to mean "anything". `_` must come last and must be
+present if not all enum values are covered (this can make overriding enums to
+add new elements difficult!). The comma between arms is currently mandatory; it
+is optional on the last arm and encouraged unless the `}` is on the same line.
 
 ### Built-in functions
 
