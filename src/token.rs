@@ -154,17 +154,13 @@ impl<'a> fmt::Display for Tok<'a> {
     }
 }
 
-fn peek(s: &str) -> Option<char> {
-    s.chars().next()
-}
-
 /// For a string starting on a block comment marker, advance up to the last
 /// character of the block comment. It will recurse in order to handle nested
 /// comments.
 fn skip_block_comment(mut s: &str) -> Result<&str, Error> {
     assert!(s.len() >= 2);
     assert!(s.starts_with("/*"));
-    s = &s[2..];
+    s = unsafe { s.get_unchecked(2..) };
 
     // TODO: This feels kind of bad to search twice, but lazy_static/regex is a
     // lot of work for two two-character search patterns. Also this means every
@@ -174,51 +170,60 @@ fn skip_block_comment(mut s: &str) -> Result<&str, Error> {
             .find("*/")
             .ok_or(format_err!("unterminated block comment"))?;
         match s.find("/*") {
-            Some(inner) if inner < end => {
-                s = &skip_block_comment(&s[inner..])?[1..];
-            }
-            _ => break Ok(&s[end + 1..]),
+            Some(inner) if inner < end =>
+                s = &skip_block_comment(&s[inner..])?,
+            _ => break Ok(unsafe { s.get_unchecked(end + 2..) }),
         }
     }
 }
 
-/// Lex a string literal, and return the rest of the string in the first
-/// position, and the string's contents in the second. s is expected to
-/// already have had the opening quote removed.
-fn lex_string_lit(mut s: &'a str) -> Result<(&'a str, Cow<'a, str>), Error> {
+/// Lex a string literal, and return the contents (with escapes processed) in the first position,
+/// and the remainder of the source in the second. s is expected to already have had the opening quote
+/// removed.
+fn lex_string_lit(mut s: &'a str) -> Result<(Cow<'a, str>, &'a str), Error> {
+    println!("parsing string literal: {:?}", s);
     // Easy case: there is no escape sequence, so we can just borrow the
     // contents directly.
     let escape = s.find("\\").unwrap_or(s.len());
-    let quote = s.find("\"").ok_or(format_err!("unterminated string literal"))?;
+    let quote = s
+        .find("\"")
+        .ok_or(format_err!("unterminated string literal"))?;
     if quote < escape {
-        return Ok((&s[quote..], s[0..quote].into()));
+        return Ok(unsafe {
+            (
+                s.get_unchecked(0..quote).into(),
+                s.get_unchecked(quote + 1..),
+            )
+        });
     }
 
     let mut l = String::new();
     while let Some(escape) = s.find("\\") {
-        l += &s[0..escape];
-        s = &s[escape+1..];
+        l += unsafe { s.get_unchecked(0..escape) };
+        s = unsafe { s.get_unchecked(escape + 1..) };
         match s.chars().next() {
-            None => {return Err(format_err!("unterminated string literal"));}
-            Some('"') => {l += "\"";}
-            Some('\\') => {l += "\\";}
-            Some('n') => {l += "\n";}
-            Some('r') => {l += "\r";}
-            Some('t') => {l += "\t";}
-            Some(e) => {return Err(format_err!("unrecognized escape sequence: \\{}", e));}
+            None => return Err(format_err!("unterminated string literal")),
+            Some('"') => l += "\"",
+            Some('\\') => l += "\\",
+            Some('n') => l += "\n",
+            Some('r') => l += "\r",
+            Some('t') => l += "\t",
+            Some(e) => return Err(format_err!("unrecognized escape sequence: \\{}", e)),
         }
-        s = &s[1..];
+        // Any escape sequence we actually accept is 1 ASCII character long.
+        s = unsafe { s.get_unchecked(1..) };
     }
-    let quote = s.find("\"").ok_or(format_err!("unterminated string literal"))?;
-    l += &s[0..quote];
-    return Ok((&s[quote..], l.into()));
+    let quote = s
+        .find("\"")
+        .ok_or(format_err!("unterminated string literal"))?;
+    l += unsafe { s.get_unchecked(0..quote) };
+    return Ok((l.into(), unsafe { s.get_unchecked(quote + 1..) }));
 }
 
 pub fn lex<'a>(mut s: &'a str) -> Result<Vec<Tok<'a>>, Error> {
     let mut toks = Vec::new();
-    while s.len() > 0 {
-        let c = peek(s).unwrap();
-        let rest = &s[1..];
+    while let Some(c) = s.chars().next() {
+        let rest = unsafe { s.get_unchecked(c.len_utf8()..) };
 
         // Note that we unconditionally advance s at the end of the loop, so
         // multi-character tokens need to advance to their last character,
@@ -233,76 +238,123 @@ pub fn lex<'a>(mut s: &'a str) -> Result<Vec<Tok<'a>>, Error> {
         //
         // TODO: Use unsafe to optimize the slicing.
         match c {
-            '(' => toks.push(Tok::Sym(Sym::LParen)),
-            ')' => toks.push(Tok::Sym(Sym::RParen)),
-            '[' => toks.push(Tok::Sym(Sym::LBrack)),
-            ']' => toks.push(Tok::Sym(Sym::RBrack)),
-            '{' => toks.push(Tok::Sym(Sym::LBrace)),
-            '}' => toks.push(Tok::Sym(Sym::RBrace)),
-            ';' => toks.push(Tok::Sym(Sym::Semi)),
-            ',' => toks.push(Tok::Sym(Sym::Comma)),
-            ':' => toks.push(Tok::Sym(Sym::Colon)),
-            '.' => toks.push(Tok::Sym(Sym::Dot)),
-            '+' => toks.push(Tok::Sym(Sym::Plus)),
-            '*' => toks.push(Tok::Sym(Sym::Star)),
-            '%' => toks.push(Tok::Sym(Sym::Percent)),
-            '/' => match peek(rest) {
+            '(' => {
+                toks.push(Tok::Sym(Sym::LParen));
+                s = rest;
+            }
+            ')' => {
+                toks.push(Tok::Sym(Sym::RParen));
+                s = rest;
+            }
+            '[' => {
+                toks.push(Tok::Sym(Sym::LBrack));
+                s = rest;
+            }
+            ']' => {
+                toks.push(Tok::Sym(Sym::RBrack));
+                s = rest;
+            }
+            '{' => {
+                toks.push(Tok::Sym(Sym::LBrace));
+                s = rest;
+            }
+            '}' => {
+                toks.push(Tok::Sym(Sym::RBrace));
+                s = rest;
+            }
+            ';' => {
+                toks.push(Tok::Sym(Sym::Semi));
+                s = rest;
+            }
+            ',' => {
+                toks.push(Tok::Sym(Sym::Comma));
+                s = rest;
+            }
+            ':' => {
+                toks.push(Tok::Sym(Sym::Colon));
+                s = rest;
+            }
+            '.' => {
+                toks.push(Tok::Sym(Sym::Dot));
+                s = rest;
+            }
+            '+' => {
+                toks.push(Tok::Sym(Sym::Plus));
+                s = rest;
+            }
+            '*' => {
+                toks.push(Tok::Sym(Sym::Star));
+                s = rest;
+            }
+            '%' => {
+                toks.push(Tok::Sym(Sym::Percent));
+                s = rest;
+            }
+            '/' => match rest.chars().next() {
                 Some('/') => {
-                    let i = s.find('\n').unwrap_or(s.len());
-                    s = &s[i - 1..];
+                    // If we don't find \n, we set i to s.len()-1 so that when we add 1 on the next
+                    // line, we end up right at the end of the string.
+                    let i = s.find('\n').unwrap_or(s.len() - 1);
+                    s = unsafe { s.get_unchecked(i + 1..) };
                 }
-                Some('*') => {
-                    s = skip_block_comment(s)?;
+                Some('*') => s = skip_block_comment(s)?,
+                _ => {
+                    toks.push(Tok::Sym(Sym::Slash));
+                    s = rest;
                 }
-                _ => toks.push(Tok::Sym(Sym::Slash)),
             },
-            '!' => if peek(rest) == Some('=') {
-                s = &s[1..];
+            '!' => if rest.chars().next() == Some('=') {
                 toks.push(Tok::Sym(Sym::NEq));
+                s = unsafe { s.get_unchecked(2..) };
             } else {
                 return Err(format_err!("expected = after ! to make != token"));
             },
-            '=' => match peek(rest) {
+            '=' => match rest.chars().next() {
                 Some('=') => {
-                    s = &s[1..];
                     toks.push(Tok::Sym(Sym::Eq));
+                    s = unsafe { s.get_unchecked(2..) };
                 }
                 Some('>') => {
-                    s = &s[1..];
                     toks.push(Tok::Sym(Sym::DoubleArrow));
+                    s = unsafe { s.get_unchecked(2..) };
                 }
-                _ => toks.push(Tok::Sym(Sym::Assign)),
+                _ => {
+                    toks.push(Tok::Sym(Sym::Assign));
+                    s = rest;
+                }
             },
-            '>' => if peek(rest) == Some('=') {
-                s = &s[1..];
+            '>' => if rest.chars().next() == Some('=') {
                 toks.push(Tok::Sym(Sym::GE));
+                s = unsafe { s.get_unchecked(2..) };
             } else {
                 toks.push(Tok::Sym(Sym::GT));
+                s = rest;
             },
-            '<' => if peek(rest) == Some('=') {
-                s = &s[1..];
+            '<' => if rest.chars().next() == Some('=') {
                 toks.push(Tok::Sym(Sym::LE));
+                s = unsafe { s.get_unchecked(2..) };
             } else {
                 toks.push(Tok::Sym(Sym::LT));
+                s = rest;
             },
-            '-' => if peek(rest) == Some('>') {
-                s = &s[1..];
+            '-' => if rest.chars().next() == Some('>') {
                 toks.push(Tok::Sym(Sym::Arrow));
+                s = unsafe { s.get_unchecked(2..) };
             } else {
                 toks.push(Tok::Sym(Sym::Minus));
+                s = rest;
             },
             c if c.is_ascii_digit() => {
                 let i = s.find(|c: char| !c.is_ascii_digit()).unwrap_or(s.len());
-                let (w, mut f) = (s[0..i].into(), None);
-                s = &s[i - 1..];
+                let (w, mut f) = (unsafe { s.get_unchecked(0..i).into() }, None);
+                s = unsafe { s.get_unchecked(i..) };
 
-                let mut r = s[1..].chars();
+                let mut r = s.chars();
                 if r.next() == Some('.') && r.next().map_or(false, |c| c.is_ascii_digit()) {
-                    println!("found period");
-                    s = &s[2..];
+                    s = unsafe { s.get_unchecked(1..) };
                     let i = s.find(|c: char| !c.is_ascii_digit()).unwrap_or(s.len());
-                    f = Some(s[0..i].into());
-                    s = &s[i - 1..];
+                    f = Some(unsafe { s.get_unchecked(0..i) }.into());
+                    s = unsafe { s.get_unchecked(i..) };
                 }
                 toks.push(Tok::Num(w, f));
             }
@@ -310,8 +362,8 @@ pub fn lex<'a>(mut s: &'a str) -> Result<Vec<Tok<'a>>, Error> {
                 let i = s
                     .find(|c: char| c != '_' && !c.is_ascii_alphanumeric())
                     .unwrap_or(s.len());
-                let ident = &s[0..i];
-                s = &s[i - 1..];
+                let ident = unsafe { s.get_unchecked(0..i) };
+                s = unsafe { s.get_unchecked(i..) };
                 if let Ok(k) = ident.parse() {
                     toks.push(Tok::Kw(k));
                 } else {
@@ -319,15 +371,13 @@ pub fn lex<'a>(mut s: &'a str) -> Result<Vec<Tok<'a>>, Error> {
                 }
             }
             '"' => {
-                let (s_, l) = lex_string_lit(&s[1..])?;
-                s = s_;
+                let (l, s_) = lex_string_lit(rest)?;
                 toks.push(Tok::String(l));
+                s = s_;
             }
-            c if c.is_ascii_whitespace() => {}
+            c if c.is_ascii_whitespace() => s = rest,
             _ => return Err(format_err!("unrecognized character: {:?}", c)),
         }
-
-        s = &s[c.len_utf8()..];
     }
     Ok(toks)
 }
@@ -657,8 +707,12 @@ mod tests {
         let toks = vec![String("a\nb\rc\td".into())];
         assert_eq!(toks, lex(str).unwrap());
 
-        let str = "\" a b c \"";
-        let toks = vec![String(" a b c ".into())];
+        let str = "\"a b c \"";
+        let toks = vec![String("a b c ".into())];
+        assert_eq!(toks, lex(str).unwrap());
+
+        let str = "a\"\"b";
+        let toks = vec![Ident("a".into()), String("".into()), Ident("b".into())];
         assert_eq!(toks, lex(str).unwrap());
     }
 }
