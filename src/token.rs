@@ -182,6 +182,38 @@ fn skip_block_comment(mut s: &str) -> Result<&str, Error> {
     }
 }
 
+/// Lex a string literal, and return the rest of the string in the first
+/// position, and the string's contents in the second. s is expected to
+/// already have had the opening quote removed.
+fn lex_string_lit(mut s: &'a str) -> Result<(&'a str, Cow<'a, str>), Error> {
+    // Easy case: there is no escape sequence, so we can just borrow the
+    // contents directly.
+    let escape = s.find("\\").unwrap_or(s.len());
+    let quote = s.find("\"").ok_or(format_err!("unterminated string literal"))?;
+    if quote < escape {
+        return Ok((&s[quote..], s[0..quote].into()));
+    }
+
+    let mut l = String::new();
+    while let Some(escape) = s.find("\\") {
+        l += &s[0..escape];
+        s = &s[escape+1..];
+        match s.chars().next() {
+            None => {return Err(format_err!("unterminated string literal"));}
+            Some('"') => {l += "\"";}
+            Some('\\') => {l += "\\";}
+            Some('n') => {l += "\n";}
+            Some('r') => {l += "\r";}
+            Some('t') => {l += "\t";}
+            Some(e) => {return Err(format_err!("unrecognized escape sequence: \\{}", e));}
+        }
+        s = &s[1..];
+    }
+    let quote = s.find("\"").ok_or(format_err!("unterminated string literal"))?;
+    l += &s[0..quote];
+    return Ok((&s[quote..], l.into()));
+}
+
 pub fn lex<'a>(mut s: &'a str) -> Result<Vec<Tok<'a>>, Error> {
     let mut toks = Vec::new();
     while s.len() > 0 {
@@ -193,12 +225,13 @@ pub fn lex<'a>(mut s: &'a str) -> Result<Vec<Tok<'a>>, Error> {
         // rather than past it.
         //
         // Throughout this code, we reborrow s by index past the first character
-        // quite frequently. Non-ASCII characters might cause panics but they
-        // are not legal, so it's fine for a first pass on the lexer.
+        // quite frequently. Non-ASCII characters will cause panics.
         //
         // TODO: Mostly the reason for this is having to add -1 in a ton of
         // places so as to avoid having to advance manually in every branch.
         // Should probably think that through more.
+        //
+        // TODO: Use unsafe to optimize the slicing.
         match c {
             '(' => toks.push(Tok::Sym(Sym::LParen)),
             ')' => toks.push(Tok::Sym(Sym::RParen)),
@@ -285,7 +318,11 @@ pub fn lex<'a>(mut s: &'a str) -> Result<Vec<Tok<'a>>, Error> {
                     toks.push(Tok::Ident(ident.into()));
                 }
             }
-            '"' => return Err(format_err!("I don't know how to parse string literals")),
+            '"' => {
+                let (s_, l) = lex_string_lit(&s[1..])?;
+                s = s_;
+                toks.push(Tok::String(l));
+            }
             c if c.is_ascii_whitespace() => {}
             _ => return Err(format_err!("unrecognized character: {:?}", c)),
         }
@@ -589,6 +626,39 @@ mod tests {
 
         let str = "/* // */\n*/";
         let toks = vec![Sym(Star), Sym(Slash)];
+        assert_eq!(toks, lex(str).unwrap());
+    }
+
+    #[test]
+    fn lex_string_literals() {
+        use super::Tok::*;
+
+        let str = "\"\"";
+        let toks = vec![String("".into())];
+        assert_eq!(toks, lex(str).unwrap());
+
+        let str = "\"abcd\"";
+        let toks = vec![String("abcd".into())];
+        assert_eq!(toks, lex(str).unwrap());
+
+        let str = "\"\"\"\"";
+        let toks = vec![String("".into()), String("".into())];
+        assert_eq!(toks, lex(str).unwrap());
+
+        let str = "\"\\\"\"";
+        let toks = vec![String("\"".into())];
+        assert_eq!(toks, lex(str).unwrap());
+
+        let str = "\"\\\\\"";
+        let toks = vec![String("\\".into())];
+        assert_eq!(toks, lex(str).unwrap());
+
+        let str = "\"a\\nb\\rc\\td\"";
+        let toks = vec![String("a\nb\rc\td".into())];
+        assert_eq!(toks, lex(str).unwrap());
+
+        let str = "\" a b c \"";
+        let toks = vec![String(" a b c ".into())];
         assert_eq!(toks, lex(str).unwrap());
     }
 }

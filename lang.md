@@ -90,6 +90,7 @@ boolean literals, and string literals are written between quotes `"..."`. Basic
 common escape sequences are supported; an error is emitted for any unknown
 escape sequence so that more can be added later. String literals are currently
 not usable as expressions, but only in human-readable names in declarations.
+They are UTF-8 encoded.
 
 ## Declarations
 
