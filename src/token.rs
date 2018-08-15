@@ -16,7 +16,7 @@ pub struct ParseSymError {
 }
 
 macro_rules! toks {
-    {$name:ident; err $err:ident; all $all: ident; $($kw:ident <- $spl:expr),*,} => {
+    {$name:ident; err $err:ident; $($kw:ident <- $spl:expr),*,} => {
         #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
         pub enum $name {
             $($kw),*,
@@ -40,16 +40,11 @@ macro_rules! toks {
                 })
             }
         }
-
-        pub static $all: &'static [$name] = &[
-            $($name::$kw),*,
-        ];
     };
 }
 
 toks! { Kw;
     err ParseKwError;
-    all ALL_KEYWORDS;
     // Declarations
     Region <- "region",
     Link <- "link",
@@ -100,7 +95,6 @@ toks! { Kw;
 
 toks! { Sym;
     err ParseSymError;
-    all ALL_SYMBOLS;
     // Delimeters
     LParen <- "(",
     RParen <- ")",
@@ -170,8 +164,7 @@ fn skip_block_comment(mut s: &str) -> Result<&str, Error> {
             .find("*/")
             .ok_or(format_err!("unterminated block comment"))?;
         match s.find("/*") {
-            Some(inner) if inner < end =>
-                s = &skip_block_comment(&s[inner..])?,
+            Some(inner) if inner < end => s = &skip_block_comment(&s[inner..])?,
             _ => break Ok(unsafe { s.get_unchecked(end + 2..) }),
         }
     }
@@ -180,7 +173,7 @@ fn skip_block_comment(mut s: &str) -> Result<&str, Error> {
 /// Lex a string literal, and return the contents (with escapes processed) in the first position,
 /// and the remainder of the source in the second. s is expected to already have had the opening quote
 /// removed.
-fn lex_string_lit(mut s: &'a str) -> Result<(Cow<'a, str>, &'a str), Error> {
+fn lex_string_lit<'a>(mut s: &'a str) -> Result<(Cow<'a, str>, &'a str), Error> {
     println!("parsing string literal: {:?}", s);
     // Easy case: there is no escape sequence, so we can just borrow the
     // contents directly.
@@ -435,8 +428,8 @@ mod tests {
 
     #[test]
     fn lex_syms() {
-        use super::Sym::*;
-        use super::Tok::*;
+        use Sym::*;
+        use Tok::*;
 
         let str = "=======";
         let toks = vec![Sym(Eq), Sym(Eq), Sym(Eq), Sym(Assign)];
@@ -501,8 +494,8 @@ mod tests {
 
     #[test]
     fn lex_nums() {
-        use super::Sym::*;
-        use super::Tok::*;
+        use Sym::*;
+        use Tok::*;
 
         let str = "0";
         let toks = vec![Num("0".into(), None)];
@@ -546,8 +539,8 @@ mod tests {
 
     #[test]
     fn lex_idents_kws() {
-        use super::Kw::*;
-        use super::Tok::*;
+        use Kw::*;
+        use Tok::*;
 
         let str = "a";
         let toks = vec![Ident("a".into())];
@@ -594,7 +587,7 @@ mod tests {
 
     #[test]
     fn lex_idents_whitespace() {
-        use super::Tok::*;
+        use Tok::*;
 
         let str = "  \t\n  \r    ";
         let toks: Vec<Tok> = vec![];
@@ -611,8 +604,8 @@ mod tests {
 
     #[test]
     fn lex_comments() {
-        use super::Sym::*;
-        use super::Tok::*;
+        use Sym::*;
+        use Tok::*;
 
         let str = "foo//bar\nbaz";
         let toks = vec![Ident("foo".into()), Ident("baz".into())];
@@ -681,7 +674,7 @@ mod tests {
 
     #[test]
     fn lex_string_literals() {
-        use super::Tok::*;
+        use Tok::*;
 
         let str = "\"\"";
         let toks = vec![String("".into())];
