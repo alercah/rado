@@ -1,3 +1,5 @@
+mod parse;
+
 use std::vec::Vec;
 
 pub struct File {
@@ -18,7 +20,7 @@ pub struct DeclName {
 }
 
 pub enum Stmt {
-    Decl(DeclName, Decl),
+    Decl(Decl),
     Prop(Prop),
     Cond(Expr, Vec<Stmt>),
 }
@@ -34,7 +36,7 @@ pub enum LinkDir {
     With,
 }
 pub struct Link {
-    pub name: DeclName,
+    pub name: Option<DeclName>,
     pub dir: LinkDir,
     pub regions: Vec<Name>,
     pub stmts: Vec<Stmt>,
@@ -59,20 +61,20 @@ pub struct Locations {
     pub decls: Vec<Location>,
 }
 
-pub struct Enum {
-    pub name: DeclName,
-    pub ids: Vec<DeclName>,
-}
-
 pub struct Param {
     pub name: Ident,
     pub ty: Option<Ty>,
 }
-pub struct Fn {
+pub struct FnDecl {
     pub name: DeclName,
     pub params: Vec<Param>,
     pub ret_ty: Option<Ty>,
     pub body: Expr,
+}
+
+pub struct Enum {
+    pub name: DeclName,
+    pub variants: Vec<DeclName>,
 }
 
 pub struct Config {
@@ -83,7 +85,7 @@ pub struct Config {
 
 pub struct ConfigEnum {
     pub name: DeclName,
-    pub e_decl: Enum,
+    pub variants: Vec<DeclName>,
     pub default: Option<Expr>,
 }
 
@@ -104,7 +106,7 @@ pub enum Decl {
     Items(Items),
     Location(Location),
     Locations(Locations),
-    Fn(Fn),
+    Fn(FnDecl),
     Enum(Enum),
     Config(Config),
     ConfigEnum(ConfigEnum),

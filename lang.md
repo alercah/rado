@@ -254,7 +254,7 @@ Configsets cannot be modified, overridden, or deleted.
 
 ### Random Declarations
 
-> Syntax: `random` *identifier* (*string-literal*)? `[` list(*expression*) `]`
+> Syntax: `random` *identifier* (*string-literal*)? `=` `[` list(*expression*) `]`
 
 A random declaration declares a randomized parameter that isn't an item or
 location, but still needs to be accounted for in logic. The expression list must

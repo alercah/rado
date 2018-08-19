@@ -1,0 +1,156 @@
+// Use a glob import to avoid unused import lints, due to lalrpop bug.
+use crate::token::*;
+use std::borrow::Cow;
+use super::*;
+
+grammar<'input>(text: &'input str);
+
+List<T>: Vec<T> = {
+    <v:(<T> ",")*> <e:T?> => match e {
+        None => v,
+        Some(e) => {
+            let mut v = v;
+            v.push(e);
+            v
+        }
+    }
+}
+
+Ident: Ident = {
+    "Ident" => Ident(<>.into_owned()),
+}
+
+pub File: File = {
+    Stmt* => { File{stmts: <>} },
+}
+
+StmtBlock: Vec<Stmt> = {
+    "{" <Stmt*> "}" => <>,
+}
+
+Stmt: Stmt = {
+    Decl => Stmt::Decl(<>),
+}
+
+Item: Item = {
+    <n:DeclName> <b:StmtBlock?> => Item{name: n, stmts: b.unwrap_or_default()},
+}
+
+Location: Location = {
+    <n:DeclName> <b:StmtBlock?> => Location{name:n, stmts: b.unwrap_or_default()},
+}
+
+DeclName: DeclName = {}
+
+Name: Name = {}
+
+LinkDir: LinkDir = {
+    "to" => LinkDir::To,
+    "from" => LinkDir::From,
+    "with" => LinkDir::With,
+}
+
+Param: Param = {
+    <i:Ident> <t:(":" <Ty>)?> => Param{name: i, ty: t},
+}
+
+Decl: Decl = {
+    "region" <n:DeclName> <b:StmtBlock> => Decl::Region(Region{name: n, stmts: b}),
+    "link" <n:DeclName?> <d:LinkDir> <r:List<Name>> <b:StmtBlock> =>
+        Decl::Link(Link{name: n, dir: d, regions: r, stmts: b}),
+    "item" <Item> => Decl::Item(<>),
+    "items" <t:List<Ident>> "{" <i:Item*> "}" => Decl::Items(Items{tags: t, decls: i}),
+    "location" <Location> => Decl::Location(<>),
+    "locations" "{" <Location*> "}" => Decl::Locations(Locations{decls: <>}),
+    "fn" <n:DeclName> <p:("(" <List<Param>> ")")?> <r:("->" <Ty>)?> "=" <b:Expr> =>
+        Decl::Fn(FnDecl{
+            name: n,
+            params: p.unwrap_or_default(),
+            ret_ty: r, 
+            body: b,
+        }),
+    "enum" <n:DeclName> "{" <v:DeclName*> "}" => Decl::Enum(Enum{name: n, variants: v}),
+    "config" <n:DeclName> ":" <t:Ty> <d:("=" <Expr>)?> =>
+        Decl::Config(Config{name: n, ty: t, default: d}),
+    "config" "enum" <n:DeclName> "{" <v:DeclName*> "}" <d:("=" <Expr>)?> =>
+        Decl::ConfigEnum(ConfigEnum{name: n, variants: v, default: d}),
+    "random" <n:DeclName> "=" "[" <v:List<Expr>> "]" =>
+        Decl::Random(Random{name: n, vals: v}),
+}
+
+Expr: Expr = {}
+
+Ty: Ty = {}
+
+extern {
+    type Error = failure::Error;
+
+    enum Tok<'input> {
+        "region" => Tok::Kw(Kw::Region),
+        "link" => Tok::Kw(Kw::Link),
+        "item" => Tok::Kw(Kw::Item),
+        "items" => Tok::Kw(Kw::Items),
+        "location" => Tok::Kw(Kw::Location),
+        "locations" => Tok::Kw(Kw::Locations),
+        "fn" => Tok::Kw(Kw::Fn),
+        "enum" => Tok::Kw(Kw::Enum),
+        "config" => Tok::Kw(Kw::Config),
+        "configset" => Tok::Kw(Kw::Configset),
+        "random" => Tok::Kw(Kw::Random),
+        "if" => Tok::Kw(Kw::If),
+        "else" => Tok::Kw(Kw::Else),
+        "modify" => Tok::Kw(Kw::Modify),
+        "override" => Tok::Kw(Kw::Override),
+        "requires" => Tok::Kw(Kw::Requires),
+        "visible" => Tok::Kw(Kw::Visible),
+        "unlock" => Tok::Kw(Kw::Unlock),
+        "tag" => Tok::Kw(Kw::Tag),
+        "alias" => Tok::Kw(Kw::Alias),
+        "provides" => Tok::Kw(Kw::Provides),
+        "progressive" => Tok::Kw(Kw::Progressive),
+        "val" => Tok::Kw(Kw::Val),
+        "max" => Tok::Kw(Kw::Max),
+        "consumable" => Tok::Kw(Kw::Consumable),
+        "restrict" => Tok::Kw(Kw::Restrict),
+        "avail" => Tok::Kw(Kw::Avail),
+        "infinity" => Tok::Kw(Kw::Infinity),
+        "grants" => Tok::Kw(Kw::Grants),
+        "count" => Tok::Kw(Kw::Count),
+        "start" => Tok::Kw(Kw::Start),
+        "num" => Tok::Kw(Kw::Num),
+        "bool" => Tok::Kw(Kw::Bool),
+        "match" => Tok::Kw(Kw::Match),
+        "min" => Tok::Kw(Kw::Min),
+        "with" => Tok::Kw(Kw::With),
+        "to" => Tok::Kw(Kw::To),
+        "from" => Tok::Kw(Kw::From),
+        "in" => Tok::Kw(Kw::In),
+        "(" => Tok::Sym(Sym::LParen),
+        ")" => Tok::Sym(Sym::RParen),
+        "[" => Tok::Sym(Sym::LBrack),
+        "]" => Tok::Sym(Sym::RBrack),
+        "{" => Tok::Sym(Sym::LBrace),
+        "}" => Tok::Sym(Sym::RBrace),
+        ";" => Tok::Sym(Sym::Semi),
+        "," => Tok::Sym(Sym::Comma),
+        ":" => Tok::Sym(Sym::Colon),
+        "." => Tok::Sym(Sym::Dot),
+        "=" => Tok::Sym(Sym::Assign),
+        "->" => Tok::Sym(Sym::Arrow),
+        "=>" => Tok::Sym(Sym::DoubleArrow),
+        "+" => Tok::Sym(Sym::Plus),
+        "-" => Tok::Sym(Sym::Minus),
+        "*" => Tok::Sym(Sym::Star),
+        "/" => Tok::Sym(Sym::Slash),
+        "%" => Tok::Sym(Sym::Percent),
+        "==" => Tok::Sym(Sym::Eq),
+        "!=" => Tok::Sym(Sym::NEq),
+        "<" => Tok::Sym(Sym::LT),
+        "<=" => Tok::Sym(Sym::LE),
+        ">=" => Tok::Sym(Sym::GT),
+        ">" => Tok::Sym(Sym::GE),
+        "String" => Tok::String(<Cow<'input, str>>),
+        "Ident" => Tok::Ident(<Cow<'input, str>>),
+        "Num" => Tok::Num(<Cow<'input, str>>, <Option<Cow<'input, str>>>),
+    }
+}
