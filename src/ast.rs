@@ -16,13 +16,13 @@ pub enum Name {
 
 pub struct DeclName {
     pub ident: Ident,
-    pub human: String,
+    pub human: Option<String>,
 }
 
 pub enum Stmt {
     Decl(Decl),
     Prop(Prop),
-    Cond(Expr, Vec<Stmt>),
+    Cond(Expr, Vec<Stmt>, Vec<Stmt>),
 }
 
 pub struct Region {
@@ -139,13 +139,11 @@ pub enum BinOp {
     Div,
     Mod,
     Eq,
-    Ne,
-    Lt,
-    Le,
-    Gt,
-    Ge,
-    And,
-    Or,
+    NEq,
+    LT,
+    LE,
+    GT,
+    GE,
 }
 
 pub enum Builtin {
@@ -160,14 +158,16 @@ pub struct MatchArm {
 }
 
 pub enum Expr {
-    NumLit(),
-    BoolLit(bool),
+    Num(num_rational::BigRational),
+    Bool(bool),
     List(Vec<Expr>),
     Name(Name),
-    FnCall(Name, Vec<Expr>),
-    BuiltinCall(Builtin, Vec<Expr>),
-    Bin(BinOp, Box<Expr>, Box<Expr>),
+    Builtin(Builtin),
+    Call(Box<Expr>, Vec<Expr>),
     Not(Box<Expr>),
+    Bin(Box<Expr>, BinOp, Box<Expr>),
+    And(Vec<Expr>),
+    Or(Vec<Expr>),
     If(Box<Expr>, Box<Expr>, Box<Expr>),
     Match(Box<Expr>, Vec<MatchArm>),
 }
@@ -178,5 +178,5 @@ pub enum Ty {
     Item,
     Fn(Vec<Ty>, Box<Ty>),
     List(Box<Ty>),
-    Name(Ident),
+    Name(Name),
 }

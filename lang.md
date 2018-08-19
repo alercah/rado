@@ -266,7 +266,7 @@ deleted.
 
 ## Conditional Blocks
 
-> Syntax: `if` *expression* *block*
+> Syntax: `if` *expression* *block* (`else` *block*)?
 
 A conditional block makes it so that its contents take effect conditionally. The
 expression must be one that depends only on constants and the values of configs
@@ -558,17 +558,17 @@ functions are stateless, this is equivalent to a `T`.
 Expressions are fairly straightforward in Peri. The following are supported, in
 order of precedence:
 
+1.  Parenthesized expressions
 1.  Literals and values (`foo`, `3`, etc.)
     1.  Value access (`i.Val`)
 1.  Explicit list creation (`[a, b, c]`)
 1.  Function calls (`fn(...)`)
-1.  Addition and subtraction for numbers (`+` and `-`)
-1.  Multiplication, division, and modulus (`\*`, `/`, and `%`)
-1.  Comparison (`==`, `!=`, `<`, `<=`, `>`, `>=`)
 1.  Boolean negation (`not`)
+1.  Multiplication, division, and modulus (`\*`, `/`, and `%`)
+1.  Addition and subtraction for numbers (`+` and `-`)
+1.  Comparison (`==`, `!=`, `<`, `<=`, `>`, `>=`)
 1.  Boolean conjunction and disjunction (`and` and `or`)
-1.  `if A then B else C`
-1.  `match E { V => R, V => R, ... }`
+1.  `if A then B else C` and `match E { V => R, V => R, ... }`
 
 Because arithmetic is infinitely precise, assocativity of most arithmetic binary
 operations doesn't matter. In order to reduce errors and avoid having to decide

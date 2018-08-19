@@ -83,7 +83,13 @@ toks! { Kw;
     // Expressions & types not covered above
     Num <- "num",
     Bool <- "bool",
+    Then <- "then",
     Match <- "match",
+    True <- "true",
+    False <- "false",
+    Not <- "not",
+    And <- "and",
+    Or <- "or",
     Min <- "min",
 
     // Prepositions

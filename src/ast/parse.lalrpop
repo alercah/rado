@@ -16,33 +16,53 @@ List<T>: Vec<T> = {
     }
 }
 
+Opt<T>: T = {
+    T? => <>.unwrap_or_default(),
+}
+
 Ident: Ident = {
     "Ident" => Ident(<>.into_owned()),
 }
 
+String: String = {
+    "String" => <>.into_owned(),
+}
+
+Num: num_rational::BigRational = {
+    "Num" => (<>.0.into_owned() + "." + &<>.1.unwrap_or("0".into())).parse().unwrap(),
+}
+
 pub File: File = {
-    Stmt* => { File{stmts: <>} },
+    <stmts:Stmt*> => { File{<>} },
 }
 
 StmtBlock: Vec<Stmt> = {
-    "{" <Stmt*> "}" => <>,
+    "{" <Stmt*> "}",
 }
 
 Stmt: Stmt = {
     Decl => Stmt::Decl(<>),
+    Prop => Stmt::Prop(<>),
+    "if" <Expr> <StmtBlock> <Opt<("else" <StmtBlock>)>> => Stmt::Cond(<>),
 }
 
 Item: Item = {
-    <n:DeclName> <b:StmtBlock?> => Item{name: n, stmts: b.unwrap_or_default()},
+    <name:DeclName> <stmts:Opt<StmtBlock>> => Item{<>},
 }
 
 Location: Location = {
-    <n:DeclName> <b:StmtBlock?> => Location{name:n, stmts: b.unwrap_or_default()},
+    <name:DeclName> <stmts:Opt<StmtBlock>> => Location{<>},
 }
 
-DeclName: DeclName = {}
+DeclName: DeclName = {
+    <ident:Ident> <human:String?> => DeclName{<>},
+}
 
-Name: Name = {}
+Name: Name = {
+    "." <Ident> => Name::Sub(Box::new(Name::Global), <>),
+    Ident => Name::Id(<>),
+    <r:Name> "." <i:Ident> => Name::Sub(Box::new(r), i),
+}
 
 LinkDir: LinkDir = {
     "to" => LinkDir::To,
@@ -51,36 +71,119 @@ LinkDir: LinkDir = {
 }
 
 Param: Param = {
-    <i:Ident> <t:(":" <Ty>)?> => Param{name: i, ty: t},
+    <name:Ident> <ty:(":" <Ty>)?> => Param{<>},
 }
 
 Decl: Decl = {
-    "region" <n:DeclName> <b:StmtBlock> => Decl::Region(Region{name: n, stmts: b}),
-    "link" <n:DeclName?> <d:LinkDir> <r:List<Name>> <b:StmtBlock> =>
-        Decl::Link(Link{name: n, dir: d, regions: r, stmts: b}),
+    "region" <name:DeclName> <stmts:StmtBlock> => Decl::Region(Region{<>}),
+    "link" <name:DeclName?> <dir:LinkDir> <regions:List<Name>> <stmts:StmtBlock> =>
+        Decl::Link(Link{<>}),
     "item" <Item> => Decl::Item(<>),
-    "items" <t:List<Ident>> "{" <i:Item*> "}" => Decl::Items(Items{tags: t, decls: i}),
+    "items" <tags:List<Ident>> "{" <decls:Item*> "}" => Decl::Items(Items{<>}),
     "location" <Location> => Decl::Location(<>),
-    "locations" "{" <Location*> "}" => Decl::Locations(Locations{decls: <>}),
-    "fn" <n:DeclName> <p:("(" <List<Param>> ")")?> <r:("->" <Ty>)?> "=" <b:Expr> =>
-        Decl::Fn(FnDecl{
-            name: n,
-            params: p.unwrap_or_default(),
-            ret_ty: r, 
-            body: b,
-        }),
-    "enum" <n:DeclName> "{" <v:DeclName*> "}" => Decl::Enum(Enum{name: n, variants: v}),
-    "config" <n:DeclName> ":" <t:Ty> <d:("=" <Expr>)?> =>
-        Decl::Config(Config{name: n, ty: t, default: d}),
-    "config" "enum" <n:DeclName> "{" <v:DeclName*> "}" <d:("=" <Expr>)?> =>
-        Decl::ConfigEnum(ConfigEnum{name: n, variants: v, default: d}),
-    "random" <n:DeclName> "=" "[" <v:List<Expr>> "]" =>
-        Decl::Random(Random{name: n, vals: v}),
+    "locations" "{" <decls:Location*> "}" => Decl::Locations(Locations{<>}),
+    "fn" <name:DeclName> <params:Opt<("(" <List<Param>> ")")>> <ret_ty:("->" <Ty>)?> "=" <body:Expr> =>
+        Decl::Fn(FnDecl{<>}),
+    "enum" <name:DeclName> "{" <variants:DeclName*> "}" => Decl::Enum(Enum{<>}),
+    "config" <name:DeclName> ":" <ty:Ty> <default:("=" <Expr>)?> =>
+        Decl::Config(Config{<>}),
+    "config" "enum" <name:DeclName> "{" <variants:DeclName*> "}" <default:("=" <Expr>)?> =>
+        Decl::ConfigEnum(ConfigEnum{<>}),
+    "random" <name:DeclName> "=" "[" <vals:List<Expr>> "]" =>
+        Decl::Random(Random{<>}),
 }
 
-Expr: Expr = {}
+Prop: Prop = {}
 
-Ty: Ty = {}
+PrimExpr: Box<Expr> = {
+    Num => Box::new(Expr::Num(<>)),
+    "true"=> Box::new(Expr::Bool(true)),
+    "false" => Box::new(Expr::Bool(false)),
+    Name => Box::new(Expr::Name(<>)),
+    "(" <CondExpr> ")",
+}
+
+CallExpr: Box<Expr> = {
+    <func:CallExpr> "(" <params:List<Expr>> ")" => Box::new(Expr::Call(<>)),
+    PrimExpr,
+}
+
+NegExpr: Box<Expr> = {
+    "not" <CallExpr> => Box::new(Expr::Not(<>)),
+    CallExpr,
+}
+
+MulOp: BinOp = {
+    "*" => BinOp::Mul,
+    "/" => BinOp::Div,
+    "%" => BinOp::Mod,
+}
+
+MulExpr: Box<Expr> = {
+    MulExpr MulOp NegExpr => Box::new(Expr::Bin(<>)),
+    NegExpr,
+}
+
+AddOp: BinOp = {
+    "+" => BinOp::Add,
+    "-" => BinOp::Sub,
+}
+
+AddExpr: Box<Expr> = {
+    AddExpr AddOp MulExpr => Box::new(Expr::Bin(<>)),
+    MulExpr,
+}
+
+CompOp: BinOp = {
+    "==" => BinOp::Eq,
+    "!=" => BinOp::NEq,
+    "<" => BinOp::LT,
+    "<=" => BinOp::LE,
+    ">" => BinOp::GT,
+    ">=" => BinOp::GE,
+}
+
+CompExpr: Box<Expr> = {
+    AddExpr CompOp AddExpr => Box::new(Expr::Bin(<>)),
+    AddExpr,
+}
+
+LogExpr: Box<Expr> = {
+    <init:(<CompExpr> "and")+> <last:CompExpr> => {
+        let mut v = init;
+        v.push(last);
+        Box::new(Expr::And(v.into_iter().map(|b| *b).collect()))
+    },
+    <init:(<CompExpr> "or")+> <last:CompExpr> => {
+        let mut v = init;
+        v.push(last);
+        Box::new(Expr::Or(v.into_iter().map(|b| *b).collect()))
+    },
+    CompExpr,
+}
+
+MatchArm: MatchArm = {
+    <pat:Name> "=>" <expr:Expr> => MatchArm{<>},
+}
+
+CondExpr: Box<Expr> = {
+    "if" <CondExpr> "then" <CondExpr> "else" <CondExpr> => Box::new(Expr::If(<>)),
+    "match" <CondExpr> "{" <List<MatchArm>> "}" => Box::new(Expr::Match(<>)),
+    LogExpr,
+}
+
+Expr: Expr = {
+    CondExpr => *<>,
+}
+
+Ty: Ty = {
+    "num" => Ty::Num,
+    "bool" => Ty::Bool,
+    "item" => Ty::Item,
+    "fn" "(" <params:List<Ty>> ")" <ret_ty:("->" <Ty>)> => Ty::Fn(params, Box::new(ret_ty)),
+    "[" <Ty> "]" => Ty::List(Box::new(<>)),
+    Name => Ty::Name(<>),
+}
 
 extern {
     type Error = failure::Error;
@@ -119,7 +222,13 @@ extern {
         "start" => Tok::Kw(Kw::Start),
         "num" => Tok::Kw(Kw::Num),
         "bool" => Tok::Kw(Kw::Bool),
+        "then" => Tok::Kw(Kw::Then),
         "match" => Tok::Kw(Kw::Match),
+        "true" => Tok::Kw(Kw::True),
+        "false" => Tok::Kw(Kw::False),
+        "not" => Tok::Kw(Kw::Not),
+        "and" => Tok::Kw(Kw::And),
+        "or" => Tok::Kw(Kw::Or),
         "min" => Tok::Kw(Kw::Min),
         "with" => Tok::Kw(Kw::With),
         "to" => Tok::Kw(Kw::To),
