@@ -137,7 +137,7 @@ pub enum Tok<'a> {
     Kw(Kw),
     Sym(Sym),
     Ident(Cow<'a, str>),
-    Num(Cow<'a, str>, Option<Cow<'a, str>>),
+    Num(bool, Cow<'a, str>, Option<Cow<'a, str>>),
     String(Cow<'a, str>),
 }
 
@@ -147,8 +147,14 @@ impl<'a> fmt::Display for Tok<'a> {
             Tok::Kw(k) => write!(f, "{}", k),
             Tok::Sym(s) => write!(f, "{}", s),
             Tok::Ident(i) => write!(f, "{}", i),
-            Tok::Num(w, None) => write!(f, "{}", w),
-            Tok::Num(w, Some(d)) => write!(f, "{}.{}", w, d),
+            Tok::Num(s, w, d) => write!(
+                f,
+                "{}{}{}{}",
+                if *s { "" } else { "-" },
+                w,
+                if d.is_some() { "." } else { "" },
+                d.as_ref().map_or("", |d| &d),
+            ),
             Tok::String(s) => write!(f, "{:?}", s),
         }
     }
@@ -176,6 +182,25 @@ fn skip_block_comment(mut s: &str) -> Result<&str, Error> {
     }
 }
 
+/// Lex a numeric literal.
+fn lex_num_lit<'a>(mut s: &'a str) -> Result<(Cow<'a, str>, Option<Cow<'a, str>>, &'a str), Error> {
+    let i = s.find(|c: char| !c.is_ascii_digit()).unwrap_or(s.len());
+    let (w, mut f) = (unsafe { s.get_unchecked(0..i).into() }, None);
+    s = unsafe { s.get_unchecked(i..) };
+
+    let mut r = s.chars();
+    if r.next() == Some('.') && r.next().map_or(false, |c| c.is_ascii_digit()) {
+        s = unsafe { s.get_unchecked(1..) };
+        let i = s.find(|c: char| !c.is_ascii_digit()).unwrap_or(s.len());
+        f = Some(unsafe { s.get_unchecked(0..i) }.into());
+        s = unsafe { s.get_unchecked(i..) };
+    }
+    if s.chars().next().map_or(false, |c| c.is_ascii_alphabetic()) {
+        Err(format_err!("alphabetic character in numeric literal"))?;
+    }
+    Ok((w, f, s))
+}
+
 /// Lex a string literal, and return the contents (with escapes processed) in the first position,
 /// and the remainder of the source in the second. s is expected to already have had the opening quote
 /// removed.
@@ -201,13 +226,13 @@ fn lex_string_lit<'a>(mut s: &'a str) -> Result<(Cow<'a, str>, &'a str), Error> 
         l += unsafe { s.get_unchecked(0..escape) };
         s = unsafe { s.get_unchecked(escape + 1..) };
         match s.chars().next() {
-            None => return Err(format_err!("unterminated string literal")),
+            None => Err(format_err!("unterminated string literal"))?,
             Some('"') => l += "\"",
             Some('\\') => l += "\\",
             Some('n') => l += "\n",
             Some('r') => l += "\r",
             Some('t') => l += "\t",
-            Some(e) => return Err(format_err!("unrecognized escape sequence: \\{}", e)),
+            Some(e) => Err(format_err!("unrecognized escape sequence: \\{}", e))?,
         }
         // Any escape sequence we actually accept is 1 ASCII character long.
         s = unsafe { s.get_unchecked(1..) };
@@ -306,7 +331,7 @@ pub fn lex<'a>(mut s: &'a str) -> Result<Vec<Tok<'a>>, Error> {
                 toks.push(Tok::Sym(Sym::NEq));
                 s = unsafe { s.get_unchecked(2..) };
             } else {
-                return Err(format_err!("expected = after ! to make != token"));
+                Err(format_err!("expected = after ! to make != token"))?;
             },
             '=' => match rest.chars().next() {
                 Some('=') => {
@@ -336,26 +361,25 @@ pub fn lex<'a>(mut s: &'a str) -> Result<Vec<Tok<'a>>, Error> {
                 toks.push(Tok::Sym(Sym::LT));
                 s = rest;
             },
-            '-' => if rest.chars().next() == Some('>') {
-                toks.push(Tok::Sym(Sym::Arrow));
-                s = unsafe { s.get_unchecked(2..) };
-            } else {
-                toks.push(Tok::Sym(Sym::Minus));
-                s = rest;
+            '-' => match rest.chars().next() {
+                Some('>') => {
+                    toks.push(Tok::Sym(Sym::Arrow));
+                    s = unsafe { s.get_unchecked(2..) };
+                }
+                Some(c) if c.is_ascii_digit() => {
+                    let (w, f, s_) = lex_num_lit(rest)?;
+                    toks.push(Tok::Num(false, w, f));
+                    s = s_;
+                }
+                _ => {
+                    toks.push(Tok::Sym(Sym::Minus));
+                    s = rest;
+                }
             },
             c if c.is_ascii_digit() => {
-                let i = s.find(|c: char| !c.is_ascii_digit()).unwrap_or(s.len());
-                let (w, mut f) = (unsafe { s.get_unchecked(0..i).into() }, None);
-                s = unsafe { s.get_unchecked(i..) };
-
-                let mut r = s.chars();
-                if r.next() == Some('.') && r.next().map_or(false, |c| c.is_ascii_digit()) {
-                    s = unsafe { s.get_unchecked(1..) };
-                    let i = s.find(|c: char| !c.is_ascii_digit()).unwrap_or(s.len());
-                    f = Some(unsafe { s.get_unchecked(0..i) }.into());
-                    s = unsafe { s.get_unchecked(i..) };
-                }
-                toks.push(Tok::Num(w, f));
+                let (w, f, s_) = lex_num_lit(s)?;
+                toks.push(Tok::Num(true, w, f));
+                s = s_;
             }
             c if c == '_' || c.is_ascii_alphabetic() => {
                 let i = s
@@ -375,7 +399,7 @@ pub fn lex<'a>(mut s: &'a str) -> Result<Vec<Tok<'a>>, Error> {
                 s = s_;
             }
             c if c.is_ascii_whitespace() => s = rest,
-            _ => return Err(format_err!("unrecognized character: {:?}", c)),
+            _ => Err(format_err!("unrecognized character: {:?}", c))?,
         }
     }
     Ok(toks)
@@ -434,8 +458,8 @@ mod tests {
 
     #[test]
     fn lex_syms() {
-        use Sym::*;
-        use Tok::*;
+        use self::Sym::*;
+        use self::Tok::*;
 
         let str = "=======";
         let toks = vec![Sym(Eq), Sym(Eq), Sym(Eq), Sym(Assign)];
@@ -500,27 +524,24 @@ mod tests {
 
     #[test]
     fn lex_nums() {
-        use Sym::*;
-        use Tok::*;
+        use self::Sym::*;
+        use self::Tok::*;
 
         let str = "0";
-        let toks = vec![Num("0".into(), None)];
+        let toks = vec![Num(true, "0".into(), None)];
         assert_eq!(toks, lex(str).unwrap());
 
         let str = "1234567890";
-        let toks = vec![Num("1234567890".into(), None)];
-        assert_eq!(toks, lex(str).unwrap());
-
-        let str = "1f";
-        let toks = vec![Num("1".into(), None), Ident("f".into())];
+        let toks = vec![Num(true, "1234567890".into(), None)];
         assert_eq!(toks, lex(str).unwrap());
 
         let str = "0.1";
-        let toks = vec![Num("0".into(), Some("1".into()))];
+        let toks = vec![Num(true, "0".into(), Some("1".into()))];
         assert_eq!(toks, lex(str).unwrap());
 
         let str = "99999999999999999999.00000000000000000000";
         let toks = vec![Num(
+            true,
             "99999999999999999999".into(),
             Some("00000000000000000000".into()),
         )];
@@ -528,25 +549,49 @@ mod tests {
 
         let str = "1.1.1";
         let toks = vec![
-            Num("1".into(), Some("1".into())),
+            Num(true, "1".into(), Some("1".into())),
             Sym(Dot),
-            Num("1".into(), None),
+            Num(true, "1".into(), None),
         ];
         assert_eq!(toks, lex(str).unwrap());
 
         let str = ".1";
-        let toks = vec![Sym(Dot), Num("1".into(), None)];
+        let toks = vec![Sym(Dot), Num(true, "1".into(), None)];
         assert_eq!(toks, lex(str).unwrap());
 
         let str = "1 .1";
-        let toks = vec![Num("1".into(), None), Sym(Dot), Num("1".into(), None)];
+        let toks = vec![
+            Num(true, "1".into(), None),
+            Sym(Dot),
+            Num(true, "1".into(), None),
+        ];
+        assert_eq!(toks, lex(str).unwrap());
+
+        let str = "-1";
+        let toks = vec![Num(false, "1".into(), None)];
+        assert_eq!(toks, lex(str).unwrap());
+
+        let str = "-2.2";
+        let toks = vec![Num(false, "2".into(), Some("2".into()))];
+        assert_eq!(toks, lex(str).unwrap());
+
+        let str = "-0.1";
+        let toks = vec![Num(false, "0".into(), Some("1".into()))];
+        assert_eq!(toks, lex(str).unwrap());
+
+        let str = "0.-1";
+        let toks = vec![
+            Num(true, "0".into(), None),
+            Sym(Dot),
+            Num(false, "1".into(), None),
+        ];
         assert_eq!(toks, lex(str).unwrap());
     }
 
     #[test]
     fn lex_idents_kws() {
-        use Kw::*;
-        use Tok::*;
+        use self::Kw::*;
+        use self::Tok::*;
 
         let str = "a";
         let toks = vec![Ident("a".into())];
@@ -586,8 +631,8 @@ mod tests {
         let toks = vec![Ident("if9".into())];
         assert_eq!(toks, lex(str).unwrap());
 
-        let str = "if then else";
-        let toks = vec![Kw(If), Ident("then".into()), Kw(Else)];
+        let str = "if than else";
+        let toks = vec![Kw(If), Ident("than".into()), Kw(Else)];
         assert_eq!(toks, lex(str).unwrap());
     }
 
@@ -610,8 +655,8 @@ mod tests {
 
     #[test]
     fn lex_comments() {
-        use Sym::*;
-        use Tok::*;
+        use self::Sym::*;
+        use self::Tok::*;
 
         let str = "foo//bar\nbaz";
         let toks = vec![Ident("foo".into()), Ident("baz".into())];

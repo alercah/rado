@@ -1,5 +1,8 @@
 // Use a glob import to avoid unused import lints, due to lalrpop bug.
 use crate::token::*;
+use num_bigint::BigInt;
+use num_rational::BigRational;
+use std::ops::Neg;
 use std::borrow::Cow;
 use super::*;
 
@@ -28,8 +31,14 @@ String: String = {
     "String" => <>.into_owned(),
 }
 
-Num: num_rational::BigRational = {
-    "Num" => (<>.0.into_owned() + "." + &<>.1.unwrap_or("0".into())).parse().unwrap(),
+Num: BigRational = {
+    "Num" => {
+        let f = <>.2.unwrap_or("0".into());
+        let mut n: BigRational = (<>.1.into_owned() + &f).parse().unwrap();
+        n = n / BigRational::from(BigInt::from(f.len()));
+        if !<>.0 { n = n.neg(); }
+        n
+    },
 }
 
 pub File: File = {
@@ -260,6 +269,6 @@ extern {
         ">" => Tok::Sym(Sym::GE),
         "String" => Tok::String(<Cow<'input, str>>),
         "Ident" => Tok::Ident(<Cow<'input, str>>),
-        "Num" => Tok::Num(<Cow<'input, str>>, <Option<Cow<'input, str>>>),
+        "Num" => Tok::Num(<bool>, <Cow<'input, str>>, <Option<Cow<'input, str>>>),
     }
 }

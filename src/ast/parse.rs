@@ -1,6 +1,9 @@
 // auto-generated: "lalrpop 0.15.2"
-// sha256: 393f71977f14c8f1925b14ddc3cf6c54e7bdcdf75d73132cdc211ba2b7874546
+// sha256: acc3f3cb87c82377bf3f2bbd88eaeebd2c2cd452d2a8503c1c2dc1ea3b97e654
 use crate::token::*;
+use num_bigint::BigInt;
+use num_rational::BigRational;
+use std::ops::Neg;
 use std::borrow::Cow;
 use super::*;
 #[allow(unused_extern_crates)]
@@ -11,6 +14,9 @@ mod __parse__File {
     #![allow(non_snake_case, non_camel_case_types, unused_mut, unused_variables, unused_imports, unused_parens)]
 
     use crate::token::*;
+    use num_bigint::BigInt;
+    use num_rational::BigRational;
+    use std::ops::Neg;
     use std::borrow::Cow;
     use super::super::*;
     #[allow(unused_extern_crates)]
@@ -21,7 +27,7 @@ mod __parse__File {
      {
         Variant0(Tok<'input>),
         Variant1(Cow<'input, str>),
-        Variant2((Cow<'input, str>, Option<Cow<'input, str>>)),
+        Variant2((bool, Cow<'input, str>, Option<Cow<'input, str>>)),
         Variant3(Vec<Param>),
         Variant4(::std::option::Option<Vec<Param>>),
         Variant5(Ty),
@@ -61,7 +67,7 @@ mod __parse__File {
         Variant39(::std::vec::Vec<Location>),
         Variant40(::std::option::Option<MatchArm>),
         Variant41(::std::option::Option<Name>),
-        Variant42(num_rational::BigRational),
+        Variant42(BigRational),
         Variant43(::std::option::Option<Param>),
         Variant44(Prop),
         Variant45(Stmt),
@@ -1488,7 +1494,7 @@ mod __parse__File {
                     Tok::Sym(Sym::GE) if true => 18,
                     Tok::Sym(Sym::GT) if true => 19,
                     Tok::Ident(_) if true => 20,
-                    Tok::Num(_, _) if true => 21,
+                    Tok::Num(_, _, _) if true => 21,
                     Tok::String(_) if true => 22,
                     Tok::Sym(Sym::LBrack) if true => 23,
                     Tok::Sym(Sym::RBrack) if true => 24,
@@ -1638,7 +1644,7 @@ mod __parse__File {
                                 _ => unreachable!(),
                             },
                             21 => match __lookahead.1 {
-                                Tok::Num(__tok0, __tok1) => __Symbol::Variant2((__tok0, __tok1)),
+                                Tok::Num(__tok0, __tok1, __tok2) => __Symbol::Variant2((__tok0, __tok1, __tok2)),
                                 _ => unreachable!(),
                             },
                             22 => match __lookahead.1 {
@@ -2510,10 +2516,21 @@ mod __parse__File {
       'input,
     >(
         __symbols: &mut ::std::vec::Vec<((),__Symbol<'input>,())>
-    ) -> ((), (Cow<'input, str>, Option<Cow<'input, str>>), ())
+    ) -> ((), (bool, Cow<'input, str>, Option<Cow<'input, str>>), ())
      {
         match __symbols.pop().unwrap() {
             (__l, __Symbol::Variant2(__v), __r) => (__l, __v, __r),
+            _ => panic!("symbol type mismatch")
+        }
+    }
+    fn __pop_Variant42<
+      'input,
+    >(
+        __symbols: &mut ::std::vec::Vec<((),__Symbol<'input>,())>
+    ) -> ((), BigRational, ())
+     {
+        match __symbols.pop().unwrap() {
+            (__l, __Symbol::Variant42(__v), __r) => (__l, __v, __r),
             _ => panic!("symbol type mismatch")
         }
     }
@@ -2800,17 +2817,6 @@ mod __parse__File {
      {
         match __symbols.pop().unwrap() {
             (__l, __Symbol::Variant37(__v), __r) => (__l, __v, __r),
-            _ => panic!("symbol type mismatch")
-        }
-    }
-    fn __pop_Variant42<
-      'input,
-    >(
-        __symbols: &mut ::std::vec::Vec<((),__Symbol<'input>,())>
-    ) -> ((), num_rational::BigRational, ())
-     {
-        match __symbols.pop().unwrap() {
-            (__l, __Symbol::Variant42(__v), __r) => (__l, __v, __r),
             _ => panic!("symbol type mismatch")
         }
     }
@@ -6973,10 +6979,16 @@ fn __action3<
     'input,
 >(
     text: &'input str,
-    (_, __0, _): ((), (Cow<'input, str>, Option<Cow<'input, str>>), ()),
-) -> num_rational::BigRational
+    (_, __0, _): ((), (bool, Cow<'input, str>, Option<Cow<'input, str>>), ()),
+) -> BigRational
 {
-    (__0.0.into_owned() + "." + &__0.1.unwrap_or("0".into())).parse().unwrap()
+    {
+        let f = __0.2.unwrap_or("0".into());
+        let mut n: BigRational = (__0.1.into_owned() + &f).parse().unwrap();
+        n = n / BigRational::from(BigInt::from(f.len()));
+        if !__0.0 { n = n.neg(); }
+        n
+    }
 }
 
 #[allow(unused_variables)]
@@ -7321,7 +7333,7 @@ fn __action30<
     'input,
 >(
     text: &'input str,
-    (_, __0, _): ((), num_rational::BigRational, ()),
+    (_, __0, _): ((), BigRational, ()),
 ) -> Box<Expr>
 {
     Box::new(Expr::Num(__0))

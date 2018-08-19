@@ -289,8 +289,10 @@ A conditional block can contain property statements; these modify or override
 statements on the surrounding region as if the conditional block is a modifying
 declaration of the region, even though it has no `modify` keyword.
 
-If two different active conditional blocks override or modify a declaration in
-ways that conflict, and one isn't contained in the other, it is an error.
+If two different conditional blocks override or modify a declaration in
+ways that conflict, there exists some configuration such that both blocks can be
+simultaneously active, and one is not contained within the other, then this is
+an error.
 
 ### New Declarations
 
