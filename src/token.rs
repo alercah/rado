@@ -91,6 +91,7 @@ toks! { Kw;
     And <- "and",
     Or <- "or",
     Min <- "min",
+    Sum <- "sum",
 
     // Prepositions
     With <- "with",

@@ -282,8 +282,9 @@ declaration by a path name that doesn't start with the global region.
 
 Regions have a special exception; modifying declarations of regions do not
 require the `modify` keyword if they only contain declarations and not property
-statements. This restriction still enforces that nothing can be inadvertently
-modified.
+statements (this is because the declarations inside would be interpreted the
+same way whether they are modifying or new). This restriction still enforces
+that nothing can be inadvertently modified.
 
 A conditional block can contain property statements; these modify or override
 statements on the surrounding region as if the conditional block is a modifying
@@ -316,11 +317,17 @@ name of the thing being modified (with no human-readable names used) and then
 the rest of the declaration. Regions are an exception, as described above.
 
 In a modifying declaration's syntax, most lists can be replaced with modifier
-lists. A modifier list is like the regular list, except with each element
-prefixed with `+` or `-`. A `+` indicates the item is being added, and a `-`
-indicates the item is being removed. As a special case, if a numeric constant
-appears in a modifier list, it must be wrapped in parentheses to make it clear
-that the modifier symbol is not an arithmetic one.
+lists (function parameter lists and any lists inside an expression cannot). A
+modifier list is wrapped as `+[ ... ]`, and each element is optionally prefixed
+with '-'. Elements without '+' are added, elements without are removed. (The
+leading '+' is required even when only removing elements to avoid parse
+ambiguities). Expressions' values are computed as constants before determining
+whether they match or not.
+
+Note that when a negative numeric constants are tokenized together, and
+therefore could get confusing: `+[-1]` is a list adding `-1`, but `+[- 1]` is a
+list adding 1. As a result, both are disallowed and grouping is required: either
+`+[(-1)]` or `+[-(1)]`.
 
 If a list can be a modifier list but the modifier syntax is not used, then it
 replaces the previous list entirely.
@@ -332,7 +339,7 @@ noted.
 
 ### Deleting Declarations
 
-A deleting declaration has the syntax `override` `-`*name*. It deletes the
+A deleting declaration has the syntax `override` `-` *name*. It deletes the
 declared thing. References to it (such as in requirements) remain valid, but
 the logic assumes the player cannot interact with them at all (items cannot be
 acquired, locations cannot contain items, regions cannot be entered, etc.).
@@ -456,7 +463,8 @@ possess. Above this limit, more instances of the item cannot be acquired.
 
 A consumable statement declares an item to be consumable. It cannot be
 referenced in most expressions (either directly or via one of its tags), but can
-be referred to in unlock statements.
+be referred to in unlock, grant, and availability statements. An item can never
+be removed from the player unless it is marked consumable.
 
 Consumable statements cannot be modified, added, or removed from an item.
 
@@ -466,11 +474,11 @@ The restrictions on consumable items may be relaxed in the future.
 
 > Can appear in: items, locations
 
-> Syntax: `restrict` `to` list(`!`? *name*)
+> Syntax: `restrict` `to` list(`not`? *name*)
 
 A restrict statement restricts an item or location to a subset of locations or
 items, respectively. Each entry in the condition list must be a name, optionally
-prefixed by `!`. For an item, it the name a location; for a location, it may
+prefixed by `not`. For an item, it must name a location; for a location, it may
 name an item or a tag.
 
 A restrict statement on a location means that only the specified items can be
@@ -482,14 +490,14 @@ items cannot be placed there.
 
 > Can appear in: regions
 
-> Syntax: `avail` list(`!`? *name* (`*` (*integer* | `infinity`))?)
+> Syntax: `avail` list(`not`? *name* (`*` (*integer* | `infinity`))?)
 
 An availability statement declares that an item is available in a region for
 pickup. While in the region, the player can acquire the item. It can be used for
 event triggers or for non-randomized items. An item name can be prefixed with
-`!` to indicate that the player can discard/lose the item rather than acquire
-it. It can have an integer on the end indicating how many are available; it
-defaults to 1.
+`not` to indicate that the player can discard/lose the item rather than acquire
+it. It can have an integer or `infinity` on the end indicating how many are
+available; it defaults to 1.
 
 Availability statements cannot be modified, and must be explicitly overridden
 with `override`; this is to avoid confusion about the effect of modifying a
@@ -499,7 +507,7 @@ quantity.
 
 > Can appear in: regions, links
 
-> Syntax: `grants` list(`!`? *name*)
+> Syntax: `grants` list(`not`? *name*)
 
 A grants statement declares that entering a region or travelling along a link
 grants or removes a specified item or items. Unlike an availability statement,
@@ -599,6 +607,7 @@ redeclared:
 
 * `min(...)` and `max(...)` take a list of numeric expressions and return the
   least or greatest value, respectively.
-* `count(i)` returns the current count of items `i` possessed by the player at
+* `count(i)` returns the total count of items `i` possessed by the player at
   evaluation time.
+* `sum(list)` returns the sum of a list.
 

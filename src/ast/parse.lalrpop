@@ -19,8 +19,31 @@ List<T>: Vec<T> = {
     }
 }
 
+NEList<T>: Vec<T> = {
+    <v:(<T> ",")*> <e:T> => {
+        let mut v = v;
+        v.push(e);
+        v
+    }
+}
+
+ModEntry<T>: (bool, T) = {
+    <T> => (true, <>),
+    "-" <T> => (false, <>),
+}
+
+ModList<T>: ModVec<T> = {
+    List<T> => ModVec::New(<>),
+    "+" "[" <List<ModEntry<T>>> "]" => ModVec::Mod(<>),
+}
+
 Opt<T>: T = {
     T? => <>.unwrap_or_default(),
+}
+
+OptNeg<T>: (bool, T) = {
+    <T> => (true, <>),
+    "not" <T> => (false, <>),
 }
 
 Ident: Ident = {
@@ -35,7 +58,9 @@ Num: BigRational = {
     "Num" => {
         let f = <>.2.unwrap_or("0".into());
         let mut n: BigRational = (<>.1.into_owned() + &f).parse().unwrap();
-        n = n / BigRational::from(BigInt::from(f.len()));
+        for _ in 0..f.len() {
+            n = n / BigRational::from(BigInt::from(10))
+        }
         if !<>.0 { n = n.neg(); }
         n
     },
@@ -53,6 +78,9 @@ Stmt: Stmt = {
     Decl => Stmt::Decl(<>),
     Prop => Stmt::Prop(<>),
     "if" <Expr> <StmtBlock> <Opt<("else" <StmtBlock>)>> => Stmt::Cond(<>),
+    "modify" <Decl> => Stmt::Modify(<>),
+    "override" <Decl> => Stmt::Override(<>),
+    "override" "-" <Decl> => Stmt::Delete(<>),
 }
 
 Item: Item = {
@@ -85,10 +113,10 @@ Param: Param = {
 
 Decl: Decl = {
     "region" <name:DeclName> <stmts:StmtBlock> => Decl::Region(Region{<>}),
-    "link" <name:DeclName?> <dir:LinkDir> <regions:List<Name>> <stmts:StmtBlock> =>
+    "link" <name:DeclName?> <dir:LinkDir> <regions:ModList<Name>> <stmts:StmtBlock> =>
         Decl::Link(Link{<>}),
     "item" <Item> => Decl::Item(<>),
-    "items" <tags:List<Ident>> "{" <decls:Item*> "}" => Decl::Items(Items{<>}),
+    "items" <tags:ModList<Ident>> "{" <decls:Item*> "}" => Decl::Items(Items{<>}),
     "location" <Location> => Decl::Location(<>),
     "locations" "{" <decls:Location*> "}" => Decl::Locations(Locations{<>}),
     "fn" <name:DeclName> <params:Opt<("(" <List<Param>> ")")>> <ret_ty:("->" <Ty>)?> "=" <body:Expr> =>
@@ -98,22 +126,53 @@ Decl: Decl = {
         Decl::Config(Config{<>}),
     "config" "enum" <name:DeclName> "{" <variants:DeclName*> "}" <default:("=" <Expr>)?> =>
         Decl::ConfigEnum(ConfigEnum{<>}),
-    "random" <name:DeclName> "=" "[" <vals:List<Expr>> "]" =>
+    "random" <name:DeclName> "=" "[" <vals:ModList<Expr>> "]" =>
         Decl::Random(Random{<>}),
 }
 
-Prop: Prop = {}
+AvailEntry<T>: (bool, T, Option<BigRational>) = {
+    <OptNeg<T>> => (<>.0, <>.1, Some(BigRational::from(BigInt::from(1)))),
+    <t:OptNeg<T>> "*" <n:Num> => (t.0, t.1, Some(n)),
+    <OptNeg<T>> "*" "infinity" => (<>.0, <>.1, None),
+}
+
+Prop: Prop = {
+    "requires" <cond:Expr> => Prop::Requires(Requires{<>}),
+    "visible" <cond:Expr> => Prop::Visible(Visible{<>}),
+    "unlock" <item:Name> => Prop::Unlock(Unlock{<>}),
+    "tag" <tags:ModList<Ident>> => Prop::Tag(Tag{<>}),
+    "alias" <names:ModList<Ident>> => Prop::Alias(Alias{<>}),
+    "provides" <items:ModList<Name>> => Prop::Provides(Provides{<>}),
+    "progressive" <items:ModList<Name>> => Prop::Progressive(Progressive{<>}),
+    "val" <name:Ident> <ty:(":" <Ty>)?> "=" <val:Expr> => Prop::Val(Val{<>}),
+    "max" <expr:Expr> => Prop::Max(Max{<>}),
+    "consumable" => Prop::Consumable,
+    "restrict" "to" <entities:ModList<OptNeg<Name>>> => Prop::Restrict(Restrict{<>}),
+    "avail" <items:ModList<AvailEntry<Name>>> => Prop::Avail(Avail{<>}),
+    "grants" <items:ModList<OptNeg<Name>>> => Prop::Grants(Grants{<>}),
+    "count" <count:Num> => Prop::Count(Count{<>}),
+    "start" "with" <items:NEList<Name>> => Prop::StartWith(StartWith{<>}),
+    "start" "in" <region:Name> => Prop::StartIn(StartIn{<>}),
+}
+
+Builtin: Builtin = {
+    "count" => Builtin::Count,
+    "max" => Builtin::Max,
+    "min" => Builtin::Min,
+    "sum" => Builtin::Sum,
+}
 
 PrimExpr: Box<Expr> = {
     Num => Box::new(Expr::Num(<>)),
     "true"=> Box::new(Expr::Bool(true)),
     "false" => Box::new(Expr::Bool(false)),
     Name => Box::new(Expr::Name(<>)),
-    "(" <CondExpr> ")",
+    "(" <CondExpr> ")" => Box::new(Expr::Grouped(<>)),
 }
 
 CallExpr: Box<Expr> = {
-    <func:CallExpr> "(" <params:List<Expr>> ")" => Box::new(Expr::Call(<>)),
+    <func:CallExpr> "(" <params:NEList<Expr>> ")" => Box::new(Expr::Call(<>)),
+    <builtin:Builtin> "(" <params:NEList<Expr>> ")" => Box::new(Expr::Builtin(<>)),
     PrimExpr,
 }
 
@@ -209,7 +268,6 @@ extern {
         "config" => Tok::Kw(Kw::Config),
         "configset" => Tok::Kw(Kw::Configset),
         "random" => Tok::Kw(Kw::Random),
-        "if" => Tok::Kw(Kw::If),
         "else" => Tok::Kw(Kw::Else),
         "modify" => Tok::Kw(Kw::Modify),
         "override" => Tok::Kw(Kw::Override),
@@ -221,16 +279,15 @@ extern {
         "provides" => Tok::Kw(Kw::Provides),
         "progressive" => Tok::Kw(Kw::Progressive),
         "val" => Tok::Kw(Kw::Val),
-        "max" => Tok::Kw(Kw::Max),
         "consumable" => Tok::Kw(Kw::Consumable),
         "restrict" => Tok::Kw(Kw::Restrict),
         "avail" => Tok::Kw(Kw::Avail),
         "infinity" => Tok::Kw(Kw::Infinity),
         "grants" => Tok::Kw(Kw::Grants),
-        "count" => Tok::Kw(Kw::Count),
         "start" => Tok::Kw(Kw::Start),
         "num" => Tok::Kw(Kw::Num),
         "bool" => Tok::Kw(Kw::Bool),
+        "if" => Tok::Kw(Kw::If),
         "then" => Tok::Kw(Kw::Then),
         "match" => Tok::Kw(Kw::Match),
         "true" => Tok::Kw(Kw::True),
@@ -238,7 +295,10 @@ extern {
         "not" => Tok::Kw(Kw::Not),
         "and" => Tok::Kw(Kw::And),
         "or" => Tok::Kw(Kw::Or),
+        "count" => Tok::Kw(Kw::Count),
+        "max" => Tok::Kw(Kw::Max),
         "min" => Tok::Kw(Kw::Min),
+        "sum" => Tok::Kw(Kw::Sum),
         "with" => Tok::Kw(Kw::With),
         "to" => Tok::Kw(Kw::To),
         "from" => Tok::Kw(Kw::From),

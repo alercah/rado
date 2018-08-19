@@ -89,7 +89,6 @@ items Major {
     FairyBottle "Bottle with fairy"
     BeeBottle "Bottle with bee"
     GoldBeeBottle "Bottle with golden bee"
-    max 4
   }
   items MagicReduction {
     HalfMagic { val Factor = 2 }
