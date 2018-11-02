@@ -5,3 +5,5 @@ extern crate failure;
 
 pub mod ast;
 pub mod token;
+
+pub(crate) mod exts;

@@ -1,4 +1,7 @@
+use crate::exts::GetDebug;
 use failure::{format_err, Error, Fail};
+#[cfg(test)]
+use proptest::{proptest, proptest_helper};
 use std::borrow::Cow;
 use std::fmt;
 use std::str::FromStr;
@@ -167,7 +170,7 @@ impl<'a> fmt::Display for Tok<'a> {
 fn skip_block_comment(mut s: &str) -> Result<&str, Error> {
     assert!(s.len() >= 2);
     assert!(s.starts_with("/*"));
-    s = unsafe { s.get_unchecked(2..) };
+    s = unsafe { s.get_debug_checked(2..) };
 
     // TODO: This feels kind of bad to search twice, but lazy_static/regex is a
     // lot of work for two two-character search patterns. Also this means every
@@ -178,7 +181,7 @@ fn skip_block_comment(mut s: &str) -> Result<&str, Error> {
             .ok_or(format_err!("unterminated block comment"))?;
         match s.find("/*") {
             Some(inner) if inner < end => s = &skip_block_comment(&s[inner..])?,
-            _ => break Ok(unsafe { s.get_unchecked(end + 2..) }),
+            _ => break Ok(unsafe { s.get_debug_checked(end + 2..) }),
         }
     }
 }
@@ -186,15 +189,15 @@ fn skip_block_comment(mut s: &str) -> Result<&str, Error> {
 /// Lex a numeric literal.
 fn lex_num_lit<'a>(mut s: &'a str) -> Result<(Cow<'a, str>, Option<Cow<'a, str>>, &'a str), Error> {
     let i = s.find(|c: char| !c.is_ascii_digit()).unwrap_or(s.len());
-    let (w, mut f) = (unsafe { s.get_unchecked(0..i).into() }, None);
-    s = unsafe { s.get_unchecked(i..) };
+    let (w, mut f) = (unsafe { s.get_debug_checked(0..i).into() }, None);
+    s = unsafe { s.get_debug_checked(i..) };
 
     let mut r = s.chars();
     if r.next() == Some('.') && r.next().map_or(false, |c| c.is_ascii_digit()) {
-        s = unsafe { s.get_unchecked(1..) };
+        s = unsafe { s.get_debug_checked(1..) };
         let i = s.find(|c: char| !c.is_ascii_digit()).unwrap_or(s.len());
-        f = Some(unsafe { s.get_unchecked(0..i) }.into());
-        s = unsafe { s.get_unchecked(i..) };
+        f = Some(unsafe { s.get_debug_checked(0..i) }.into());
+        s = unsafe { s.get_debug_checked(i..) };
     }
     if s.chars().next().map_or(false, |c| c.is_ascii_alphabetic()) {
         Err(format_err!("alphabetic character in numeric literal"))?;
@@ -216,16 +219,16 @@ fn lex_string_lit<'a>(mut s: &'a str) -> Result<(Cow<'a, str>, &'a str), Error> 
     if quote < escape {
         return Ok(unsafe {
             (
-                s.get_unchecked(0..quote).into(),
-                s.get_unchecked(quote + 1..),
+                s.get_debug_checked(0..quote).into(),
+                s.get_debug_checked(quote + 1..),
             )
         });
     }
 
     let mut l = String::new();
     while let Some(escape) = s.find("\\") {
-        l += unsafe { s.get_unchecked(0..escape) };
-        s = unsafe { s.get_unchecked(escape + 1..) };
+        l += unsafe { s.get_debug_checked(0..escape) };
+        s = unsafe { s.get_debug_checked(escape + 1..) };
         match s.chars().next() {
             None => Err(format_err!("unterminated string literal"))?,
             Some('"') => l += "\"",
@@ -236,19 +239,19 @@ fn lex_string_lit<'a>(mut s: &'a str) -> Result<(Cow<'a, str>, &'a str), Error> 
             Some(e) => Err(format_err!("unrecognized escape sequence: \\{}", e))?,
         }
         // Any escape sequence we actually accept is 1 ASCII character long.
-        s = unsafe { s.get_unchecked(1..) };
+        s = unsafe { s.get_debug_checked(1..) };
     }
     let quote = s
         .find("\"")
         .ok_or(format_err!("unterminated string literal"))?;
-    l += unsafe { s.get_unchecked(0..quote) };
-    return Ok((l.into(), unsafe { s.get_unchecked(quote + 1..) }));
+    l += unsafe { s.get_debug_checked(0..quote) };
+    return Ok((l.into(), unsafe { s.get_debug_checked(quote + 1..) }));
 }
 
 pub fn lex<'a>(mut s: &'a str) -> Result<Vec<Tok<'a>>, Error> {
     let mut toks = Vec::new();
     while let Some(c) = s.chars().next() {
-        let rest = unsafe { s.get_unchecked(c.len_utf8()..) };
+        let rest = unsafe { s.get_debug_checked(c.len_utf8()..) };
 
         // Note that we unconditionally advance s at the end of the loop, so
         // multi-character tokens need to advance to their last character,
@@ -320,7 +323,7 @@ pub fn lex<'a>(mut s: &'a str) -> Result<Vec<Tok<'a>>, Error> {
                     // If we don't find \n, we set i to s.len()-1 so that when we add 1 on the next
                     // line, we end up right at the end of the string.
                     let i = s.find('\n').unwrap_or(s.len() - 1);
-                    s = unsafe { s.get_unchecked(i + 1..) };
+                    s = unsafe { s.get_debug_checked(i + 1..) };
                 }
                 Some('*') => s = skip_block_comment(s)?,
                 _ => {
@@ -328,44 +331,50 @@ pub fn lex<'a>(mut s: &'a str) -> Result<Vec<Tok<'a>>, Error> {
                     s = rest;
                 }
             },
-            '!' => if rest.chars().next() == Some('=') {
-                toks.push(Tok::Sym(Sym::NEq));
-                s = unsafe { s.get_unchecked(2..) };
-            } else {
-                Err(format_err!("expected = after ! to make != token"))?;
-            },
+            '!' => {
+                if rest.chars().next() == Some('=') {
+                    toks.push(Tok::Sym(Sym::NEq));
+                    s = unsafe { s.get_debug_checked(2..) };
+                } else {
+                    Err(format_err!("expected = after ! to make != token"))?;
+                }
+            }
             '=' => match rest.chars().next() {
                 Some('=') => {
                     toks.push(Tok::Sym(Sym::Eq));
-                    s = unsafe { s.get_unchecked(2..) };
+                    s = unsafe { s.get_debug_checked(2..) };
                 }
                 Some('>') => {
                     toks.push(Tok::Sym(Sym::DoubleArrow));
-                    s = unsafe { s.get_unchecked(2..) };
+                    s = unsafe { s.get_debug_checked(2..) };
                 }
                 _ => {
                     toks.push(Tok::Sym(Sym::Assign));
                     s = rest;
                 }
             },
-            '>' => if rest.chars().next() == Some('=') {
-                toks.push(Tok::Sym(Sym::GE));
-                s = unsafe { s.get_unchecked(2..) };
-            } else {
-                toks.push(Tok::Sym(Sym::GT));
-                s = rest;
-            },
-            '<' => if rest.chars().next() == Some('=') {
-                toks.push(Tok::Sym(Sym::LE));
-                s = unsafe { s.get_unchecked(2..) };
-            } else {
-                toks.push(Tok::Sym(Sym::LT));
-                s = rest;
-            },
+            '>' => {
+                if rest.chars().next() == Some('=') {
+                    toks.push(Tok::Sym(Sym::GE));
+                    s = unsafe { s.get_debug_checked(2..) };
+                } else {
+                    toks.push(Tok::Sym(Sym::GT));
+                    s = rest;
+                }
+            }
+            '<' => {
+                if rest.chars().next() == Some('=') {
+                    toks.push(Tok::Sym(Sym::LE));
+                    s = unsafe { s.get_debug_checked(2..) };
+                } else {
+                    toks.push(Tok::Sym(Sym::LT));
+                    s = rest;
+                }
+            }
             '-' => match rest.chars().next() {
                 Some('>') => {
                     toks.push(Tok::Sym(Sym::Arrow));
-                    s = unsafe { s.get_unchecked(2..) };
+                    s = unsafe { s.get_debug_checked(2..) };
                 }
                 Some(c) if c.is_ascii_digit() => {
                     let (w, f, s_) = lex_num_lit(rest)?;
@@ -386,8 +395,8 @@ pub fn lex<'a>(mut s: &'a str) -> Result<Vec<Tok<'a>>, Error> {
                 let i = s
                     .find(|c: char| c != '_' && !c.is_ascii_alphanumeric())
                     .unwrap_or(s.len());
-                let ident = unsafe { s.get_unchecked(0..i) };
-                s = unsafe { s.get_unchecked(i..) };
+                let ident = unsafe { s.get_debug_checked(0..i) };
+                s = unsafe { s.get_debug_checked(i..) };
                 if let Ok(k) = ident.parse() {
                     toks.push(Tok::Kw(k));
                 } else {
@@ -759,5 +768,12 @@ mod tests {
         let str = "a\"\"b";
         let toks = vec![Ident("a".into()), String("".into()), Ident("b".into())];
         assert_eq!(toks, lex(str).unwrap());
+    }
+
+    proptest! {
+        #[test]
+        fn always_valid(ref s in ".*") {
+            let _ = lex(s);
+        }
     }
 }
