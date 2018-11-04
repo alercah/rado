@@ -1,17 +1,17 @@
 use crate::exts::GetDebug;
 use failure::{format_err, Error, Fail};
-#[cfg(test)]
-use proptest::{proptest, proptest_helper};
 use std::borrow::Cow;
 use std::fmt;
 use std::str::FromStr;
 
+/// An error from failing to parse a [Kw].
 #[derive(Clone, Debug, Fail)]
 #[fail(display = "{:?} is not a keyword", s)]
 pub struct ParseKwError {
     s: String,
 }
 
+/// An error from failing to parse a [Sym].
 #[derive(Clone, Debug, Fail)]
 #[fail(display = "{:?} is not a symbol", s)]
 pub struct ParseSymError {
@@ -46,6 +46,7 @@ macro_rules! toks {
     };
 }
 
+/// Peri keywords.
 toks! { Kw;
     err ParseKwError;
     // Declarations
@@ -103,6 +104,8 @@ toks! { Kw;
     In <- "in",
 }
 
+/// Peri symbol tokens. Each operator is a distinct token, so some tokens are
+/// multiple characters long.
 toks! { Sym;
     err ParseSymError;
     // Delimeters
@@ -136,13 +139,66 @@ toks! { Sym;
     GE <- ">",
 }
 
+/// The sign of a numeric literal. Zero is considered positive, since the minus
+/// sign is not used for zero literals; negative 0 is an error.
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
+pub enum Sign {
+    Positive,
+    Negative,
+}
+
+impl fmt::Display for Sign {
+    /// Display the sign as it renders before a number: nothing if it is
+    /// positive, and a minus sign for negative.
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(match self {
+            Sign::Positive => "",
+            Sign::Negative => "-",
+        })
+    }
+}
+
+/// A Peri token.
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
 pub enum Tok<'a> {
+    /// A keyword.
     Kw(Kw),
+    /// A symbol or operator.
     Sym(Sym),
+    /// An identifier other than a keyword.
     Ident(Cow<'a, str>),
-    Num(bool, Cow<'a, str>, Option<Cow<'a, str>>),
+    /// A numeric literal. Numbers are unparsed
+    Num(
+        /// The sign of the number.
+        Sign,
+        /// The whole-number portion of the number (before the '.', if any).
+        Cow<'a, str>,
+        /// The decimal portion of the number (after the '.').
+        Option<Cow<'a, str>>,
+    ),
+    /// A string literal. The field contains the string with escapes already
+    /// procesed.
     String(Cow<'a, str>),
+}
+
+impl<'a> Tok<'a> {
+    /// Convert any `Cow` strings owned by this token to owned versions, making
+    /// copies if needed. After this, calling `to_owned` on them will be a
+    /// no-op.
+    pub fn into_owned(t: Tok<'a>) -> Tok<'static> {
+        use Tok::*;
+        match t {
+            Kw(k) => Kw(k),
+            Sym(s) => Sym(s),
+            Ident(i) => Ident(Cow::Owned(i.into_owned())),
+            Num(s, w, d) => Num(
+                s,
+                Cow::Owned(w.into_owned()),
+                d.map(|d| Cow::Owned(d.into_owned())),
+            ),
+            String(s) => String(Cow::Owned(s.into_owned())),
+        }
+    }
 }
 
 impl<'a> fmt::Display for Tok<'a> {
@@ -154,7 +210,7 @@ impl<'a> fmt::Display for Tok<'a> {
             Tok::Num(s, w, d) => write!(
                 f,
                 "{}{}{}{}",
-                if *s { "" } else { "-" },
+                s,
                 w,
                 if d.is_some() { "." } else { "" },
                 d.as_ref().map_or("", |d| &d),
@@ -209,7 +265,6 @@ fn lex_num_lit<'a>(mut s: &'a str) -> Result<(Cow<'a, str>, Option<Cow<'a, str>>
 /// and the remainder of the source in the second. s is expected to already have had the opening quote
 /// removed.
 fn lex_string_lit<'a>(mut s: &'a str) -> Result<(Cow<'a, str>, &'a str), Error> {
-    println!("parsing string literal: {:?}", s);
     // Easy case: there is no escape sequence, so we can just borrow the
     // contents directly.
     let escape = s.find("\\").unwrap_or(s.len());
@@ -248,23 +303,11 @@ fn lex_string_lit<'a>(mut s: &'a str) -> Result<(Cow<'a, str>, &'a str), Error> 
     return Ok((l.into(), unsafe { s.get_debug_checked(quote + 1..) }));
 }
 
+/// Lex a string into a token vector. An error occurs if the string is not made of legal tokens.
 pub fn lex<'a>(mut s: &'a str) -> Result<Vec<Tok<'a>>, Error> {
     let mut toks = Vec::new();
     while let Some(c) = s.chars().next() {
         let rest = unsafe { s.get_debug_checked(c.len_utf8()..) };
-
-        // Note that we unconditionally advance s at the end of the loop, so
-        // multi-character tokens need to advance to their last character,
-        // rather than past it.
-        //
-        // Throughout this code, we reborrow s by index past the first character
-        // quite frequently. Non-ASCII characters will cause panics.
-        //
-        // TODO: Mostly the reason for this is having to add -1 in a ton of
-        // places so as to avoid having to advance manually in every branch.
-        // Should probably think that through more.
-        //
-        // TODO: Use unsafe to optimize the slicing.
         match c {
             '(' => {
                 toks.push(Tok::Sym(Sym::LParen));
@@ -378,7 +421,12 @@ pub fn lex<'a>(mut s: &'a str) -> Result<Vec<Tok<'a>>, Error> {
                 }
                 Some(c) if c.is_ascii_digit() => {
                     let (w, f, s_) = lex_num_lit(rest)?;
-                    toks.push(Tok::Num(false, w, f));
+                    if w.chars().all(|c| c == '0')
+                        && f.as_ref().unwrap_or(&"".into()).chars().all(|c| c == '0')
+                    {
+                        return Err(format_err!("negative zero numeric literal"));
+                    }
+                    toks.push(Tok::Num(Sign::Negative, w, f));
                     s = s_;
                 }
                 _ => {
@@ -388,7 +436,7 @@ pub fn lex<'a>(mut s: &'a str) -> Result<Vec<Tok<'a>>, Error> {
             },
             c if c.is_ascii_digit() => {
                 let (w, f, s_) = lex_num_lit(s)?;
-                toks.push(Tok::Num(true, w, f));
+                toks.push(Tok::Num(Sign::Positive, w, f));
                 s = s_;
             }
             c if c == '_' || c.is_ascii_alphabetic() => {
@@ -419,6 +467,7 @@ pub fn lex<'a>(mut s: &'a str) -> Result<Vec<Tok<'a>>, Error> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use proptest::{proptest, proptest_helper};
 
     #[test]
     fn kws_parse() {
@@ -538,20 +587,20 @@ mod tests {
         use self::Tok::*;
 
         let str = "0";
-        let toks = vec![Num(true, "0".into(), None)];
+        let toks = vec![Num(Sign::Positive, "0".into(), None)];
         assert_eq!(toks, lex(str).unwrap());
 
         let str = "1234567890";
-        let toks = vec![Num(true, "1234567890".into(), None)];
+        let toks = vec![Num(Sign::Positive, "1234567890".into(), None)];
         assert_eq!(toks, lex(str).unwrap());
 
         let str = "0.1";
-        let toks = vec![Num(true, "0".into(), Some("1".into()))];
+        let toks = vec![Num(Sign::Positive, "0".into(), Some("1".into()))];
         assert_eq!(toks, lex(str).unwrap());
 
         let str = "99999999999999999999.00000000000000000000";
         let toks = vec![Num(
-            true,
+            Sign::Positive,
             "99999999999999999999".into(),
             Some("00000000000000000000".into()),
         )];
@@ -559,41 +608,41 @@ mod tests {
 
         let str = "1.1.1";
         let toks = vec![
-            Num(true, "1".into(), Some("1".into())),
+            Num(Sign::Positive, "1".into(), Some("1".into())),
             Sym(Dot),
-            Num(true, "1".into(), None),
+            Num(Sign::Positive, "1".into(), None),
         ];
         assert_eq!(toks, lex(str).unwrap());
 
         let str = ".1";
-        let toks = vec![Sym(Dot), Num(true, "1".into(), None)];
+        let toks = vec![Sym(Dot), Num(Sign::Positive, "1".into(), None)];
         assert_eq!(toks, lex(str).unwrap());
 
         let str = "1 .1";
         let toks = vec![
-            Num(true, "1".into(), None),
+            Num(Sign::Positive, "1".into(), None),
             Sym(Dot),
-            Num(true, "1".into(), None),
+            Num(Sign::Positive, "1".into(), None),
         ];
         assert_eq!(toks, lex(str).unwrap());
 
         let str = "-1";
-        let toks = vec![Num(false, "1".into(), None)];
+        let toks = vec![Num(Sign::Negative, "1".into(), None)];
         assert_eq!(toks, lex(str).unwrap());
 
         let str = "-2.2";
-        let toks = vec![Num(false, "2".into(), Some("2".into()))];
+        let toks = vec![Num(Sign::Negative, "2".into(), Some("2".into()))];
         assert_eq!(toks, lex(str).unwrap());
 
         let str = "-0.1";
-        let toks = vec![Num(false, "0".into(), Some("1".into()))];
+        let toks = vec![Num(Sign::Negative, "0".into(), Some("1".into()))];
         assert_eq!(toks, lex(str).unwrap());
 
         let str = "0.-1";
         let toks = vec![
-            Num(true, "0".into(), None),
+            Num(Sign::Positive, "0".into(), None),
             Sym(Dot),
-            Num(false, "1".into(), None),
+            Num(Sign::Negative, "1".into(), None),
         ];
         assert_eq!(toks, lex(str).unwrap());
     }
@@ -768,6 +817,30 @@ mod tests {
         let str = "a\"\"b";
         let toks = vec![Ident("a".into()), String("".into()), Ident("b".into())];
         assert_eq!(toks, lex(str).unwrap());
+    }
+
+    #[test]
+    fn lex_errors() {
+        let str = "!";
+        assert!(lex(str).is_err());
+
+        let str = "\0";
+        assert!(lex(str).is_err());
+
+        let str = "\x12";
+        assert!(lex(str).is_err());
+
+        let str = "é";
+        assert!(lex(str).is_err());
+
+        let str = "=!";
+        assert!(lex(str).is_err());
+
+        let str = "\u{1034a}";
+        assert!(lex(str).is_err());
+
+        let str = "\u{ffef}hi";
+        assert!(lex(str).is_err());
     }
 
     proptest! {

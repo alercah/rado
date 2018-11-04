@@ -1,3 +1,6 @@
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    lalrpop::process_root()
+    println!("output dir: {}", std::env::var("OUT_DIR").unwrap());
+    lalrpop::Configuration::new()
+        .use_cargo_dir_conventions()
+        .process()
 }

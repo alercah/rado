@@ -61,7 +61,7 @@ Num: BigRational = {
         for _ in 0..f.len() {
             n = n / BigRational::from(BigInt::from(10))
         }
-        if !<>.0 { n = n.neg(); }
+        if <>.0 == Sign::Negative { n = n.neg(); }
         n
     },
 }
@@ -329,6 +329,6 @@ extern {
         ">" => Tok::Sym(Sym::GE),
         "String" => Tok::String(<Cow<'input, str>>),
         "Ident" => Tok::Ident(<Cow<'input, str>>),
-        "Num" => Tok::Num(<bool>, <Cow<'input, str>>, <Option<Cow<'input, str>>>),
+        "Num" => Tok::Num(<Sign>, <Cow<'input, str>>, <Option<Cow<'input, str>>>),
     }
 }
