@@ -153,33 +153,33 @@ fn CanDefeat(boss) = match boss {
   ArmosKnights =>
     Sword or Hammer or CanShootArrows or Bluemerang or Redmerang or
     ((FireRod or IceRod) and MagicBars >= 4) or
-    ((RedCane or BlueCane) and MagicBars >= 2)
+    ((RedCane or BlueCane) and MagicBars >= 2),
   Lanmolas =>
     Sword or Hammer or CanShootArrows or FireRod or IceRod or RedCane or
-    BlueCane
-  Moldorm => Sword or Hammer
-  Agahnim => Sword or Hammer or Net
-  HelmasaurKing => Sword or Hammer or CanShootArrows
+    BlueCane,
+  Moldorm => Sword or Hammer,
+  Agahnim => Sword or Hammer or Net,
+  HelmasaurKing => Sword or Hammer or CanShootArrows,
   Arrghus =>
     Hookshot and (Sword or Hammer or (FireRod and MagicBars >= 2) or
-      (CanShootArrows and (FireRod or (IceRod and MagicBars >= 2))))
+      (CanShootArrows and (FireRod or (IceRod and MagicBars >= 2)))),
   Mothula =>
     Sword or Hammer or (CanGetGoldBee and Net) or
-    (MagicBars >= 2 and (FireRod or IceRod or RedCane)
-  Blind => Sword or Hammer or RedCane or BlueCane
+    (MagicBars >= 2 and (FireRod or IceRod or RedCane)),
+  Blind => Sword or Hammer or RedCane or BlueCane,
   Kholdstare =>
     (CanMeltIce and (Sword or Hammer)) or (FireRod and MagicBars >= 3) or
-    (FireRod and CanCast(Bombos) and MagicBars >= 2)
+    (FireRod and CanCast(Bombos) and MagicBars >= 2),
   Vitreous =>
-    Sword or Hammer or CanShootArrows
+    Sword or Hammer or CanShootArrows,
   Trinexx =>
     FireRod and IceRod and (Hammer or L3Sword or
-      (L2Sword and MagicBars >= 2) or (L1Sword and MagicBars >= 4))
-  Agahnim2 => Sword or Hammer or Net
+      (L2Sword and MagicBars >= 2) or (L1Sword and MagicBars >= 4)),
+  Agahnim2 => Sword or Hammer or Net,
   Ganon =>
     ((MasterSword or (Modes.Swords == Modes.Swordless and Hammer)) or
       (SilverArrows or Skills.SilverlessGanon)) and
     (Lamp or (FireRod and
-        (MagicBars >= 3 or (TemperedSword and MagicBars >= 2))))
+        (MagicBars >= 3 or (TemperedSword and MagicBars >= 2)))),
 }
 

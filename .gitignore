@@ -12,3 +12,6 @@ Cargo.lock
 # Editor temporary files
 .*.sw*
 *~
+
+# Parse rson files from tests
+*.parse.rson

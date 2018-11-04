@@ -161,9 +161,15 @@ logic assumes that items are randomized among their locations.
 > Syntax: `items` list(*identifier*) *block*
 
 A multi-item declaration is a shortcut for declaring multiple items. Inside its
-block, only item declarations are allowed, but they must omit the leading `item`
-keyword. The list of names in the declaration is a list of tags which are
-declared on every item inside.
+block, only item declarations and nested multi-item declarations are allowed.
+Item declarations must omit the leading `item` keyword.
+
+The list of names in the declaration is a list of tags which are declared on
+every item inside. When multi-item declarations are nested, all the tags from
+all the nested declarations are declared on each item.
+
+Multi-item declarations can be nested; the effect is to declare all the tags on
+the contents.
 
 Items declarations can be prefixed with `modify` or `override`, in which case
 they behave as if every declaration in them is as well. In modifying
@@ -222,7 +228,7 @@ Enums cannot be modified, overridden, or deleted.
 
 ### Config-Enum Declaration
 
-> Syntax: `config` *identifier* (*string-literal*)? `:` *enum-declaration* (`default` *expression*)
+> Syntax: `config` *identifier* (*string-literal*)? `:` `enum` (`default` *expression*)
 
 A config-enum declaration is a hybrid declaration that declares both an enum
 type and a config with the same name. The config's type is that of the enum.
@@ -232,6 +238,15 @@ them to share a name which is not otherwise possible.
 
 Config-enums cannot be modified, overridden, or deleted.
 
+### Multi-Config Declaration
+
+> Syntax: `configs` `:` *type* *block*
+
+A multi-config declaration declares many configs in one block, all of the same
+type. The block must contain only config declarations without the leading
+`config` keyword. Config-enum declarations may not be declared in this fashion;
+declare the enum separately.
+
 ### Configset Declaration
 
 > Syntax: `configset` *identifier* (*string-literal*) *block*
@@ -240,11 +255,12 @@ A configset declaration declares a set of config values with a specific name,
 which can be used to make sets of defaults which can be selected without having
 to pick each individual option.
 
-The block consists of statements of the form *name* `=` *expression*. The name
-must name a config, and the expression must be a constant. Selecting the
-configs, subject to later overrides.
+The block consists of comma-separated assignments of the form *name* `=>`
+*expression*. The name must name a config, and the expression must be a
+constant. Selecting the configset, subject to later overrides, sets the values
+of all the configs as it specifies.
 
-The block can also contain statements that are simply the name of another
+The block can also contain entries that are simply the name of another
 configset. In this case, the configset is treated as if it contains the values
 in the other configset as well, as modified by any explicit assignments. A
 configset cannot contain multiple overlapping configsets, nor can it contain

@@ -59,6 +59,7 @@ toks! { Kw;
     Fn <- "fn",
     Enum <- "enum",
     Config <- "config",
+    Configs <- "configs",
     Configset <- "configset",
     Random <- "random",
     If <- "if",
@@ -97,11 +98,12 @@ toks! { Kw;
     Min <- "min",
     Sum <- "sum",
 
-    // Prepositions
+    // Miscellaneous
     With <- "with",
     To <- "to",
     From <- "from",
     In <- "in",
+    Default <- "default",
 }
 
 /// Peri symbol tokens. Each operator is a distinct token, so some tokens are

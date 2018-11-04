@@ -9,9 +9,21 @@ lalrpop = "0.16"
 
 [dependencies]
 failure = "0.1.1"
-num-bigint = "0.2.0"
-num-rational = "0.2.1"
+# num-bigint = "0.2.0"
+# num-rational = "0.2.1"
 lalrpop-util = "0.16"
+serde = "1.0"
+serde_derive = "1.0"
+rson_rs = "0.2"
+
+[dependencies.num-bigint]
+version = "0.2.1"
+features = ["serde"]
+
+[dependencies.num-rational]
+version = "0.2.1"
+features = ["serde"]
 
 [dev-dependencies]
 proptest = "0.7.0"
+difference = "2.0.0"

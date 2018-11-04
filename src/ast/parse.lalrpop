@@ -6,7 +6,11 @@ use std::ops::Neg;
 use std::borrow::Cow;
 use super::*;
 
-grammar<'input>(text: &'input str);
+grammar<'input>;
+
+SepBlock<T>: Vec<T> = {
+    ";"* <(<T> ";"*)*>
+}
 
 List<T>: Vec<T> = {
     <v:(<T> ",")*> <e:T?> => match e {
@@ -67,11 +71,11 @@ Num: BigRational = {
 }
 
 pub File: File = {
-    <stmts:Stmt*> => { File{<>} },
+    <stmts:SepBlock<Stmt>> => { File{<>} },
 }
 
 StmtBlock: Vec<Stmt> = {
-    "{" <Stmt*> "}",
+    "{" <SepBlock<Stmt>> "}",
 }
 
 Stmt: Stmt = {
@@ -86,6 +90,25 @@ Stmt: Stmt = {
 Item: Item = {
     <name:DeclName> <stmts:Opt<StmtBlock>> => Item{<>},
 }
+
+ItemsBody: (Vec<Item>, Vec<Items>) = {
+    <rest:ItemsBody> <item:Item> ";"* => {
+        let mut rest = rest;
+        rest.0.push(item);
+        rest
+    },
+    <rest:ItemsBody> "items" <items:Items> ";"* => {
+        let mut rest = rest;
+        rest.1.push(items);
+        rest
+    },
+    ";"* => (vec![], vec![]),
+} 
+
+Items: Items = {
+    <tags:ModList<Ident>> "{" <decls:ItemsBody> "}" =>
+        Items{tags: tags, items: decls.0, nested: decls.1},
+       }
 
 Location: Location = {
     <name:DeclName> <stmts:Opt<StmtBlock>> => Location{<>},
@@ -111,21 +134,43 @@ Param: Param = {
     <name:Ident> <ty:(":" <Ty>)?> => Param{<>},
 }
 
+TypedConfig: TypedConfig = {
+    <name:DeclName> <default:("default" <Expr>)?> => TypedConfig{<>},
+}
+
+ConfigsetBody: (Vec<(Name, Expr)>, Vec<Name>) = {
+    <Name> "=>" <Expr> => (vec![(<>)], vec![]),
+    <Name> => (vec![], vec![<>]),
+    <rest:ConfigsetBody> "," <name:Name> "=>" <expr:Expr> => {
+        let mut rest = rest;
+        rest.0.push((name, expr));
+        rest
+    },
+    <rest:ConfigsetBody> "," <name:Name> => {
+        let mut rest = rest;
+        rest.1.push(name);
+        rest
+    },
+}
+
 Decl: Decl = {
     "region" <name:DeclName> <stmts:StmtBlock> => Decl::Region(Region{<>}),
-    "link" <name:DeclName?> <dir:LinkDir> <regions:ModList<Name>> <stmts:StmtBlock> =>
+    "link" <name:DeclName?> <dir:LinkDir> <regions:ModList<Name>> <stmts:Opt<StmtBlock>> =>
         Decl::Link(Link{<>}),
     "item" <Item> => Decl::Item(<>),
-    "items" <tags:ModList<Ident>> "{" <decls:Item*> "}" => Decl::Items(Items{<>}),
+    "items" <Items> => Decl::Items(<>),
     "location" <Location> => Decl::Location(<>),
     "locations" "{" <decls:Location*> "}" => Decl::Locations(Locations{<>}),
     "fn" <name:DeclName> <params:Opt<("(" <List<Param>> ")")>> <ret_ty:("->" <Ty>)?> "=" <body:Expr> =>
         Decl::Fn(FnDecl{<>}),
-    "enum" <name:DeclName> "{" <variants:DeclName*> "}" => Decl::Enum(Enum{<>}),
-    "config" <name:DeclName> ":" <ty:Ty> <default:("=" <Expr>)?> =>
+    "enum" <name:DeclName> "{" <variants:SepBlock<DeclName>> "}" => Decl::Enum(Enum{<>}),
+    "config" <name:DeclName> ":" <ty:Ty> <default:("default" <Expr>)?> =>
         Decl::Config(Config{<>}),
-    "config" "enum" <name:DeclName> "{" <variants:DeclName*> "}" <default:("=" <Expr>)?> =>
+    "config" <name:DeclName> ":" "enum" "{" <variants:DeclName*> "}" <default:("default" <Expr>)?> =>
         Decl::ConfigEnum(ConfigEnum{<>}),
+    "configs" ":" <ty:Ty> "{" <configs:SepBlock<TypedConfig>>"}" => Decl::Configs(Configs{<>}),
+    "configset" <name:DeclName> "{" <body:ConfigsetBody> ","? "}" =>
+        Decl::Configset(Configset{name: name, vals: body.0, configsets: body.1}),
     "random" <name:DeclName> "=" "[" <vals:ModList<Expr>> "]" =>
         Decl::Random(Random{<>}),
 }
@@ -266,6 +311,7 @@ extern {
         "fn" => Tok::Kw(Kw::Fn),
         "enum" => Tok::Kw(Kw::Enum),
         "config" => Tok::Kw(Kw::Config),
+        "configs" => Tok::Kw(Kw::Configs),
         "configset" => Tok::Kw(Kw::Configset),
         "random" => Tok::Kw(Kw::Random),
         "else" => Tok::Kw(Kw::Else),
@@ -303,6 +349,7 @@ extern {
         "to" => Tok::Kw(Kw::To),
         "from" => Tok::Kw(Kw::From),
         "in" => Tok::Kw(Kw::In),
+        "default" => Tok::Kw(Kw::Default),
         "(" => Tok::Sym(Sym::LParen),
         ")" => Tok::Sym(Sym::RParen),
         "[" => Tok::Sym(Sym::LBrack),

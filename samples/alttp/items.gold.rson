@@ -1,0 +1,1502 @@
+{
+    stmts: [
+        Decl(Items({
+            tags: New([
+                ("Prize"),
+            ]),
+            items: [
+            ],
+            nested: [
+                {
+                    tags: New([
+                        ("Crystal"),
+                    ]),
+                    items: [
+                        {
+                            name: {
+                                ident: ("Crystal1"),
+                                human: None,
+                            },
+                            stmts: [
+                            ],
+                        },
+                        {
+                            name: {
+                                ident: ("Crystal2"),
+                                human: None,
+                            },
+                            stmts: [
+                            ],
+                        },
+                        {
+                            name: {
+                                ident: ("Crystal3"),
+                                human: None,
+                            },
+                            stmts: [
+                            ],
+                        },
+                        {
+                            name: {
+                                ident: ("Crystal4"),
+                                human: None,
+                            },
+                            stmts: [
+                            ],
+                        },
+                        {
+                            name: {
+                                ident: ("Crystal5"),
+                                human: None,
+                            },
+                            stmts: [
+                                Prop(Tag({
+                                    tags: New([
+                                        ("Crystal56"),
+                                    ]),
+                                })),
+                            ],
+                        },
+                        {
+                            name: {
+                                ident: ("Crystal6"),
+                                human: None,
+                            },
+                            stmts: [
+                                Prop(Tag({
+                                    tags: New([
+                                        ("Crystal56"),
+                                    ]),
+                                })),
+                            ],
+                        },
+                        {
+                            name: {
+                                ident: ("Crystal7"),
+                                human: None,
+                            },
+                            stmts: [
+                            ],
+                        },
+                    ],
+                    nested: [
+                    ],
+                },
+                {
+                    tags: New([
+                        ("Pendant"),
+                    ]),
+                    items: [
+                        {
+                            name: {
+                                ident: ("PendantOfCourage"),
+                                human: Some("Pendant of Courage"),
+                            },
+                            stmts: [
+                                Prop(Alias({
+                                    names: New([
+                                        ("GreenPendant"),
+                                    ]),
+                                })),
+                            ],
+                        },
+                        {
+                            name: {
+                                ident: ("PendantOfWisdom"),
+                                human: Some("Pendant of Wisdom"),
+                            },
+                            stmts: [
+                                Prop(Alias({
+                                    names: New([
+                                        ("BluePendant"),
+                                    ]),
+                                })),
+                            ],
+                        },
+                        {
+                            name: {
+                                ident: ("PendantOfPower"),
+                                human: Some("Pendant of Power"),
+                            },
+                            stmts: [
+                                Prop(Alias({
+                                    names: New([
+                                        ("RedPendant"),
+                                    ]),
+                                })),
+                            ],
+                        },
+                    ],
+                    nested: [
+                    ],
+                },
+            ],
+        })),
+        Decl(Items({
+            tags: New([
+                ("Major"),
+            ]),
+            items: [
+                {
+                    name: {
+                        ident: ("FighterSwordAndShield"),
+                        human: Some("Fighter Sword & Shield"),
+                    },
+                    stmts: [
+                        Prop(Alias({
+                            names: New([
+                                ("L1SwordAndShield"),
+                            ]),
+                        })),
+                        Prop(Provides({
+                            items: New([
+                                Id(("FighterSword")),
+                                Id(("FighterShield")),
+                            ]),
+                        })),
+                    ],
+                },
+                {
+                    name: {
+                        ident: ("Lamp"),
+                        human: None,
+                    },
+                    stmts: [
+                        Prop(Tag({
+                            tags: New([
+                                ("FireSource"),
+                            ]),
+                        })),
+                    ],
+                },
+                {
+                    name: {
+                        ident: ("FireRod"),
+                        human: None,
+                    },
+                    stmts: [
+                        Prop(Tag({
+                            tags: New([
+                                ("FireSource"),
+                                ("Weapon"),
+                            ]),
+                        })),
+                    ],
+                },
+                {
+                    name: {
+                        ident: ("IceRod"),
+                        human: None,
+                    },
+                    stmts: [
+                        Prop(Alias({
+                            names: New([
+                                ("NiceRod"),
+                            ]),
+                        })),
+                    ],
+                },
+                {
+                    name: {
+                        ident: ("Hookshot"),
+                        human: None,
+                    },
+                    stmts: [
+                    ],
+                },
+                {
+                    name: {
+                        ident: ("Bow"),
+                        human: None,
+                    },
+                    stmts: [
+                    ],
+                },
+                {
+                    name: {
+                        ident: ("BowWithArrows"),
+                        human: Some("Bow with Arrows"),
+                    },
+                    stmts: [
+                        Prop(Provides({
+                            items: New([
+                                Id(("Bow")),
+                                Id(("WoodenArrows")),
+                            ]),
+                        })),
+                        Prop(Tag({
+                            tags: New([
+                                ("Weapon"),
+                            ]),
+                        })),
+                    ],
+                },
+                {
+                    name: {
+                        ident: ("BowWithSilverArrows"),
+                        human: Some("Bow with Silver Arrows"),
+                    },
+                    stmts: [
+                        Prop(Provides({
+                            items: New([
+                                Id(("Bow")),
+                                Id(("SilverArrows")),
+                            ]),
+                        })),
+                        Prop(Tag({
+                            tags: New([
+                                ("Weapon"),
+                            ]),
+                        })),
+                    ],
+                },
+                {
+                    name: {
+                        ident: ("Hammer"),
+                        human: None,
+                    },
+                    stmts: [
+                        Prop(Tag({
+                            tags: New([
+                                ("Weapon"),
+                            ]),
+                        })),
+                    ],
+                },
+                {
+                    name: {
+                        ident: ("Mushroom"),
+                        human: None,
+                    },
+                    stmts: [
+                    ],
+                },
+                {
+                    name: {
+                        ident: ("MagicPowder"),
+                        human: None,
+                    },
+                    stmts: [
+                        Prop(Alias({
+                            names: New([
+                                ("Powder"),
+                            ]),
+                        })),
+                    ],
+                },
+                {
+                    name: {
+                        ident: ("Shovel"),
+                        human: None,
+                    },
+                    stmts: [
+                    ],
+                },
+                {
+                    name: {
+                        ident: ("Flute"),
+                        human: None,
+                    },
+                    stmts: [
+                        Prop(Alias({
+                            names: New([
+                                ("Ocarina"),
+                            ]),
+                        })),
+                    ],
+                },
+                {
+                    name: {
+                        ident: ("Cape"),
+                        human: None,
+                    },
+                    stmts: [
+                        Prop(Val({
+                            name: ("InvincibilityCost"),
+                            ty: None,
+                            val: Num(((1, [
+                                2,
+                            ]), (1, [
+                                1,
+                            ]))),
+                        })),
+                    ],
+                },
+                {
+                    name: {
+                        ident: ("CaneOfByrna"),
+                        human: None,
+                    },
+                    stmts: [
+                        Prop(Val({
+                            name: ("InvincibilityCost"),
+                            ty: None,
+                            val: Num(((1, [
+                                1,
+                            ]), (1, [
+                                1,
+                            ]))),
+                        })),
+                        Prop(Alias({
+                            names: New([
+                                ("CaneOfBryan"),
+                                ("BlueCane"),
+                            ]),
+                        })),
+                        Prop(Tag({
+                            tags: New([
+                                ("Weapon"),
+                            ]),
+                        })),
+                    ],
+                },
+                {
+                    name: {
+                        ident: ("CaneOfSomaria"),
+                        human: None,
+                    },
+                    stmts: [
+                        Prop(Alias({
+                            names: New([
+                                ("RedCane"),
+                            ]),
+                        })),
+                        Prop(Tag({
+                            tags: New([
+                                ("Weapon"),
+                            ]),
+                        })),
+                    ],
+                },
+                {
+                    name: {
+                        ident: ("MoonPearl"),
+                        human: None,
+                    },
+                    stmts: [
+                        Prop(Alias({
+                            names: New([
+                                ("Pearl"),
+                            ]),
+                        })),
+                    ],
+                },
+                {
+                    name: {
+                        ident: ("PegasusBoots"),
+                        human: None,
+                    },
+                    stmts: [
+                        Prop(Alias({
+                            names: New([
+                                ("Boots"),
+                            ]),
+                        })),
+                    ],
+                },
+                {
+                    name: {
+                        ident: ("BookOfMudora"),
+                        human: None,
+                    },
+                    stmts: [
+                        Prop(Alias({
+                            names: New([
+                                ("Book"),
+                            ]),
+                        })),
+                    ],
+                },
+                {
+                    name: {
+                        ident: ("Flippers"),
+                        human: None,
+                    },
+                    stmts: [
+                    ],
+                },
+            ],
+            nested: [
+                {
+                    tags: New([
+                        ("Sword"),
+                        ("Weapon"),
+                    ]),
+                    items: [
+                        {
+                            name: {
+                                ident: ("FighterSword"),
+                                human: None,
+                            },
+                            stmts: [
+                                Prop(Alias({
+                                    names: New([
+                                        ("L1Sword"),
+                                    ]),
+                                })),
+                            ],
+                        },
+                        {
+                            name: {
+                                ident: ("MasterSword"),
+                                human: None,
+                            },
+                            stmts: [
+                                Prop(Alias({
+                                    names: New([
+                                        ("L2Sword"),
+                                        ("LightSaber"),
+                                    ]),
+                                })),
+                            ],
+                        },
+                        {
+                            name: {
+                                ident: ("TemperedSword"),
+                                human: None,
+                            },
+                            stmts: [
+                                Prop(Alias({
+                                    names: New([
+                                        ("L3Sword"),
+                                        ("BaconSword"),
+                                    ]),
+                                })),
+                                Prop(Provides({
+                                    items: New([
+                                        Id(("MasterSword")),
+                                    ]),
+                                })),
+                            ],
+                        },
+                        {
+                            name: {
+                                ident: ("GoldSword"),
+                                human: None,
+                            },
+                            stmts: [
+                                Prop(Alias({
+                                    names: New([
+                                        ("L4Sword"),
+                                        ("ButterSword"),
+                                    ]),
+                                })),
+                                Prop(Provides({
+                                    items: New([
+                                        Id(("TemperedSword")),
+                                    ]),
+                                })),
+                            ],
+                        },
+                        {
+                            name: {
+                                ident: ("ProgressiveSword"),
+                                human: None,
+                            },
+                            stmts: [
+                                Prop(Progressive({
+                                    items: New([
+                                        Id(("FighterSword")),
+                                        Id(("MasterSword")),
+                                        Id(("TemperedSword")),
+                                        Id(("GoldSword")),
+                                    ]),
+                                })),
+                            ],
+                        },
+                    ],
+                    nested: [
+                    ],
+                },
+                {
+                    tags: New([
+                        ("Shield"),
+                    ]),
+                    items: [
+                        {
+                            name: {
+                                ident: ("FighterShield"),
+                                human: None,
+                            },
+                            stmts: [
+                                Prop(Alias({
+                                    names: New([
+                                        ("BlueShield"),
+                                    ]),
+                                })),
+                            ],
+                        },
+                        {
+                            name: {
+                                ident: ("FireShield"),
+                                human: None,
+                            },
+                            stmts: [
+                                Prop(Alias({
+                                    names: New([
+                                        ("RedShield"),
+                                    ]),
+                                })),
+                            ],
+                        },
+                        {
+                            name: {
+                                ident: ("MirrorShield"),
+                                human: None,
+                            },
+                            stmts: [
+                                Prop(Alias({
+                                    names: New([
+                                        ("RiotShield"),
+                                    ]),
+                                })),
+                            ],
+                        },
+                        {
+                            name: {
+                                ident: ("ProgressiveShield"),
+                                human: None,
+                            },
+                            stmts: [
+                                Prop(Progressive({
+                                    items: New([
+                                        Id(("FighterShield")),
+                                        Id(("FireShield")),
+                                        Id(("MirrorShield")),
+                                    ]),
+                                })),
+                            ],
+                        },
+                    ],
+                    nested: [
+                    ],
+                },
+                {
+                    tags: New([
+                        ("Armor"),
+                    ]),
+                    items: [
+                        {
+                            name: {
+                                ident: ("BlueMail"),
+                                human: None,
+                            },
+                            stmts: [
+                            ],
+                        },
+                        {
+                            name: {
+                                ident: ("RedMail"),
+                                human: None,
+                            },
+                            stmts: [
+                            ],
+                        },
+                        {
+                            name: {
+                                ident: ("ProgressiveMail"),
+                                human: None,
+                            },
+                            stmts: [
+                                Prop(Progressive({
+                                    items: New([
+                                        Id(("BlueMail")),
+                                        Id(("RedMail")),
+                                    ]),
+                                })),
+                            ],
+                        },
+                    ],
+                    nested: [
+                    ],
+                },
+                {
+                    tags: New([
+                        ("Arrows"),
+                    ]),
+                    items: [
+                        {
+                            name: {
+                                ident: ("WoodenArrows"),
+                                human: None,
+                            },
+                            stmts: [
+                            ],
+                        },
+                        {
+                            name: {
+                                ident: ("SilverArrows"),
+                                human: None,
+                            },
+                            stmts: [
+                            ],
+                        },
+                    ],
+                    nested: [
+                    ],
+                },
+                {
+                    tags: New([
+                        ("Glove"),
+                    ]),
+                    items: [
+                        {
+                            name: {
+                                ident: ("PowerGlove"),
+                                human: None,
+                            },
+                            stmts: [
+                            ],
+                        },
+                        {
+                            name: {
+                                ident: ("TitansMitts"),
+                                human: Some("Titan's Mitts"),
+                            },
+                            stmts: [
+                                Prop(Alias({
+                                    names: New([
+                                        ("Mitts"),
+                                    ]),
+                                })),
+                            ],
+                        },
+                        {
+                            name: {
+                                ident: ("ProgressiveGlove"),
+                                human: None,
+                            },
+                            stmts: [
+                                Prop(Progressive({
+                                    items: New([
+                                        Id(("PowerGlove")),
+                                        Id(("TitansMitts")),
+                                    ]),
+                                })),
+                            ],
+                        },
+                    ],
+                    nested: [
+                    ],
+                },
+                {
+                    tags: New([
+                        ("Bottle"),
+                    ]),
+                    items: [
+                        {
+                            name: {
+                                ident: ("EmptyBottle"),
+                                human: None,
+                            },
+                            stmts: [
+                            ],
+                        },
+                        {
+                            name: {
+                                ident: ("RedBottle"),
+                                human: Some("Bottle with red potion"),
+                            },
+                            stmts: [
+                            ],
+                        },
+                        {
+                            name: {
+                                ident: ("GreenBottle"),
+                                human: Some("Bottle with green potion"),
+                            },
+                            stmts: [
+                            ],
+                        },
+                        {
+                            name: {
+                                ident: ("BlueBottle"),
+                                human: Some("Bottle with blue potion"),
+                            },
+                            stmts: [
+                            ],
+                        },
+                        {
+                            name: {
+                                ident: ("FairyBottle"),
+                                human: Some("Bottle with fairy"),
+                            },
+                            stmts: [
+                            ],
+                        },
+                        {
+                            name: {
+                                ident: ("BeeBottle"),
+                                human: Some("Bottle with bee"),
+                            },
+                            stmts: [
+                            ],
+                        },
+                        {
+                            name: {
+                                ident: ("GoldBeeBottle"),
+                                human: Some("Bottle with golden bee"),
+                            },
+                            stmts: [
+                            ],
+                        },
+                    ],
+                    nested: [
+                    ],
+                },
+                {
+                    tags: New([
+                        ("MagicReduction"),
+                    ]),
+                    items: [
+                        {
+                            name: {
+                                ident: ("HalfMagic"),
+                                human: None,
+                            },
+                            stmts: [
+                                Prop(Val({
+                                    name: ("Factor"),
+                                    ty: None,
+                                    val: Num(((1, [
+                                        2,
+                                    ]), (1, [
+                                        1,
+                                    ]))),
+                                })),
+                            ],
+                        },
+                        {
+                            name: {
+                                ident: ("QuarterMagic"),
+                                human: None,
+                            },
+                            stmts: [
+                                Prop(Val({
+                                    name: ("Factor"),
+                                    ty: None,
+                                    val: Num(((1, [
+                                        4,
+                                    ]), (1, [
+                                        1,
+                                    ]))),
+                                })),
+                            ],
+                        },
+                        {
+                            name: {
+                                ident: ("ProgressiveMagic"),
+                                human: None,
+                            },
+                            stmts: [
+                                Prop(Progressive({
+                                    items: New([
+                                        Id(("HalfMagic")),
+                                        Id(("QuarterMagic")),
+                                    ]),
+                                })),
+                            ],
+                        },
+                    ],
+                    nested: [
+                    ],
+                },
+                {
+                    tags: New([
+                        ("Medallion"),
+                    ]),
+                    items: [
+                        {
+                            name: {
+                                ident: ("Bombos"),
+                                human: None,
+                            },
+                            stmts: [
+                            ],
+                        },
+                        {
+                            name: {
+                                ident: ("Ether"),
+                                human: None,
+                            },
+                            stmts: [
+                            ],
+                        },
+                        {
+                            name: {
+                                ident: ("Quake"),
+                                human: None,
+                            },
+                            stmts: [
+                            ],
+                        },
+                    ],
+                    nested: [
+                    ],
+                },
+            ],
+        })),
+        Decl(Items({
+            tags: New([
+                ("Minor"),
+            ]),
+            items: [
+                {
+                    name: {
+                        ident: ("Net"),
+                        human: Some("Bug-Catching Net"),
+                    },
+                    stmts: [
+                        Prop(Alias({
+                            names: New([
+                                ("BugCatchingNet"),
+                            ]),
+                        })),
+                    ],
+                },
+                {
+                    name: {
+                        ident: ("BlueBoomerang"),
+                        human: None,
+                    },
+                    stmts: [
+                        Prop(Alias({
+                            names: New([
+                                ("Bluemerang"),
+                            ]),
+                        })),
+                    ],
+                },
+                {
+                    name: {
+                        ident: ("RedBoomerang"),
+                        human: None,
+                    },
+                    stmts: [
+                        Prop(Alias({
+                            names: New([
+                                ("Redmerang"),
+                            ]),
+                        })),
+                    ],
+                },
+            ],
+            nested: [
+                {
+                    tags: New([
+                        ("Bombs"),
+                    ]),
+                    items: [
+                        {
+                            name: {
+                                ident: ("SingleBomb"),
+                                human: None,
+                            },
+                            stmts: [
+                                Prop(Val({
+                                    name: ("Num"),
+                                    ty: None,
+                                    val: Num(((1, [
+                                        1,
+                                    ]), (1, [
+                                        1,
+                                    ]))),
+                                })),
+                            ],
+                        },
+                        {
+                            name: {
+                                ident: ("ThreeBombs"),
+                                human: None,
+                            },
+                            stmts: [
+                                Prop(Val({
+                                    name: ("Num"),
+                                    ty: None,
+                                    val: Num(((1, [
+                                        3,
+                                    ]), (1, [
+                                        1,
+                                    ]))),
+                                })),
+                            ],
+                        },
+                        {
+                            name: {
+                                ident: ("TenBombs"),
+                                human: None,
+                            },
+                            stmts: [
+                                Prop(Val({
+                                    name: ("Num"),
+                                    ty: None,
+                                    val: Num(((1, [
+                                        10,
+                                    ]), (1, [
+                                        1,
+                                    ]))),
+                                })),
+                                Prop(Tag({
+                                    tags: New([
+                                        ("Weapon"),
+                                    ]),
+                                })),
+                            ],
+                        },
+                    ],
+                    nested: [
+                    ],
+                },
+            ],
+        })),
+        Decl(Items({
+            tags: New([
+                ("Event"),
+            ]),
+            items: [
+                {
+                    name: {
+                        ident: ("DefeatAgahnim1"),
+                        human: None,
+                    },
+                    stmts: [
+                    ],
+                },
+                {
+                    name: {
+                        ident: ("DefeatAgahnim2"),
+                        human: None,
+                    },
+                    stmts: [
+                    ],
+                },
+            ],
+            nested: [
+            ],
+        })),
+        Decl(Fn({
+            name: {
+                ident: ("CanMeltIce"),
+                human: None,
+            },
+            params: [
+            ],
+            ret_ty: None,
+            body: Or([
+                Name(Id(("FireRod"))),
+                Call(
+Name(Id(("CanCast"))), [
+                        Name(Id(("Bombos"))),
+                    ]),
+                ]),
+            })),
+            Decl(Fn({
+                name: {
+                    ident: ("CanCast"),
+                    human: None,
+                },
+                params: [
+                    {
+                        name: ("medallion"),
+                        ty: None,
+                    },
+                ],
+                ret_ty: None,
+                body: And([
+                    Name(Id(("medallion"))),
+                    Grouped(Or([
+                        Bin(
+Name(Sub(
+Id(("Modes")), ("Swords"))), Eq, Name(Sub(
+Id(("Modes")), ("Swordless")))),
+                                    Name(Id(("Sword"))),
+                                ])),
+                            ]),
+                        })),
+                        Decl(Fn({
+                            name: {
+                                ident: ("CanShootSilverArrows"),
+                                human: None,
+                            },
+                            params: [
+                            ],
+                            ret_ty: None,
+                            body: And([
+                                Name(Id(("Bow"))),
+                                Name(Id(("SilverArrows"))),
+                            ]),
+                        })),
+                        Decl(Fn({
+                            name: {
+                                ident: ("CanShootArrows"),
+                                human: None,
+                            },
+                            params: [
+                            ],
+                            ret_ty: None,
+                            body: And([
+                                Name(Id(("Bow"))),
+                                Name(Id(("Arrows"))),
+                            ]),
+                        })),
+                        Decl(Fn({
+                            name: {
+                                ident: ("CanCutCurtains"),
+                                human: None,
+                            },
+                            params: [
+                            ],
+                            ret_ty: None,
+                            body: Or([
+                                Bin(
+Name(Sub(
+Id(("Modes")), ("Swords"))), Eq, Name(Sub(
+Id(("Modes")), ("Swordless")))),
+                                            Name(Id(("Sword"))),
+                                        ]),
+                                    })),
+                                    Decl(Fn({
+                                        name: {
+                                            ident: ("BottleCount"),
+                                            human: None,
+                                        },
+                                        params: [
+                                        ],
+                                        ret_ty: None,
+                                        body: Builtin(
+Min, [
+                                                Builtin(
+Count, [
+                                                        Name(Id(("Bottle"))),
+                                                    ]),
+                                                    Num(((1, [
+                                                        4,
+                                                    ]), (1, [
+                                                        1,
+                                                    ]))),
+                                                ]),
+                                            })),
+                                            Decl(Fn({
+                                                name: {
+                                                    ident: ("MagicBars"),
+                                                    human: None,
+                                                },
+                                                params: [
+                                                ],
+                                                ret_ty: None,
+                                                body: Bin(
+Builtin(
+Max, [
+                                                            Num(((1, [
+                                                                1,
+                                                            ]), (1, [
+                                                                1,
+                                                            ]))),
+                                                            Name(Sub(
+Id(("MagicReduction")), ("Factor"))),
+                                                            ]), Mul, Grouped(Bin(
+Name(Id(("BottleCount"))), Add, Num(((1, [
+                                                                    1,
+                                                                ]), (1, [
+                                                                    1,
+                                                                ])))))),
+                                                            })),
+                                                            Decl(Fn({
+                                                                name: {
+                                                                    ident: ("HasWeaponsFor"),
+                                                                    human: None,
+                                                                },
+                                                                params: [
+                                                                    {
+                                                                        name: ("n"),
+                                                                        ty: None,
+                                                                    },
+                                                                ],
+                                                                ret_ty: None,
+                                                                body: Or([
+                                                                    Name(Id(("Sword"))),
+                                                                    Name(Id(("Hammer"))),
+                                                                    Name(Id(("FireRod"))),
+                                                                    Name(Id(("CanShootArrows"))),
+                                                                    Name(Id(("RedCane"))),
+                                                                    Grouped(Bin(
+Bin(
+Name(Id(("n"))), Mul, Num(((1, [
+                                                                                2,
+                                                                            ]), (1, [
+                                                                                1,
+                                                                            ])))), LE, Builtin(
+Sum, [
+                                                                                    Name(Sub(
+Id(("Bombs")), ("Num"))),
+                                                                                    ]))),
+                                                                                    Grouped(And([
+                                                                                        Name(Id(("BlueCane"))),
+                                                                                        Bin(
+Bin(
+Name(Id(("n"))), Mul, Num(((1, [
+                                                                                                    5,
+                                                                                                ]), (1, [
+                                                                                                    1,
+                                                                                                ])))), LE, Name(Id(("MagicBars")))),
+                                                                                            ])),
+                                                                                        ]),
+                                                                                    })),
+                                                                                    Decl(Fn({
+                                                                                        name: {
+                                                                                            ident: ("CanGetGoldBee"),
+                                                                                            human: None,
+                                                                                        },
+                                                                                        params: [
+                                                                                        ],
+                                                                                        ret_ty: None,
+                                                                                        body: And([
+                                                                                            Name(Id(("Net"))),
+                                                                                            Name(Id(("Bottle"))),
+                                                                                            Grouped(Or([
+                                                                                                Call(
+Name(Id(("CanCast"))), [
+                                                                                                        Name(Id(("Quake"))),
+                                                                                                    ]),
+                                                                                                    Name(Id(("Sword"))),
+                                                                                                ])),
+                                                                                            ]),
+                                                                                        })),
+                                                                                        Decl(Enum({
+                                                                                            name: {
+                                                                                                ident: ("Boss"),
+                                                                                                human: None,
+                                                                                            },
+                                                                                            variants: [
+                                                                                                {
+                                                                                                    ident: ("ArmosKnights"),
+                                                                                                    human: None,
+                                                                                                },
+                                                                                                {
+                                                                                                    ident: ("Lanmolas"),
+                                                                                                    human: None,
+                                                                                                },
+                                                                                                {
+                                                                                                    ident: ("Moldorm"),
+                                                                                                    human: None,
+                                                                                                },
+                                                                                                {
+                                                                                                    ident: ("Agahnim1"),
+                                                                                                    human: None,
+                                                                                                },
+                                                                                                {
+                                                                                                    ident: ("HelmasaurKing"),
+                                                                                                    human: None,
+                                                                                                },
+                                                                                                {
+                                                                                                    ident: ("Arrghus"),
+                                                                                                    human: None,
+                                                                                                },
+                                                                                                {
+                                                                                                    ident: ("Mothula"),
+                                                                                                    human: None,
+                                                                                                },
+                                                                                                {
+                                                                                                    ident: ("Blind"),
+                                                                                                    human: None,
+                                                                                                },
+                                                                                                {
+                                                                                                    ident: ("Kholdstare"),
+                                                                                                    human: None,
+                                                                                                },
+                                                                                                {
+                                                                                                    ident: ("Vitreous"),
+                                                                                                    human: None,
+                                                                                                },
+                                                                                                {
+                                                                                                    ident: ("Trinexx"),
+                                                                                                    human: None,
+                                                                                                },
+                                                                                                {
+                                                                                                    ident: ("Agahnim2"),
+                                                                                                    human: None,
+                                                                                                },
+                                                                                                {
+                                                                                                    ident: ("Ganon"),
+                                                                                                    human: None,
+                                                                                                },
+                                                                                            ],
+                                                                                        })),
+                                                                                        Decl(Fn({
+                                                                                            name: {
+                                                                                                ident: ("CanDefeat"),
+                                                                                                human: None,
+                                                                                            },
+                                                                                            params: [
+                                                                                                {
+                                                                                                    name: ("boss"),
+                                                                                                    ty: None,
+                                                                                                },
+                                                                                            ],
+                                                                                            ret_ty: None,
+                                                                                            body: Match(
+Name(Id(("boss"))), [
+                                                                                                    {
+                                                                                                        pat: Id(("ArmosKnights")),
+                                                                                                        expr: Or([
+                                                                                                            Name(Id(("Sword"))),
+                                                                                                            Name(Id(("Hammer"))),
+                                                                                                            Name(Id(("CanShootArrows"))),
+                                                                                                            Name(Id(("Bluemerang"))),
+                                                                                                            Name(Id(("Redmerang"))),
+                                                                                                            Grouped(And([
+                                                                                                                Grouped(Or([
+                                                                                                                    Name(Id(("FireRod"))),
+                                                                                                                    Name(Id(("IceRod"))),
+                                                                                                                ])),
+                                                                                                                Bin(
+Name(Id(("MagicBars"))), GT, Num(((1, [
+                                                                                                                        4,
+                                                                                                                    ]), (1, [
+                                                                                                                        1,
+                                                                                                                    ])))),
+                                                                                                                ])),
+                                                                                                                Grouped(And([
+                                                                                                                    Grouped(Or([
+                                                                                                                        Name(Id(("RedCane"))),
+                                                                                                                        Name(Id(("BlueCane"))),
+                                                                                                                    ])),
+                                                                                                                    Bin(
+Name(Id(("MagicBars"))), GT, Num(((1, [
+                                                                                                                            2,
+                                                                                                                        ]), (1, [
+                                                                                                                            1,
+                                                                                                                        ])))),
+                                                                                                                    ])),
+                                                                                                                ]),
+                                                                                                            },
+                                                                                                            {
+                                                                                                                pat: Id(("Lanmolas")),
+                                                                                                                expr: Or([
+                                                                                                                    Name(Id(("Sword"))),
+                                                                                                                    Name(Id(("Hammer"))),
+                                                                                                                    Name(Id(("CanShootArrows"))),
+                                                                                                                    Name(Id(("FireRod"))),
+                                                                                                                    Name(Id(("IceRod"))),
+                                                                                                                    Name(Id(("RedCane"))),
+                                                                                                                    Name(Id(("BlueCane"))),
+                                                                                                                ]),
+                                                                                                            },
+                                                                                                            {
+                                                                                                                pat: Id(("Moldorm")),
+                                                                                                                expr: Or([
+                                                                                                                    Name(Id(("Sword"))),
+                                                                                                                    Name(Id(("Hammer"))),
+                                                                                                                ]),
+                                                                                                            },
+                                                                                                            {
+                                                                                                                pat: Id(("Agahnim")),
+                                                                                                                expr: Or([
+                                                                                                                    Name(Id(("Sword"))),
+                                                                                                                    Name(Id(("Hammer"))),
+                                                                                                                    Name(Id(("Net"))),
+                                                                                                                ]),
+                                                                                                            },
+                                                                                                            {
+                                                                                                                pat: Id(("HelmasaurKing")),
+                                                                                                                expr: Or([
+                                                                                                                    Name(Id(("Sword"))),
+                                                                                                                    Name(Id(("Hammer"))),
+                                                                                                                    Name(Id(("CanShootArrows"))),
+                                                                                                                ]),
+                                                                                                            },
+                                                                                                            {
+                                                                                                                pat: Id(("Arrghus")),
+                                                                                                                expr: And([
+                                                                                                                    Name(Id(("Hookshot"))),
+                                                                                                                    Grouped(Or([
+                                                                                                                        Name(Id(("Sword"))),
+                                                                                                                        Name(Id(("Hammer"))),
+                                                                                                                        Grouped(And([
+                                                                                                                            Name(Id(("FireRod"))),
+                                                                                                                            Bin(
+Name(Id(("MagicBars"))), GT, Num(((1, [
+                                                                                                                                    2,
+                                                                                                                                ]), (1, [
+                                                                                                                                    1,
+                                                                                                                                ])))),
+                                                                                                                            ])),
+                                                                                                                            Grouped(And([
+                                                                                                                                Name(Id(("CanShootArrows"))),
+                                                                                                                                Grouped(Or([
+                                                                                                                                    Name(Id(("FireRod"))),
+                                                                                                                                    Grouped(And([
+                                                                                                                                        Name(Id(("IceRod"))),
+                                                                                                                                        Bin(
+Name(Id(("MagicBars"))), GT, Num(((1, [
+                                                                                                                                                2,
+                                                                                                                                            ]), (1, [
+                                                                                                                                                1,
+                                                                                                                                            ])))),
+                                                                                                                                        ])),
+                                                                                                                                    ])),
+                                                                                                                                ])),
+                                                                                                                            ])),
+                                                                                                                        ]),
+                                                                                                                    },
+                                                                                                                    {
+                                                                                                                        pat: Id(("Mothula")),
+                                                                                                                        expr: Or([
+                                                                                                                            Name(Id(("Sword"))),
+                                                                                                                            Name(Id(("Hammer"))),
+                                                                                                                            Grouped(And([
+                                                                                                                                Name(Id(("CanGetGoldBee"))),
+                                                                                                                                Name(Id(("Net"))),
+                                                                                                                            ])),
+                                                                                                                            Grouped(And([
+                                                                                                                                Bin(
+Name(Id(("MagicBars"))), GT, Num(((1, [
+                                                                                                                                        2,
+                                                                                                                                    ]), (1, [
+                                                                                                                                        1,
+                                                                                                                                    ])))),
+                                                                                                                                    Grouped(Or([
+                                                                                                                                        Name(Id(("FireRod"))),
+                                                                                                                                        Name(Id(("IceRod"))),
+                                                                                                                                        Name(Id(("RedCane"))),
+                                                                                                                                    ])),
+                                                                                                                                ])),
+                                                                                                                            ]),
+                                                                                                                        },
+                                                                                                                        {
+                                                                                                                            pat: Id(("Blind")),
+                                                                                                                            expr: Or([
+                                                                                                                                Name(Id(("Sword"))),
+                                                                                                                                Name(Id(("Hammer"))),
+                                                                                                                                Name(Id(("RedCane"))),
+                                                                                                                                Name(Id(("BlueCane"))),
+                                                                                                                            ]),
+                                                                                                                        },
+                                                                                                                        {
+                                                                                                                            pat: Id(("Kholdstare")),
+                                                                                                                            expr: Or([
+                                                                                                                                Grouped(And([
+                                                                                                                                    Name(Id(("CanMeltIce"))),
+                                                                                                                                    Grouped(Or([
+                                                                                                                                        Name(Id(("Sword"))),
+                                                                                                                                        Name(Id(("Hammer"))),
+                                                                                                                                    ])),
+                                                                                                                                ])),
+                                                                                                                                Grouped(And([
+                                                                                                                                    Name(Id(("FireRod"))),
+                                                                                                                                    Bin(
+Name(Id(("MagicBars"))), GT, Num(((1, [
+                                                                                                                                            3,
+                                                                                                                                        ]), (1, [
+                                                                                                                                            1,
+                                                                                                                                        ])))),
+                                                                                                                                    ])),
+                                                                                                                                    Grouped(And([
+                                                                                                                                        Name(Id(("FireRod"))),
+                                                                                                                                        Call(
+Name(Id(("CanCast"))), [
+                                                                                                                                                Name(Id(("Bombos"))),
+                                                                                                                                            ]),
+                                                                                                                                            Bin(
+Name(Id(("MagicBars"))), GT, Num(((1, [
+                                                                                                                                                    2,
+                                                                                                                                                ]), (1, [
+                                                                                                                                                    1,
+                                                                                                                                                ])))),
+                                                                                                                                            ])),
+                                                                                                                                        ]),
+                                                                                                                                    },
+                                                                                                                                    {
+                                                                                                                                        pat: Id(("Vitreous")),
+                                                                                                                                        expr: Or([
+                                                                                                                                            Name(Id(("Sword"))),
+                                                                                                                                            Name(Id(("Hammer"))),
+                                                                                                                                            Name(Id(("CanShootArrows"))),
+                                                                                                                                        ]),
+                                                                                                                                    },
+                                                                                                                                    {
+                                                                                                                                        pat: Id(("Trinexx")),
+                                                                                                                                        expr: And([
+                                                                                                                                            Name(Id(("FireRod"))),
+                                                                                                                                            Name(Id(("IceRod"))),
+                                                                                                                                            Grouped(Or([
+                                                                                                                                                Name(Id(("Hammer"))),
+                                                                                                                                                Name(Id(("L3Sword"))),
+                                                                                                                                                Grouped(And([
+                                                                                                                                                    Name(Id(("L2Sword"))),
+                                                                                                                                                    Bin(
+Name(Id(("MagicBars"))), GT, Num(((1, [
+                                                                                                                                                            2,
+                                                                                                                                                        ]), (1, [
+                                                                                                                                                            1,
+                                                                                                                                                        ])))),
+                                                                                                                                                    ])),
+                                                                                                                                                    Grouped(And([
+                                                                                                                                                        Name(Id(("L1Sword"))),
+                                                                                                                                                        Bin(
+Name(Id(("MagicBars"))), GT, Num(((1, [
+                                                                                                                                                                4,
+                                                                                                                                                            ]), (1, [
+                                                                                                                                                                1,
+                                                                                                                                                            ])))),
+                                                                                                                                                        ])),
+                                                                                                                                                    ])),
+                                                                                                                                                ]),
+                                                                                                                                            },
+                                                                                                                                            {
+                                                                                                                                                pat: Id(("Agahnim2")),
+                                                                                                                                                expr: Or([
+                                                                                                                                                    Name(Id(("Sword"))),
+                                                                                                                                                    Name(Id(("Hammer"))),
+                                                                                                                                                    Name(Id(("Net"))),
+                                                                                                                                                ]),
+                                                                                                                                            },
+                                                                                                                                            {
+                                                                                                                                                pat: Id(("Ganon")),
+                                                                                                                                                expr: And([
+                                                                                                                                                    Grouped(Or([
+                                                                                                                                                        Grouped(Or([
+                                                                                                                                                            Name(Id(("MasterSword"))),
+                                                                                                                                                            Grouped(And([
+                                                                                                                                                                Bin(
+Name(Sub(
+Id(("Modes")), ("Swords"))), Eq, Name(Sub(
+Id(("Modes")), ("Swordless")))),
+                                                                                                                                                                            Name(Id(("Hammer"))),
+                                                                                                                                                                        ])),
+                                                                                                                                                                    ])),
+                                                                                                                                                                    Grouped(Or([
+                                                                                                                                                                        Name(Id(("SilverArrows"))),
+                                                                                                                                                                        Name(Sub(
+Id(("Skills")), ("SilverlessGanon"))),
+                                                                                                                                                                        ])),
+                                                                                                                                                                    ])),
+                                                                                                                                                                    Grouped(Or([
+                                                                                                                                                                        Name(Id(("Lamp"))),
+                                                                                                                                                                        Grouped(And([
+                                                                                                                                                                            Name(Id(("FireRod"))),
+                                                                                                                                                                            Grouped(Or([
+                                                                                                                                                                                Bin(
+Name(Id(("MagicBars"))), GT, Num(((1, [
+                                                                                                                                                                                        3,
+                                                                                                                                                                                    ]), (1, [
+                                                                                                                                                                                        1,
+                                                                                                                                                                                    ])))),
+                                                                                                                                                                                    Grouped(And([
+                                                                                                                                                                                        Name(Id(("TemperedSword"))),
+                                                                                                                                                                                        Bin(
+Name(Id(("MagicBars"))), GT, Num(((1, [
+                                                                                                                                                                                                2,
+                                                                                                                                                                                            ]), (1, [
+                                                                                                                                                                                                1,
+                                                                                                                                                                                            ])))),
+                                                                                                                                                                                        ])),
+                                                                                                                                                                                    ])),
+                                                                                                                                                                                ])),
+                                                                                                                                                                            ])),
+                                                                                                                                                                        ]),
+                                                                                                                                                                    },
+                                                                                                                                                                ]),
+                                                                                                                                                            })),
+                                                                                                                                                        ],
+                                                                                                                                                    }

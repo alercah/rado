@@ -1,0 +1,574 @@
+{
+    stmts: [
+        Decl(Region({
+            name: {
+                ident: ("LightWorld"),
+                human: None,
+            },
+            stmts: [
+                Decl(Region({
+                    name: {
+                        ident: ("SecretPassage"),
+                        human: None,
+                    },
+                    stmts: [
+                        Decl(Link({
+                            name: None,
+                            dir: From,
+                            regions: New([
+                                Id(("LightWorld")),
+                                Id(("LinksHouse")),
+                            ]),
+                            stmts: [
+                            ],
+                        })),
+                        Decl(Link({
+                            name: None,
+                            dir: To,
+                            regions: New([
+                                Id(("HyruleCastle")),
+                            ]),
+                            stmts: [
+                            ],
+                        })),
+                        Decl(Locations({
+                            decls: [
+                                {
+                                    name: {
+                                        ident: ("Uncle"),
+                                        human: Some("Link's Uncle"),
+                                    },
+                                    stmts: [
+                                    ],
+                                },
+                                {
+                                    name: {
+                                        ident: ("Chest"),
+                                        human: None,
+                                    },
+                                    stmts: [
+                                    ],
+                                },
+                            ],
+                        })),
+                        Cond(
+Bin(
+Name(Sub(
+Id(("Modes")), ("State"))), Eq, Name(Sub(
+Id(("Modes")), ("Standard")))), [
+                                            Modify(Location({
+                                                name: {
+                                                    ident: ("Uncle"),
+                                                    human: None,
+                                                },
+                                                stmts: [
+                                                    Prop(Restrict({
+                                                        entities: New([
+                                                            (true, Id(("Weapon"))),
+                                                        ]),
+                                                    })),
+                                                ],
+                                            })),
+                                        ], [
+                                        ]),
+                                        Cond(
+Bin(
+Name(Sub(
+Id(("Modes")), ("Swords"))), Eq, Name(Sub(
+Id(("Modes")), ("UncleAssured")))), [
+                                                            Modify(Location({
+                                                                name: {
+                                                                    ident: ("Uncle"),
+                                                                    human: None,
+                                                                },
+                                                                stmts: [
+                                                                    Prop(Restrict({
+                                                                        entities: New([
+                                                                            (true, Id(("Sword"))),
+                                                                        ]),
+                                                                    })),
+                                                                ],
+                                                            })),
+                                                        ], [
+                                                        ]),
+                                                    ],
+                                                })),
+                                                Decl(Region({
+                                                    name: {
+                                                        ident: ("HyruleCastle"),
+                                                        human: None,
+                                                    },
+                                                    stmts: [
+                                                        Decl(Items({
+                                                            tags: New([
+                                                            ]),
+                                                            items: [
+                                                                {
+                                                                    name: {
+                                                                        ident: ("BigKey"),
+                                                                        human: None,
+                                                                    },
+                                                                    stmts: [
+                                                                    ],
+                                                                },
+                                                                {
+                                                                    name: {
+                                                                        ident: ("Map"),
+                                                                        human: None,
+                                                                    },
+                                                                    stmts: [
+                                                                    ],
+                                                                },
+                                                                {
+                                                                    name: {
+                                                                        ident: ("SmallKey"),
+                                                                        human: None,
+                                                                    },
+                                                                    stmts: [
+                                                                        Prop(Consumable),
+                                                                    ],
+                                                                },
+                                                            ],
+                                                            nested: [
+                                                            ],
+                                                        })),
+                                                        Decl(Items({
+                                                            tags: New([
+                                                                ("Event"),
+                                                            ]),
+                                                            items: [
+                                                                {
+                                                                    name: {
+                                                                        ident: ("FetchZelda"),
+                                                                        human: None,
+                                                                    },
+                                                                    stmts: [
+                                                                    ],
+                                                                },
+                                                                {
+                                                                    name: {
+                                                                        ident: ("RescueZelda"),
+                                                                        human: None,
+                                                                    },
+                                                                    stmts: [
+                                                                    ],
+                                                                },
+                                                            ],
+                                                            nested: [
+                                                            ],
+                                                        })),
+                                                        Cond(
+Not(Name(Sub(
+Id(("Modes")), ("KeySanity")))), [
+                                                                    Modify(Items({
+                                                                        tags: New([
+                                                                        ]),
+                                                                        items: [
+                                                                            {
+                                                                                name: {
+                                                                                    ident: ("BigKey"),
+                                                                                    human: None,
+                                                                                },
+                                                                                stmts: [
+                                                                                    Prop(Restrict({
+                                                                                        entities: New([
+                                                                                            (true, Id(("HyruleCastle"))),
+                                                                                        ]),
+                                                                                    })),
+                                                                                ],
+                                                                            },
+                                                                            {
+                                                                                name: {
+                                                                                    ident: ("Map"),
+                                                                                    human: None,
+                                                                                },
+                                                                                stmts: [
+                                                                                    Prop(Restrict({
+                                                                                        entities: New([
+                                                                                            (true, Id(("HyruleCastle"))),
+                                                                                        ]),
+                                                                                    })),
+                                                                                ],
+                                                                            },
+                                                                            {
+                                                                                name: {
+                                                                                    ident: ("SmallKey"),
+                                                                                    human: None,
+                                                                                },
+                                                                                stmts: [
+                                                                                    Prop(Restrict({
+                                                                                        entities: New([
+                                                                                            (true, Id(("HyruleCastle"))),
+                                                                                        ]),
+                                                                                    })),
+                                                                                ],
+                                                                            },
+                                                                        ],
+                                                                        nested: [
+                                                                        ],
+                                                                    })),
+                                                                ], [
+                                                                ]),
+                                                                Cond(
+Bin(
+Name(Sub(
+Id(("Modes")), ("State"))), Eq, Name(Sub(
+Id(("Modes")), ("Open")))), [
+                                                                                    Prop(StartWith({
+                                                                                        items: [
+                                                                                            Id(("FetchZelda")),
+                                                                                            Id(("RescueZelda")),
+                                                                                        ],
+                                                                                    })),
+                                                                                ], [
+                                                                                ]),
+                                                                                Decl(Link({
+                                                                                    name: None,
+                                                                                    dir: With,
+                                                                                    regions: New([
+                                                                                        Id(("LightWorld")),
+                                                                                    ]),
+                                                                                    stmts: [
+                                                                                        Prop(Requires({
+                                                                                            cond: And([
+                                                                                                Name(Id(("RescueZelda"))),
+                                                                                                Not(Name(Id(("DefeatAgahnim1")))),
+                                                                                            ]),
+                                                                                        })),
+                                                                                    ],
+                                                                                })),
+                                                                                Decl(Link({
+                                                                                    name: None,
+                                                                                    dir: To,
+                                                                                    regions: New([
+                                                                                        Sub(
+Id(("DarkWorld")), ("Eastern")),
+                                                                                        ]),
+                                                                                        stmts: [
+                                                                                            Prop(Requires({
+                                                                                                cond: And([
+                                                                                                    Name(Id(("RescueZelda"))),
+                                                                                                    Name(Id(("DefeatAgahnim1"))),
+                                                                                                ]),
+                                                                                            })),
+                                                                                        ],
+                                                                                    })),
+                                                                                    Decl(Location({
+                                                                                        name: {
+                                                                                            ident: ("MapChest"),
+                                                                                            human: None,
+                                                                                        },
+                                                                                        stmts: [
+                                                                                        ],
+                                                                                    })),
+                                                                                    Prop(Avail({
+                                                                                        items: New([
+                                                                                            (true, Id(("SmallKey")), Some(((1, [
+                                                                                                1,
+                                                                                            ]), (1, [
+                                                                                                1,
+                                                                                            ])))),
+                                                                                        ]),
+                                                                                    })),
+                                                                                    Decl(Region({
+                                                                                        name: {
+                                                                                            ident: ("Basement"),
+                                                                                            human: None,
+                                                                                        },
+                                                                                        stmts: [
+                                                                                            Decl(Region({
+                                                                                                name: {
+                                                                                                    ident: ("Upper"),
+                                                                                                    human: None,
+                                                                                                },
+                                                                                                stmts: [
+                                                                                                    Decl(Link({
+                                                                                                        name: None,
+                                                                                                        dir: With,
+                                                                                                        regions: New([
+                                                                                                            Id(("HyruleCastle")),
+                                                                                                        ]),
+                                                                                                        stmts: [
+                                                                                                            Prop(Unlock({
+                                                                                                                item: Id(("SmallKey")),
+                                                                                                            })),
+                                                                                                        ],
+                                                                                                    })),
+                                                                                                    Decl(Location({
+                                                                                                        name: {
+                                                                                                            ident: ("BoomerangChest"),
+                                                                                                            human: None,
+                                                                                                        },
+                                                                                                        stmts: [
+                                                                                                        ],
+                                                                                                    })),
+                                                                                                    Prop(Avail({
+                                                                                                        items: New([
+                                                                                                            (true, Id(("SmallKey")), Some(((1, [
+                                                                                                                1,
+                                                                                                            ]), (1, [
+                                                                                                                1,
+                                                                                                            ])))),
+                                                                                                        ]),
+                                                                                                    })),
+                                                                                                ],
+                                                                                            })),
+                                                                                            Decl(Region({
+                                                                                                name: {
+                                                                                                    ident: ("Lower"),
+                                                                                                    human: None,
+                                                                                                },
+                                                                                                stmts: [
+                                                                                                    Decl(Link({
+                                                                                                        name: None,
+                                                                                                        dir: With,
+                                                                                                        regions: New([
+                                                                                                            Id(("Upper")),
+                                                                                                        ]),
+                                                                                                        stmts: [
+                                                                                                            Prop(Unlock({
+                                                                                                                item: Id(("SmallKey")),
+                                                                                                            })),
+                                                                                                        ],
+                                                                                                    })),
+                                                                                                    Decl(Location({
+                                                                                                        name: {
+                                                                                                            ident: ("ZeldasCell"),
+                                                                                                            human: Some("Zelda's Cell"),
+                                                                                                        },
+                                                                                                        stmts: [
+                                                                                                        ],
+                                                                                                    })),
+                                                                                                    Prop(Avail({
+                                                                                                        items: New([
+                                                                                                            (true, Id(("FetchZelda")), Some(((1, [
+                                                                                                                1,
+                                                                                                            ]), (1, [
+                                                                                                                1,
+                                                                                                            ])))),
+                                                                                                        ]),
+                                                                                                    })),
+                                                                                                ],
+                                                                                            })),
+                                                                                        ],
+                                                                                    })),
+                                                                                    Decl(Region({
+                                                                                        name: {
+                                                                                            ident: ("Sewers"),
+                                                                                            human: None,
+                                                                                        },
+                                                                                        stmts: [
+                                                                                            Decl(Region({
+                                                                                                name: {
+                                                                                                    ident: ("Front"),
+                                                                                                    human: None,
+                                                                                                },
+                                                                                                stmts: [
+                                                                                                    Prop(Requires({
+                                                                                                        cond: Or([
+                                                                                                            Name(Id(("Lamp"))),
+                                                                                                            Bin(
+Name(Sub(
+Id(("Modes")), ("State"))), Eq, Name(Sub(
+Id(("Modes")), ("Standard")))),
+                                                                                                                        Name(Sub(
+Id(("Modes")), ("DarkRooms"))),
+                                                                                                                        ]),
+                                                                                                                    })),
+                                                                                                                    Decl(Link({
+                                                                                                                        name: None,
+                                                                                                                        dir: With,
+                                                                                                                        regions: New([
+                                                                                                                            Id(("HyruleCastle")),
+                                                                                                                        ]),
+                                                                                                                        stmts: [
+                                                                                                                            Prop(Requires({
+                                                                                                                                cond: Name(Id(("FetchZelda"))),
+                                                                                                                            })),
+                                                                                                                        ],
+                                                                                                                    })),
+                                                                                                                    Decl(Location({
+                                                                                                                        name: {
+                                                                                                                            ident: ("Chest"),
+                                                                                                                            human: None,
+                                                                                                                        },
+                                                                                                                        stmts: [
+                                                                                                                        ],
+                                                                                                                    })),
+                                                                                                                ],
+                                                                                                            })),
+                                                                                                            Decl(Region({
+                                                                                                                name: {
+                                                                                                                    ident: ("Mid"),
+                                                                                                                    human: None,
+                                                                                                                },
+                                                                                                                stmts: [
+                                                                                                                    Prop(Requires({
+                                                                                                                        cond: Or([
+                                                                                                                            Name(Id(("Lamp"))),
+                                                                                                                            Bin(
+Name(Sub(
+Id(("Modes")), ("State"))), Eq, Name(Sub(
+Id(("Modes")), ("Standard")))),
+                                                                                                                                        Name(Sub(
+Id(("Modes")), ("DarkRooms"))),
+                                                                                                                                        ]),
+                                                                                                                                    })),
+                                                                                                                                    Decl(Link({
+                                                                                                                                        name: None,
+                                                                                                                                        dir: With,
+                                                                                                                                        regions: New([
+                                                                                                                                            Id(("Front")),
+                                                                                                                                        ]),
+                                                                                                                                        stmts: [
+                                                                                                                                            Prop(Unlock({
+                                                                                                                                                item: Id(("SmallKey")),
+                                                                                                                                            })),
+                                                                                                                                        ],
+                                                                                                                                    })),
+                                                                                                                                    Prop(Avail({
+                                                                                                                                        items: New([
+                                                                                                                                            (true, Id(("SmallKey")), Some(((1, [
+                                                                                                                                                1,
+                                                                                                                                            ]), (1, [
+                                                                                                                                                1,
+                                                                                                                                            ])))),
+                                                                                                                                        ]),
+                                                                                                                                    })),
+                                                                                                                                ],
+                                                                                                                            })),
+                                                                                                                            Decl(Region({
+                                                                                                                                name: {
+                                                                                                                                    ident: ("Back"),
+                                                                                                                                    human: None,
+                                                                                                                                },
+                                                                                                                                stmts: [
+                                                                                                                                    Decl(Link({
+                                                                                                                                        name: None,
+                                                                                                                                        dir: With,
+                                                                                                                                        regions: New([
+                                                                                                                                            Id(("Mid")),
+                                                                                                                                        ]),
+                                                                                                                                        stmts: [
+                                                                                                                                            Prop(Unlock({
+                                                                                                                                                item: Id(("SmallKey")),
+                                                                                                                                            })),
+                                                                                                                                        ],
+                                                                                                                                    })),
+                                                                                                                                    Decl(Link({
+                                                                                                                                        name: None,
+                                                                                                                                        dir: To,
+                                                                                                                                        regions: New([
+                                                                                                                                            Id(("LightWorld")),
+                                                                                                                                        ]),
+                                                                                                                                        stmts: [
+                                                                                                                                            Prop(Grants({
+                                                                                                                                                items: New([
+                                                                                                                                                    (true, Id(("RescueZelda"))),
+                                                                                                                                                ]),
+                                                                                                                                            })),
+                                                                                                                                        ],
+                                                                                                                                    })),
+                                                                                                                                    Decl(Link({
+                                                                                                                                        name: None,
+                                                                                                                                        dir: From,
+                                                                                                                                        regions: New([
+                                                                                                                                            Id(("LightWorld")),
+                                                                                                                                        ]),
+                                                                                                                                        stmts: [
+                                                                                                                                            Prop(Requires({
+                                                                                                                                                cond: Name(Id(("Gloves"))),
+                                                                                                                                            })),
+                                                                                                                                        ],
+                                                                                                                                    })),
+                                                                                                                                    Decl(Location({
+                                                                                                                                        name: {
+                                                                                                                                            ident: ("SideRoom"),
+                                                                                                                                            human: None,
+                                                                                                                                        },
+                                                                                                                                        stmts: [
+                                                                                                                                            Prop(Count({
+                                                                                                                                                count: ((1, [
+                                                                                                                                                    3,
+                                                                                                                                                ]), (1, [
+                                                                                                                                                    1,
+                                                                                                                                                ])),
+                                                                                                                                            })),
+                                                                                                                                        ],
+                                                                                                                                    })),
+                                                                                                                                ],
+                                                                                                                            })),
+                                                                                                                        ],
+                                                                                                                    })),
+                                                                                                                ],
+                                                                                                            })),
+                                                                                                            Decl(Region({
+                                                                                                                name: {
+                                                                                                                    ident: ("LinksHouse"),
+                                                                                                                    human: Some("Link's House"),
+                                                                                                                },
+                                                                                                                stmts: [
+                                                                                                                    Decl(Link({
+                                                                                                                        name: None,
+                                                                                                                        dir: With,
+                                                                                                                        regions: New([
+                                                                                                                            Id(("LightWorld")),
+                                                                                                                        ]),
+                                                                                                                        stmts: [
+                                                                                                                            Prop(Requires({
+                                                                                                                                cond: Name(Id(("RescueZelda"))),
+                                                                                                                            })),
+                                                                                                                        ],
+                                                                                                                    })),
+                                                                                                                    Decl(Location({
+                                                                                                                        name: {
+                                                                                                                            ident: ("Chest"),
+                                                                                                                            human: None,
+                                                                                                                        },
+                                                                                                                        stmts: [
+                                                                                                                        ],
+                                                                                                                    })),
+                                                                                                                ],
+                                                                                                            })),
+                                                                                                            Decl(Location({
+                                                                                                                name: {
+                                                                                                                    ident: ("LumberjackCave"),
+                                                                                                                    human: None,
+                                                                                                                },
+                                                                                                                stmts: [
+                                                                                                                    Prop(Requires({
+                                                                                                                        cond: And([
+                                                                                                                            Name(Id(("DefeatAgahnim1"))),
+                                                                                                                            Name(Id(("Boots"))),
+                                                                                                                        ]),
+                                                                                                                    })),
+                                                                                                                    Prop(Visible({
+                                                                                                                        cond: Bool(true),
+                                                                                                                    })),
+                                                                                                                ],
+                                                                                                            })),
+                                                                                                        ],
+                                                                                                    })),
+                                                                                                    Cond(
+Bin(
+Name(Sub(
+Id(("Modes")), ("State"))), Eq, Name(Sub(
+Id(("Modes")), ("Standard")))), [
+                                                                                                                        Prop(StartIn({
+                                                                                                                            region: Sub(
+Id(("LightWorld")), ("SecretPassage")),
+                                                                                                                            })),
+                                                                                                                        ], [
+                                                                                                                        ]),
+                                                                                                                        Cond(
+Bin(
+Name(Sub(
+Id(("Modes")), ("State"))), Eq, Name(Sub(
+Id(("Modes")), ("Open")))), [
+                                                                                                                                            Prop(StartIn({
+                                                                                                                                                region: Id(("LightWorld")),
+                                                                                                                                            })),
+                                                                                                                                        ], [
+                                                                                                                                        ]),
+                                                                                                                                    ],
+                                                                                                                                }

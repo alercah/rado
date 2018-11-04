@@ -1,0 +1,175 @@
+{
+    stmts: [
+        Decl(Region({
+            name: {
+                ident: ("Modes"),
+                human: None,
+            },
+            stmts: [
+                Prop(Requires({
+                    cond: Bool(false),
+                })),
+                Decl(ConfigEnum({
+                    name: {
+                        ident: ("State"),
+                        human: None,
+                    },
+                    variants: [
+                        {
+                            ident: ("Standard"),
+                            human: None,
+                        },
+                        {
+                            ident: ("Open"),
+                            human: None,
+                        },
+                    ],
+                    default: Some(Name(Id(("Standard")))),
+                })),
+                Decl(ConfigEnum({
+                    name: {
+                        ident: ("Swords"),
+                        human: None,
+                    },
+                    variants: [
+                        {
+                            ident: ("Swordless"),
+                            human: None,
+                        },
+                        {
+                            ident: ("UncleAssured"),
+                            human: None,
+                        },
+                        {
+                            ident: ("RandomSwords"),
+                            human: None,
+                        },
+                    ],
+                    default: Some(Name(Id(("Swords")))),
+                })),
+                Decl(Config({
+                    name: {
+                        ident: ("Keysanity"),
+                        human: None,
+                    },
+                    ty: Bool,
+                    default: Some(Bool(false)),
+                })),
+                Decl(ConfigEnum({
+                    name: {
+                        ident: ("Difficulty"),
+                        human: None,
+                    },
+                    variants: [
+                        {
+                            ident: ("Easy"),
+                            human: None,
+                        },
+                        {
+                            ident: ("Normal"),
+                            human: None,
+                        },
+                        {
+                            ident: ("Hard"),
+                            human: None,
+                        },
+                        {
+                            ident: ("Elite"),
+                            human: None,
+                        },
+                        {
+                            ident: ("Insane"),
+                            human: None,
+                        },
+                    ],
+                    default: Some(Name(Id(("Normal")))),
+                })),
+            ],
+        })),
+        Decl(Region({
+            name: {
+                ident: ("Skills"),
+                human: None,
+            },
+            stmts: [
+                Prop(Requires({
+                    cond: Bool(false),
+                })),
+                Decl(Configs({
+                    ty: Bool,
+                    configs: [
+                        {
+                            name: {
+                                ident: ("WaterWalk"),
+                                human: None,
+                            },
+                            default: Some(Bool(false)),
+                        },
+                        {
+                            name: {
+                                ident: ("BombJumps"),
+                                human: None,
+                            },
+                            default: Some(Bool(false)),
+                        },
+                        {
+                            name: {
+                                ident: ("DarkRooms"),
+                                human: None,
+                            },
+                            default: Some(Bool(false)),
+                        },
+                        {
+                            name: {
+                                ident: ("SuperBunny"),
+                                human: None,
+                            },
+                            default: Some(Bool(false)),
+                        },
+                        {
+                            name: {
+                                ident: ("Hover"),
+                                human: None,
+                            },
+                            default: Some(Bool(false)),
+                        },
+                        {
+                            name: {
+                                ident: ("Screenwraps"),
+                                human: None,
+                            },
+                            default: Some(Bool(false)),
+                        },
+                    ],
+                })),
+                Decl(Configset({
+                    name: {
+                        ident: ("MinorGlitches"),
+                        human: None,
+                    },
+                    vals: [
+                        (Id(("WaterWalk")), Bool(true)),
+                        (Id(("BombJumps")), Bool(true)),
+                        (Id(("DarkRooms")), Bool(true)),
+                        (Id(("SuperBunny")), Bool(true)),
+                        (Id(("Hover")), Bool(true)),
+                    ],
+                    configsets: [
+                    ],
+                })),
+                Decl(Configset({
+                    name: {
+                        ident: ("MajorGlitches"),
+                        human: None,
+                    },
+                    vals: [
+                        (Id(("Screenwraps")), Bool(true)),
+                    ],
+                    configsets: [
+                        Id(("MinorGlitches")),
+                    ],
+                })),
+            ],
+        })),
+    ],
+}

@@ -32,13 +32,19 @@ region Skills {
     DarkRooms default false
     SuperBunny default false
     Hover default false
+    Screenwraps default false
   }
 
   configset MinorGlitches {
-    WaterWalk = true
-    BombJumps = true
-    DarkRooms = true
-    SuperBunny = true
-    Hover = true
+    WaterWalk => true,
+    BombJumps => true,
+    DarkRooms => true,
+    SuperBunny => true,
+    Hover => true,
+  }
+
+  configset MajorGlitches {
+    Screenwraps => true,
+    MinorGlitches,
   }
 }
