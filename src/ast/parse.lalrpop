@@ -108,7 +108,7 @@ ItemsBody: (Vec<Item>, Vec<Items>) = {
 Items: Items = {
     <tags:ModList<Ident>> "{" <decls:ItemsBody> "}" =>
         Items{tags: tags, items: decls.0, nested: decls.1},
-       }
+}
 
 Location: Location = {
     <name:DeclName> <stmts:Opt<StmtBlock>> => Location{<>},
@@ -118,10 +118,15 @@ DeclName: DeclName = {
     <ident:Ident> <human:String?> => DeclName{<>},
 }
 
-Name: Name = {
-    "." <Ident> => Name::Sub(Box::new(Name::Global), <>),
-    Ident => Name::Id(<>),
-    <r:Name> "." <i:Ident> => Name::Sub(Box::new(r), i),
+Path: Vec<Ident> = {
+    <Ident> => {
+        vec![<>]
+    },
+    <p:Path> "." <i:Ident> => {
+        let mut p = p;
+        p.push(i);
+        p
+    },
 }
 
 LinkDir: LinkDir = {
@@ -138,15 +143,15 @@ TypedConfig: TypedConfig = {
     <name:DeclName> <default:("default" <Expr>)?> => TypedConfig{<>},
 }
 
-ConfigsetBody: (Vec<(Name, Expr)>, Vec<Name>) = {
-    <Name> "=>" <Expr> => (vec![(<>)], vec![]),
-    <Name> => (vec![], vec![<>]),
-    <rest:ConfigsetBody> "," <name:Name> "=>" <expr:Expr> => {
+ConfigsetBody: (Vec<(Path, Expr)>, Vec<Path>) = {
+    <Path> "=>" <Expr> => (vec![(<>)], vec![]),
+    <Path> => (vec![], vec![<>]),
+    <rest:ConfigsetBody> "," <name:Path> "=>" <expr:Expr> => {
         let mut rest = rest;
         rest.0.push((name, expr));
         rest
     },
-    <rest:ConfigsetBody> "," <name:Name> => {
+    <rest:ConfigsetBody> "," <name:Path> => {
         let mut rest = rest;
         rest.1.push(name);
         rest
@@ -155,7 +160,7 @@ ConfigsetBody: (Vec<(Name, Expr)>, Vec<Name>) = {
 
 Decl: Decl = {
     "region" <name:DeclName> <stmts:StmtBlock> => Decl::Region(Region{<>}),
-    "link" <name:DeclName?> <dir:LinkDir> <regions:ModList<Name>> <stmts:Opt<StmtBlock>> =>
+    "link" <name:DeclName?> <dir:LinkDir> <regions:ModList<Path>> <stmts:Opt<StmtBlock>> =>
         Decl::Link(Link{<>}),
     "item" <Item> => Decl::Item(<>),
     "items" <Items> => Decl::Items(<>),
@@ -184,20 +189,20 @@ AvailEntry<T>: (bool, T, Option<BigRational>) = {
 Prop: Prop = {
     "requires" <cond:Expr> => Prop::Requires(Requires{<>}),
     "visible" <cond:Expr> => Prop::Visible(Visible{<>}),
-    "unlock" <item:Name> => Prop::Unlock(Unlock{<>}),
+    "unlock" <item:Path> => Prop::Unlock(Unlock{<>}),
     "tag" <tags:ModList<Ident>> => Prop::Tag(Tag{<>}),
     "alias" <names:ModList<Ident>> => Prop::Alias(Alias{<>}),
-    "provides" <items:ModList<Name>> => Prop::Provides(Provides{<>}),
-    "progressive" <items:ModList<Name>> => Prop::Progressive(Progressive{<>}),
+    "provides" <items:ModList<Path>> => Prop::Provides(Provides{<>}),
+    "progressive" <items:ModList<Path>> => Prop::Progressive(Progressive{<>}),
     "val" <name:Ident> <ty:(":" <Ty>)?> "=" <val:Expr> => Prop::Val(Val{<>}),
     "max" <expr:Expr> => Prop::Max(Max{<>}),
     "consumable" => Prop::Consumable,
-    "restrict" "to" <entities:ModList<OptNeg<Name>>> => Prop::Restrict(Restrict{<>}),
-    "avail" <items:ModList<AvailEntry<Name>>> => Prop::Avail(Avail{<>}),
-    "grants" <items:ModList<OptNeg<Name>>> => Prop::Grants(Grants{<>}),
+    "restrict" "to" <entities:ModList<OptNeg<Path>>> => Prop::Restrict(Restrict{<>}),
+    "avail" <items:ModList<AvailEntry<Path>>> => Prop::Avail(Avail{<>}),
+    "grants" <items:ModList<OptNeg<Path>>> => Prop::Grants(Grants{<>}),
     "count" <count:Num> => Prop::Count(Count{<>}),
-    "start" "with" <items:NEList<Name>> => Prop::StartWith(StartWith{<>}),
-    "start" "in" <region:Name> => Prop::StartIn(StartIn{<>}),
+    "start" "with" <items:NEList<Path>> => Prop::StartWith(StartWith{<>}),
+    "start" "in" <region:Path> => Prop::StartIn(StartIn{<>}),
 }
 
 Builtin: Builtin = {
@@ -211,7 +216,7 @@ PrimExpr: Box<Expr> = {
     Num => Box::new(Expr::Num(<>)),
     "true"=> Box::new(Expr::Bool(true)),
     "false" => Box::new(Expr::Bool(false)),
-    Name => Box::new(Expr::Name(<>)),
+    Path => Box::new(Expr::Name(<>)),
     "(" <CondExpr> ")" => Box::new(Expr::Grouped(<>)),
 }
 
@@ -276,7 +281,7 @@ LogExpr: Box<Expr> = {
 }
 
 MatchArm: MatchArm = {
-    <pat:Name> "=>" <expr:Expr> => MatchArm{<>},
+    <pat:Path> "=>" <expr:Expr> => MatchArm{<>},
 }
 
 CondExpr: Box<Expr> = {
@@ -295,7 +300,7 @@ Ty: Ty = {
     "item" => Ty::Item,
     "fn" "(" <params:List<Ty>> ")" <ret_ty:("->" <Ty>)> => Ty::Fn(params, Box::new(ret_ty)),
     "[" <Ty> "]" => Ty::List(Box::new(<>)),
-    Name => Ty::Name(<>),
+    Path => Ty::Name(<>),
 }
 
 extern {

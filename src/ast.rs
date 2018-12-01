@@ -11,16 +11,10 @@ pub struct File {
 }
 
 #[derive(Clone, Hash, Debug, Serialize, Deserialize)]
-pub struct Ident(String);
+pub struct Ident(pub String);
 
 pub type Num = num_rational::BigRational;
-
-#[derive(Clone, Hash, Debug, Serialize, Deserialize)]
-pub enum Name {
-    Global,
-    Sub(Box<Name>, Ident),
-    Id(Ident),
-}
+pub type Path = Vec<Ident>;
 
 #[derive(Clone, Hash, Debug, Serialize, Deserialize)]
 pub struct DeclName {
@@ -61,7 +55,7 @@ pub enum LinkDir {
 pub struct Link {
     pub name: Option<DeclName>,
     pub dir: LinkDir,
-    pub regions: ModVec<Name>,
+    pub regions: ModVec<Path>,
     pub stmts: Vec<Stmt>,
 }
 
@@ -138,8 +132,8 @@ pub struct Configs {
 #[derive(Clone, Hash, Debug, Serialize, Deserialize)]
 pub struct Configset {
     pub name: DeclName,
-    pub vals: Vec<(Name, Expr)>,
-    pub configsets: Vec<Name>,
+    pub vals: Vec<(Path, Expr)>,
+    pub configsets: Vec<Path>,
 }
 
 #[derive(Clone, Hash, Debug, Serialize, Deserialize)]
@@ -177,7 +171,7 @@ pub struct Visible {
 
 #[derive(Clone, Hash, Debug, Serialize, Deserialize)]
 pub struct Unlock {
-    pub item: Name,
+    pub item: Path,
 }
 
 #[derive(Clone, Hash, Debug, Serialize, Deserialize)]
@@ -192,12 +186,12 @@ pub struct Alias {
 
 #[derive(Clone, Hash, Debug, Serialize, Deserialize)]
 pub struct Provides {
-    pub items: ModVec<Name>,
+    pub items: ModVec<Path>,
 }
 
 #[derive(Clone, Hash, Debug, Serialize, Deserialize)]
 pub struct Progressive {
-    pub items: ModVec<Name>,
+    pub items: ModVec<Path>,
 }
 
 #[derive(Clone, Hash, Debug, Serialize, Deserialize)]
@@ -214,17 +208,17 @@ pub struct Max {
 
 #[derive(Clone, Hash, Debug, Serialize, Deserialize)]
 pub struct Restrict {
-    pub entities: ModVec<(bool, Name)>,
+    pub entities: ModVec<(bool, Path)>,
 }
 
 #[derive(Clone, Hash, Debug, Serialize, Deserialize)]
 pub struct Avail {
-    pub items: ModVec<(bool, Name, Option<Num>)>,
+    pub items: ModVec<(bool, Path, Option<Num>)>,
 }
 
 #[derive(Clone, Hash, Debug, Serialize, Deserialize)]
 pub struct Grants {
-    pub items: ModVec<(bool, Name)>,
+    pub items: ModVec<(bool, Path)>,
 }
 
 #[derive(Clone, Hash, Debug, Serialize, Deserialize)]
@@ -234,12 +228,12 @@ pub struct Count {
 
 #[derive(Clone, Hash, Debug, Serialize, Deserialize)]
 pub struct StartWith {
-    pub items: Vec<Name>,
+    pub items: Vec<Path>,
 }
 
 #[derive(Clone, Hash, Debug, Serialize, Deserialize)]
 pub struct StartIn {
-    pub region: Name,
+    pub region: Path,
 }
 
 #[derive(Clone, Hash, Debug, Serialize, Deserialize)]
@@ -287,7 +281,7 @@ pub enum Builtin {
 
 #[derive(Clone, Hash, Debug, Serialize, Deserialize)]
 pub struct MatchArm {
-    pub pat: Name,
+    pub pat: Path,
     pub expr: Expr,
 }
 
@@ -297,7 +291,7 @@ pub enum Expr {
     Num(Num),
     Bool(bool),
     List(Vec<Expr>),
-    Name(Name),
+    Name(Path),
     Call(Box<Expr>, Vec<Expr>),
     Builtin(Builtin, Vec<Expr>),
     Not(Box<Expr>),
@@ -315,7 +309,7 @@ pub enum Ty {
     Item,
     Fn(Vec<Ty>, Box<Ty>),
     List(Box<Ty>),
-    Name(Name),
+    Name(Path),
 }
 
 #[cfg(test)]

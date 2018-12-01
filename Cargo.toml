@@ -15,6 +15,9 @@ lalrpop-util = "0.16"
 serde = "1.0"
 serde_derive = "1.0"
 rson_rs = "0.2"
+id-map = "0.2.1"
+string-interner = "0.7.0"
+mixed_ref = "0.1.1"
 
 [dependencies.num-bigint]
 version = "0.2.1"

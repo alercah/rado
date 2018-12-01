@@ -44,15 +44,15 @@ Scoping in Peri is quite simple. Each region introduces a new scope. When a name
 is used, it can refer to any name declared in the same or an enclosing scope
 (even if it is declared after the point of use). Names in other scopes can be
 referred to with a dot syntax `Outer.Inner`; dot syntax is also used to refer to
-values on items. A prefixed dot (as in `.Global`) refers to the outermost module.
+values on items.
 
 Conditional blocks also introduce scopes, however, they are anonymous so they
 cannot be referred to from outside.
 
 Almost all names are declared in the innermost scope in which they appear. Name
 shadowing is not permitted; a declaration cannot use the same name as something
-else in the same or an enclosing scope. Tag declarations, however, are global
-and consequently a tag's name cannot be reused for anything else.
+else in the same or an enclosing scope. This means that absolute paths are not
+required.
 
 ## General Syntax
 
@@ -126,6 +126,11 @@ A region declaration declares a region. Generally, the logic engine considers a
 region to be a place where the player is able to be, assuming that the player is
 actually able to make it there. Additionally, items can be located in regions,
 so that the player can pick them up.
+
+Regions double as namespaces; regions introduce new scopes and declarations can
+be placed in them. There is no actual semantic meaning to the nesting property
+of regions. They are not separate concepts because there is currently no need to
+actually distinguish between them.
 
 Note that a region's accessibility is declared by its links, so a region with no
 links will be inaccessible (unless the player starts there) and can be used just
@@ -292,9 +297,9 @@ within are ignored if the expression is false and evaluated if it is true.
 Within a conditional block, declarations can have four forms: new, overriding,
 modifying, and deleting. Overriding and modifying declarations must be prefixed
 with the keyword `override` and `modify`, respectively, to avoid the possibility
-of accidentally colliding names. Deleting declarations have a special syntax.
-Overriding, modifying, and deleting declarations can refer to the previous
-declaration by a path name that doesn't start with the global region.
+of accidentally colliding names. Deleting declarations start with `override -`.
+Overriding, modifying, and deleting declarations must refer to a previous
+declaration.
 
 Regions have a special exception; modifying declarations of regions do not
 require the `modify` keyword if they only contain declarations and not property
