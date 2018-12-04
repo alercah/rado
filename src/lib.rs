@@ -1,14 +1,11 @@
 #![feature(uniform_paths)]
 
-#[macro_use]
-extern crate failure;
-
 pub mod ast;
 pub mod token;
 
 pub(crate) mod exts;
 
-use ast::{Decl, Stmt};
+use ast::{Decl, ModVec, Prop, Stmt};
 use failure::{format_err, Error};
 use id_map::IdMap;
 use mixed_ref::MixedRef;
@@ -294,21 +291,26 @@ impl std::ops::DerefMut for FromAST {
 
 impl FromAST {
     fn build(mut self, f: ast::File) -> Result<Program, Error> {
-        // First pass: load all the entities, so that name lookup becomes
-        // possible. Properties are not loaded.
-        for s in f.stmts {
-            match s {
-                Stmt::Decl(Decl::Region(r)) => self.add_region(ScopeId::Global, r)?,
-                Stmt::Decl(Decl::Item(i)) => self.add_item(ScopeId::Global, i, HashSet::new())?,
-                Stmt::Decl(Decl::Items(i)) => self.add_items(ScopeId::Global, i)?,
-                _ => {}
-            }
-        }
+        self.populate_scope(ScopeId::Global, &f.stmts)?;
         Ok(self.0)
     }
 
-    fn add_region(&mut self, parent: ScopeId, region: ast::Region) -> Result<(), Error> {
-        let n = self.add_name(region.name);
+    fn populate_scope(&mut self, scope: ScopeId, stmts: &Vec<ast::Stmt>) -> Result<(), Error> {
+        // First pass: load all the entities, so that name lookup becomes
+        // possible. Properties are not loaded.
+        for s in stmts {
+            match s {
+                Stmt::Decl(Decl::Region(r)) => self.add_region(scope, &r)?,
+                Stmt::Decl(Decl::Item(i)) => self.add_item(scope, &i)?,
+                Stmt::Decl(Decl::Items(i)) => self.add_items(scope, &i)?,
+                _ => {}
+            }
+        }
+        Ok(())
+    }
+
+    fn add_region(&mut self, parent: ScopeId, region: &ast::Region) -> Result<(), Error> {
+        let n = self.add_name(&region.name);
         self.validate_name_collisions(parent, n.ident)?;
 
         let r = Region {
@@ -324,61 +326,74 @@ impl FromAST {
             PrivateHack(()),
         );
 
-        let id = ScopeId::Region(Id(id));
-        // In the first pass, we only process statements.
-        for s in region.stmts {
-            match s {
-                Stmt::Decl(Decl::Region(r)) => self.add_region(id, r)?,
-                Stmt::Decl(Decl::Item(i)) => self.add_item(id, i, HashSet::new())?,
-                Stmt::Decl(Decl::Items(i)) => self.add_items(id, i)?,
-                _ => {}
-            }
-        }
+        self.populate_scope(ScopeId::Region(Id(id)), &region.stmts)?;
         Ok(())
     }
 
-    fn add_item(
-        &mut self,
-        parent: ScopeId,
-        item: ast::Item,
-        tags: HashSet<Ident>,
-    ) -> Result<(), Error> {
-        let n = self.add_name(item.name);
+    fn add_item(&mut self, parent: ScopeId, item: &ast::Item) -> Result<(), Error> {
+        let n = self.add_name(&item.name);
         self.validate_name_collisions(parent, n.ident)?;
 
+        // We put properties off until the second pass ordinarily, except that
+        // tags actually declare the tag names, so we process them now.
         let i = Item {
             parent: parent,
             name: n,
-            tags: tags,
+            tags: HashSet::new(),
         };
-
-        // We put properties off until the second pass ordinarily, except that
-        // tags actually declare the tag names, so process them now.
-        for s in item.stmts {
-            Stmt::Prop(Prop::Tag(t))
+        for s in &item.stmts {
+            if let Stmt::Prop(Prop::Tag(t)) = s {
+                self.add_tag_vec(&t.tags)?;
+            }
         }
-
+        let n = i.name.ident;
+        let id = self.items.insert(i);
+        self.get_scope_mut(parent).unwrap().insert_child(
+            n,
+            EntityId::Item(Id(id)),
+            PrivateHack(()),
+        );
         Ok(())
     }
-    fn add_items(&mut self, parent: ScopeId, i: ast::Items) -> Result<(), Error> {
+    fn add_items(&mut self, parent: ScopeId, items: &ast::Items) -> Result<(), Error> {
+        self.add_tag_vec(&items.tags)?;
+        for i in &items.items {
+            self.add_item(parent, &i)?;
+        }
+        for i in &items.nested {
+            self.add_items(parent, &i)?;
+        }
         Ok(())
     }
 
-    fn add_ident(&mut self, i: ast::Ident) -> Ident {
-        Ident(self.idents.get_or_intern(i.0))
+    fn add_ident(&mut self, i: &ast::Ident) -> Ident {
+        Ident(self.idents.get_or_intern(&*i.0))
     }
-    fn add_name(&mut self, n: ast::DeclName) -> Name {
+    fn add_name(&mut self, n: &ast::DeclName) -> Name {
         Name {
-            ident: self.add_ident(n.ident),
-            human: n.human,
+            ident: self.add_ident(&n.ident),
+            human: None,
         }
     }
 
-    fn add_tag(&mut self, t: Ident) -> Result<(), Error> {
+    fn add_tag_vec(&mut self, tags: &ModVec<ast::Ident>) -> Result<(), Error> {
+        for t in match tags {
+            ModVec::New(v) => either::Left(v.iter()),
+            ModVec::Mod(v) => either::Right(v.iter().map(|p| &p.1)),
+        } {
+            self.add_tag(&t)?;
+        }
+        Ok(())
+    }
+    fn add_tag(&mut self, tag: &ast::Ident) -> Result<(), Error> {
+        let t = self.add_ident(tag);
         let mut to_check = vec![&**self as &dyn Scope];
         while let Some(s) = to_check.pop() {
             for (n, e) in s.children() {
                 if *n == t {
+                    if e == &EntityId::Tag(t) {
+                        return Ok(());
+                    }
                     return Err(format_err!("tag declared with same name as entity"));
                 }
                 match e {
