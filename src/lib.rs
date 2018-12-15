@@ -1,4 +1,6 @@
 #![feature(uniform_paths)]
+#![feature(unrestricted_attribute_tokens)]
+#![feature(stmt_expr_attributes)]
 
 pub mod ast;
 pub mod token;
@@ -52,6 +54,12 @@ impl Path {
 #[derive(Copy, Clone, Hash, PartialEq, Eq, PartialOrd, Ord, Debug)]
 pub struct Id(id_map::Id);
 
+impl From<Id> for id_map::Id {
+    fn from(i: Id) -> id_map::Id {
+        i.0
+    }
+}
+
 /// A typed id for an entity in a Peri program. Every entity has a unique
 /// EntityId.
 #[derive(Copy, Clone, Hash, PartialEq, Eq, PartialOrd, Ord, Debug)]
@@ -64,26 +72,28 @@ pub enum EntityId {
     Tag(Ident),
 }
 
+macro_rules! unwrap_entity_id {
+    ($name:ident, $variant:ident, $ty:ident) => {
+        #[doc(concat!("Unwrap this EntityId as a ", stringify!($variant), ".\n\n# Panics\n\nPanics if `self` is a different variant."))]
+        pub fn $name(&self) -> $ty {
+            match self {
+                EntityId::$variant(x) => *x,
+                _ => panic!("Entity id is not a {}: {:?}", stringify!($variant), self),
+            }
+        }
+    };
+}
+
+impl EntityId {
+    unwrap_entity_id!(unwrap_region, Region, Id);
+    unwrap_entity_id!(unwrap_item, Item, Id);
+    unwrap_entity_id!(unwrap_tag, Tag, Ident);
+}
+
 /// A trait that abstracts over the various entities in Peri.
 pub trait Entity {
     /// Retrieve the entity's parent scope.
     fn parent(&self) -> ScopeId;
-}
-
-/// A holder for a dynamic Entity, owned or borrowed.
-pub enum DynEntity<'a> {
-    Owned(Box<dyn Entity + 'a>),
-    Borrowed(&'a (dyn Entity + 'a)),
-}
-
-impl<'a> std::ops::Deref for DynEntity<'a> {
-    type Target = dyn Entity + 'a;
-    fn deref(&self) -> &Self::Target {
-        match self {
-            DynEntity::Owned(b) => &**b,
-            DynEntity::Borrowed(r) => *r,
-        }
-    }
 }
 
 /// An identifier for a scope in a Peri program.
@@ -160,10 +170,10 @@ impl Program {
     /// Lookup a single identifier in a scope. Lookup proceeds by traversing
     /// upwards along the scope tree to find if any scopes contain the provided
     /// identifier.
-    pub fn lookup_ident(&self, scope: &dyn Scope, ident: Ident) -> Option<EntityId> {
+    pub fn lookup(&self, scope: &dyn Scope, ident: Ident) -> Option<EntityId> {
         scope
             .lookup_ident(ident)
-            .or_else(|| self.lookup_ident(self.get_scope(scope.parent()?).unwrap(), ident))
+            .or_else(|| self.lookup(self.get_scope(scope.parent()?).unwrap(), ident))
     }
 
     /// Lookup an entity by full path. Lookup is done by looking up the first
@@ -172,7 +182,7 @@ impl Program {
     pub fn lookup_entity(&self, scope: &dyn Scope, path: &Path) -> Result<EntityId, Error> {
         let mut segs = path.0.iter();
         let mut cur = self
-            .lookup_ident(scope, *segs.next().unwrap())
+            .lookup(scope, *segs.next().unwrap())
             .ok_or(format_err!("first identifier in path not found in lookup"))?;
         for next in segs {
             let child: &dyn Scope;
@@ -292,18 +302,19 @@ impl std::ops::DerefMut for FromAST {
 impl FromAST {
     fn build(mut self, f: ast::File) -> Result<Program, Error> {
         self.populate_scope(ScopeId::Global, &f.stmts)?;
+        self.build_scope(ScopeId::Global, f.stmts)?;
         Ok(self.0)
     }
 
     fn populate_scope(&mut self, scope: ScopeId, stmts: &Vec<ast::Stmt>) -> Result<(), Error> {
         // First pass: load all the entities, so that name lookup becomes
-        // possible. Properties are not loaded.
+        // possible. Tags are the only properties loaded.
         for s in stmts {
             match s {
                 Stmt::Decl(Decl::Region(r)) => self.add_region(scope, &r)?,
                 Stmt::Decl(Decl::Item(i)) => self.add_item(scope, &i)?,
                 Stmt::Decl(Decl::Items(i)) => self.add_items(scope, &i)?,
-                _ => {}
+                _ => unimplemented!(),
             }
         }
         Ok(())
@@ -369,6 +380,9 @@ impl FromAST {
     fn add_ident(&mut self, i: &ast::Ident) -> Ident {
         Ident(self.idents.get_or_intern(&*i.0))
     }
+    // add_name adds an identifier into the interning cache and returns a Name
+    // from it. It does not set the human name; that must be done manually
+    // during the second pass.
     fn add_name(&mut self, n: &ast::DeclName) -> Name {
         Name {
             ident: self.add_ident(&n.ident),
@@ -407,7 +421,7 @@ impl FromAST {
     }
 
     fn validate_name_collisions(&self, s: ScopeId, n: Ident) -> Result<(), Error> {
-        if let Some(e) = self.lookup_ident(self.get_scope(s).unwrap(), n) {
+        if let Some(e) = self.lookup(self.get_scope(s).unwrap(), n) {
             if self.get_entity(e).unwrap().parent() == s {
                 Err(format_err!("name already declared in same scope"))
             } else {
@@ -416,5 +430,76 @@ impl FromAST {
         } else {
             Ok(())
         }
+    }
+
+    fn build_scope(&mut self, scope: ScopeId, stmts: Vec<ast::Stmt>) -> Result<(), Error> {
+        for s in stmts {
+            match s {
+                Stmt::Decl(Decl::Region(region)) => {
+                    let id = self
+                        .lookup_ast(self.get_scope(scope).unwrap(), &region.name.ident)
+                        .unwrap_region();
+                    self.build_region(id, region)?;
+                }
+                Stmt::Decl(Decl::Item(item)) => {
+                    let id = self
+                        .lookup_ast(self.get_scope(scope).unwrap(), &item.name.ident)
+                        .unwrap_item();
+                    self.build_item(id, item, HashSet::new())?;
+                }
+                Stmt::Decl(Decl::Items(items)) => self.build_items(items, scope, HashSet::new())?,
+                _ => unimplemented!(),
+            }
+        }
+        Ok(())
+    }
+
+    fn build_region(&mut self, region: Id, input: ast::Region) -> Result<(), Error> {
+        self.build_scope(ScopeId::Region(region), input.stmts)?;
+        let region = self.regions.get_mut(region.into()).unwrap();
+        region.name.human = input.name.human;
+        Ok(())
+    }
+
+    fn build_item(
+        &mut self,
+        item: Id,
+        input: ast::Item,
+        tags: HashSet<Ident>,
+    ) -> Result<(), Error> {
+        let item = self.items.get_mut(item.into()).unwrap();
+        item.name.human = input.name.human;
+        item.tags = tags;
+        unimplemented!()
+    }
+
+    fn build_items(
+        &mut self,
+        items: ast::Items,
+        scope: ScopeId,
+        mut tags: HashSet<Ident>,
+    ) -> Result<(), Error> {
+        guard::guard!(let ModVec::New(t) = items.tags
+                      else { unimplemented!() });
+        tags.extend(t.into_iter().map(|tag| self.convert_ident(&tag)));
+
+        for nested in items.nested {
+            self.build_items(nested, scope, tags.clone())?;
+        }
+        for item in items.items {
+            let id = self
+                .lookup_ast(self.get_scope(scope).unwrap(), &item.name.ident)
+                .unwrap_item();
+            self.build_item(id, item, tags.clone())?;
+        }
+        Ok(())
+    }
+
+    fn lookup_ast(&self, scope: &dyn Scope, ident: &ast::Ident) -> EntityId {
+        scope.lookup_ident(self.convert_ident(ident)).unwrap()
+    }
+
+    fn convert_ident(&self, ident: &ast::Ident) -> Ident {
+        Ident(self.idents.get(&ident.0).unwrap())
     }
 }
