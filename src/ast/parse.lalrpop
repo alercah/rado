@@ -197,10 +197,8 @@ Prop: Prop = {
     "val" <name:Ident> <ty:(":" <Ty>)?> "=" <val:Expr> => Prop::Val(Val{<>}),
     "max" <expr:Expr> => Prop::Max(Max{<>}),
     "consumable" => Prop::Consumable,
-    "restrict" "to" <entities:ModList<OptNeg<Path>>> => Prop::Restrict(Restrict{<>}),
     "avail" <items:ModList<AvailEntry<Path>>> => Prop::Avail(Avail{<>}),
     "grants" <items:ModList<OptNeg<Path>>> => Prop::Grants(Grants{<>}),
-    "count" <count:Num> => Prop::Count(Count{<>}),
     "start" "with" <items:NEList<Path>> => Prop::StartWith(StartWith{<>}),
     "start" "in" <region:Path> => Prop::StartIn(StartIn{<>}),
 }
@@ -331,7 +329,6 @@ extern {
         "progressive" => Tok::Kw(Kw::Progressive),
         "val" => Tok::Kw(Kw::Val),
         "consumable" => Tok::Kw(Kw::Consumable),
-        "restrict" => Tok::Kw(Kw::Restrict),
         "avail" => Tok::Kw(Kw::Avail),
         "infinity" => Tok::Kw(Kw::Infinity),
         "grants" => Tok::Kw(Kw::Grants),

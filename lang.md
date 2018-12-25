@@ -153,6 +153,9 @@ On a modifying declaration, the `with`, `to`, or `from` and list can be omitted.
 If it is not, the direction must match, and the list is optionally a modifier
 list.
 
+**Links are planned to be significantly changed and will not be implemented
+anything like described.**
+
 ### Item Declaration
 
 > Syntax: `item` *identifier* (*string-literal*)? (*block*)?
@@ -451,6 +454,9 @@ containing item; the second is provided when the player has two, and so on.
 Progression is not cumulative; two of the containing item do not provide the
 first item.
 
+Note that the progressive statement is an exception to the general rule that
+lists are really sets and that order does not matter.
+
 Progressive statements cannot be modified, but can be overridden.
 
 ### Value Statement
@@ -491,21 +497,9 @@ Consumable statements cannot be modified, added, or removed from an item.
 
 The restrictions on consumable items may be relaxed in the future.
 
-### Restrict Statement
-
-> Can appear in: items, locations
-
-> Syntax: `restrict` `to` list(`not`? *name*)
-
-A restrict statement restricts an item or location to a subset of locations or
-items, respectively. Each entry in the condition list must be a name, optionally
-prefixed by `not`. For an item, it must name a location; for a location, it may
-name an item or a tag.
-
-A restrict statement on a location means that only the specified items can be
-placed there. On an item, it means that the item can only be placed in the
-specified locations. `!` on an entry inverts the meaning; it means that those
-items cannot be placed there.
+**Consumables are planned to be changed to be a distinct type, rather than a
+subtype of item. They will consequently work very differently from how they are
+described here.**
 
 ### Availability Statement
 
@@ -524,6 +518,9 @@ Availability statements cannot be modified, and must be explicitly overridden
 with `override`; this is to avoid confusion about the effect of modifying a
 quantity.
 
+**Availability statements will likely be modified or removed to suit a new
+location model.**
+
 ### Grant Statement
 
 > Can appear in: regions, links
@@ -534,15 +531,8 @@ A grants statement declares that entering a region or travelling along a link
 grants or removes a specified item or items. Unlike an availability statement,
 this is not optional, even if the player does not want it.
 
-### Count Statement
-
-> Can appear in: items, locations
-
-> Syntax: `count` *integer*
-
-A count statement specifies either that a location contains the given number
-of items instead of just 1, or that a certain number of an item exist in the
-game to be randomized.
+**Grant statements will likely be modified or removed to suit a new location
+model.**
 
 ### Start With Statement
 

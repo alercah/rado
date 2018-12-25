@@ -150,8 +150,12 @@
                         })),
                         Prop(Provides({
                             items: New([
-                                Id(("FighterSword")),
-                                Id(("FighterShield")),
+                                [
+                                    ("FighterSword"),
+                                ],
+                                [
+                                    ("FighterShield"),
+                                ],
                             ]),
                         })),
                     ],
@@ -220,8 +224,12 @@
                     stmts: [
                         Prop(Provides({
                             items: New([
-                                Id(("Bow")),
-                                Id(("WoodenArrows")),
+                                [
+                                    ("Bow"),
+                                ],
+                                [
+                                    ("WoodenArrows"),
+                                ],
                             ]),
                         })),
                         Prop(Tag({
@@ -239,8 +247,12 @@
                     stmts: [
                         Prop(Provides({
                             items: New([
-                                Id(("Bow")),
-                                Id(("SilverArrows")),
+                                [
+                                    ("Bow"),
+                                ],
+                                [
+                                    ("SilverArrows"),
+                                ],
                             ]),
                         })),
                         Prop(Tag({
@@ -464,7 +476,9 @@
                                 })),
                                 Prop(Provides({
                                     items: New([
-                                        Id(("MasterSword")),
+                                        [
+                                            ("MasterSword"),
+                                        ],
                                     ]),
                                 })),
                             ],
@@ -483,7 +497,9 @@
                                 })),
                                 Prop(Provides({
                                     items: New([
-                                        Id(("TemperedSword")),
+                                        [
+                                            ("TemperedSword"),
+                                        ],
                                     ]),
                                 })),
                             ],
@@ -496,10 +512,18 @@
                             stmts: [
                                 Prop(Progressive({
                                     items: New([
-                                        Id(("FighterSword")),
-                                        Id(("MasterSword")),
-                                        Id(("TemperedSword")),
-                                        Id(("GoldSword")),
+                                        [
+                                            ("FighterSword"),
+                                        ],
+                                        [
+                                            ("MasterSword"),
+                                        ],
+                                        [
+                                            ("TemperedSword"),
+                                        ],
+                                        [
+                                            ("GoldSword"),
+                                        ],
                                     ]),
                                 })),
                             ],
@@ -560,9 +584,15 @@
                             stmts: [
                                 Prop(Progressive({
                                     items: New([
-                                        Id(("FighterShield")),
-                                        Id(("FireShield")),
-                                        Id(("MirrorShield")),
+                                        [
+                                            ("FighterShield"),
+                                        ],
+                                        [
+                                            ("FireShield"),
+                                        ],
+                                        [
+                                            ("MirrorShield"),
+                                        ],
                                     ]),
                                 })),
                             ],
@@ -600,8 +630,12 @@
                             stmts: [
                                 Prop(Progressive({
                                     items: New([
-                                        Id(("BlueMail")),
-                                        Id(("RedMail")),
+                                        [
+                                            ("BlueMail"),
+                                        ],
+                                        [
+                                            ("RedMail"),
+                                        ],
                                     ]),
                                 })),
                             ],
@@ -669,8 +703,12 @@
                             stmts: [
                                 Prop(Progressive({
                                     items: New([
-                                        Id(("PowerGlove")),
-                                        Id(("TitansMitts")),
+                                        [
+                                            ("PowerGlove"),
+                                        ],
+                                        [
+                                            ("TitansMitts"),
+                                        ],
                                     ]),
                                 })),
                             ],
@@ -791,8 +829,12 @@
                             stmts: [
                                 Prop(Progressive({
                                     items: New([
-                                        Id(("HalfMagic")),
-                                        Id(("QuarterMagic")),
+                                        [
+                                            ("HalfMagic"),
+                                        ],
+                                        [
+                                            ("QuarterMagic"),
+                                        ],
                                     ]),
                                 })),
                             ],
@@ -983,10 +1025,16 @@
             ],
             ret_ty: None,
             body: Or([
-                Name(Id(("FireRod"))),
+                Name([
+                    ("FireRod"),
+                ]),
                 Call(
-Name(Id(("CanCast"))), [
-                        Name(Id(("Bombos"))),
+Name([
+                        ("CanCast"),
+                    ]), [
+                        Name([
+                            ("Bombos"),
+                        ]),
                     ]),
                 ]),
             })),
@@ -1003,266 +1051,592 @@ Name(Id(("CanCast"))), [
                 ],
                 ret_ty: None,
                 body: And([
-                    Name(Id(("medallion"))),
+                    Name([
+                        ("medallion"),
+                    ]),
                     Grouped(Or([
                         Bin(
-Name(Sub(
-Id(("Modes")), ("Swords"))), Eq, Name(Sub(
-Id(("Modes")), ("Swordless")))),
-                                    Name(Id(("Sword"))),
-                                ])),
+Name([
+                                ("Modes"),
+                                ("Swords"),
+                            ]), Eq, Name([
+                                ("Modes"),
+                                ("Swordless"),
+                            ])),
+                            Name([
+                                ("Sword"),
                             ]),
-                        })),
-                        Decl(Fn({
-                            name: {
-                                ident: ("CanShootSilverArrows"),
-                                human: None,
-                            },
-                            params: [
-                            ],
-                            ret_ty: None,
-                            body: And([
-                                Name(Id(("Bow"))),
-                                Name(Id(("SilverArrows"))),
+                        ])),
+                    ]),
+                })),
+                Decl(Fn({
+                    name: {
+                        ident: ("CanShootSilverArrows"),
+                        human: None,
+                    },
+                    params: [
+                    ],
+                    ret_ty: None,
+                    body: And([
+                        Name([
+                            ("Bow"),
+                        ]),
+                        Name([
+                            ("SilverArrows"),
+                        ]),
+                    ]),
+                })),
+                Decl(Fn({
+                    name: {
+                        ident: ("CanShootArrows"),
+                        human: None,
+                    },
+                    params: [
+                    ],
+                    ret_ty: None,
+                    body: And([
+                        Name([
+                            ("Bow"),
+                        ]),
+                        Name([
+                            ("Arrows"),
+                        ]),
+                    ]),
+                })),
+                Decl(Fn({
+                    name: {
+                        ident: ("CanCutCurtains"),
+                        human: None,
+                    },
+                    params: [
+                    ],
+                    ret_ty: None,
+                    body: Or([
+                        Bin(
+Name([
+                                ("Modes"),
+                                ("Swords"),
+                            ]), Eq, Name([
+                                ("Modes"),
+                                ("Swordless"),
+                            ])),
+                            Name([
+                                ("Sword"),
                             ]),
-                        })),
-                        Decl(Fn({
-                            name: {
-                                ident: ("CanShootArrows"),
-                                human: None,
-                            },
-                            params: [
-                            ],
-                            ret_ty: None,
-                            body: And([
-                                Name(Id(("Bow"))),
-                                Name(Id(("Arrows"))),
-                            ]),
-                        })),
-                        Decl(Fn({
-                            name: {
-                                ident: ("CanCutCurtains"),
-                                human: None,
-                            },
-                            params: [
-                            ],
-                            ret_ty: None,
-                            body: Or([
-                                Bin(
-Name(Sub(
-Id(("Modes")), ("Swords"))), Eq, Name(Sub(
-Id(("Modes")), ("Swordless")))),
-                                            Name(Id(("Sword"))),
-                                        ]),
-                                    })),
-                                    Decl(Fn({
-                                        name: {
-                                            ident: ("BottleCount"),
-                                            human: None,
-                                        },
-                                        params: [
-                                        ],
-                                        ret_ty: None,
-                                        body: Builtin(
+                        ]),
+                    })),
+                    Decl(Fn({
+                        name: {
+                            ident: ("BottleCount"),
+                            human: None,
+                        },
+                        params: [
+                        ],
+                        ret_ty: None,
+                        body: Builtin(
 Min, [
-                                                Builtin(
+                                Builtin(
 Count, [
-                                                        Name(Id(("Bottle"))),
-                                                    ]),
-                                                    Num(((1, [
-                                                        4,
-                                                    ]), (1, [
-                                                        1,
-                                                    ]))),
-                                                ]),
-                                            })),
-                                            Decl(Fn({
-                                                name: {
-                                                    ident: ("MagicBars"),
-                                                    human: None,
-                                                },
-                                                params: [
-                                                ],
-                                                ret_ty: None,
-                                                body: Bin(
+                                        Name([
+                                            ("Bottle"),
+                                        ]),
+                                    ]),
+                                    Num(((1, [
+                                        4,
+                                    ]), (1, [
+                                        1,
+                                    ]))),
+                                ]),
+                            })),
+                            Decl(Fn({
+                                name: {
+                                    ident: ("MagicBars"),
+                                    human: None,
+                                },
+                                params: [
+                                ],
+                                ret_ty: None,
+                                body: Bin(
 Builtin(
 Max, [
-                                                            Num(((1, [
-                                                                1,
-                                                            ]), (1, [
-                                                                1,
+                                            Num(((1, [
+                                                1,
+                                            ]), (1, [
+                                                1,
+                                            ]))),
+                                            Name([
+                                                ("MagicReduction"),
+                                                ("Factor"),
+                                            ]),
+                                        ]), Mul, Grouped(Bin(
+Name([
+                                                ("BottleCount"),
+                                            ]), Add, Num(((1, [
+                                                1,
+                                            ]), (1, [
+                                                1,
+                                            ])))))),
+                                        })),
+                                        Decl(Fn({
+                                            name: {
+                                                ident: ("HasWeaponsFor"),
+                                                human: None,
+                                            },
+                                            params: [
+                                                {
+                                                    name: ("n"),
+                                                    ty: None,
+                                                },
+                                            ],
+                                            ret_ty: None,
+                                            body: Or([
+                                                Name([
+                                                    ("Sword"),
+                                                ]),
+                                                Name([
+                                                    ("Hammer"),
+                                                ]),
+                                                Name([
+                                                    ("FireRod"),
+                                                ]),
+                                                Name([
+                                                    ("CanShootArrows"),
+                                                ]),
+                                                Name([
+                                                    ("RedCane"),
+                                                ]),
+                                                Grouped(Bin(
+Bin(
+Name([
+                                                            ("n"),
+                                                        ]), Mul, Num(((1, [
+                                                            2,
+                                                        ]), (1, [
+                                                            1,
+                                                        ])))), LE, Builtin(
+Sum, [
+                                                                Name([
+                                                                    ("Bombs"),
+                                                                    ("Num"),
+                                                                ]),
                                                             ]))),
-                                                            Name(Sub(
-Id(("MagicReduction")), ("Factor"))),
-                                                            ]), Mul, Grouped(Bin(
-Name(Id(("BottleCount"))), Add, Num(((1, [
-                                                                    1,
-                                                                ]), (1, [
-                                                                    1,
-                                                                ])))))),
+                                                            Grouped(And([
+                                                                Name([
+                                                                    ("BlueCane"),
+                                                                ]),
+                                                                Bin(
+Bin(
+Name([
+                                                                            ("n"),
+                                                                        ]), Mul, Num(((1, [
+                                                                            5,
+                                                                        ]), (1, [
+                                                                            1,
+                                                                        ])))), LE, Name([
+                                                                            ("MagicBars"),
+                                                                        ])),
+                                                                    ])),
+                                                                ]),
                                                             })),
                                                             Decl(Fn({
                                                                 name: {
-                                                                    ident: ("HasWeaponsFor"),
+                                                                    ident: ("CanGetGoldBee"),
                                                                     human: None,
                                                                 },
                                                                 params: [
-                                                                    {
-                                                                        name: ("n"),
-                                                                        ty: None,
-                                                                    },
                                                                 ],
                                                                 ret_ty: None,
-                                                                body: Or([
-                                                                    Name(Id(("Sword"))),
-                                                                    Name(Id(("Hammer"))),
-                                                                    Name(Id(("FireRod"))),
-                                                                    Name(Id(("CanShootArrows"))),
-                                                                    Name(Id(("RedCane"))),
-                                                                    Grouped(Bin(
-Bin(
-Name(Id(("n"))), Mul, Num(((1, [
-                                                                                2,
-                                                                            ]), (1, [
-                                                                                1,
-                                                                            ])))), LE, Builtin(
-Sum, [
-                                                                                    Name(Sub(
-Id(("Bombs")), ("Num"))),
-                                                                                    ]))),
+                                                                body: And([
+                                                                    Name([
+                                                                        ("Net"),
+                                                                    ]),
+                                                                    Name([
+                                                                        ("Bottle"),
+                                                                    ]),
+                                                                    Grouped(Or([
+                                                                        Call(
+Name([
+                                                                                ("CanCast"),
+                                                                            ]), [
+                                                                                Name([
+                                                                                    ("Quake"),
+                                                                                ]),
+                                                                            ]),
+                                                                            Name([
+                                                                                ("Sword"),
+                                                                            ]),
+                                                                        ])),
+                                                                    ]),
+                                                                })),
+                                                                Decl(Enum({
+                                                                    name: {
+                                                                        ident: ("Boss"),
+                                                                        human: None,
+                                                                    },
+                                                                    variants: [
+                                                                        {
+                                                                            ident: ("ArmosKnights"),
+                                                                            human: None,
+                                                                        },
+                                                                        {
+                                                                            ident: ("Lanmolas"),
+                                                                            human: None,
+                                                                        },
+                                                                        {
+                                                                            ident: ("Moldorm"),
+                                                                            human: None,
+                                                                        },
+                                                                        {
+                                                                            ident: ("Agahnim1"),
+                                                                            human: None,
+                                                                        },
+                                                                        {
+                                                                            ident: ("HelmasaurKing"),
+                                                                            human: None,
+                                                                        },
+                                                                        {
+                                                                            ident: ("Arrghus"),
+                                                                            human: None,
+                                                                        },
+                                                                        {
+                                                                            ident: ("Mothula"),
+                                                                            human: None,
+                                                                        },
+                                                                        {
+                                                                            ident: ("Blind"),
+                                                                            human: None,
+                                                                        },
+                                                                        {
+                                                                            ident: ("Kholdstare"),
+                                                                            human: None,
+                                                                        },
+                                                                        {
+                                                                            ident: ("Vitreous"),
+                                                                            human: None,
+                                                                        },
+                                                                        {
+                                                                            ident: ("Trinexx"),
+                                                                            human: None,
+                                                                        },
+                                                                        {
+                                                                            ident: ("Agahnim2"),
+                                                                            human: None,
+                                                                        },
+                                                                        {
+                                                                            ident: ("Ganon"),
+                                                                            human: None,
+                                                                        },
+                                                                    ],
+                                                                })),
+                                                                Decl(Fn({
+                                                                    name: {
+                                                                        ident: ("CanDefeat"),
+                                                                        human: None,
+                                                                    },
+                                                                    params: [
+                                                                        {
+                                                                            name: ("boss"),
+                                                                            ty: None,
+                                                                        },
+                                                                    ],
+                                                                    ret_ty: None,
+                                                                    body: Match(
+Name([
+                                                                            ("boss"),
+                                                                        ]), [
+                                                                            {
+                                                                                pat: [
+                                                                                    ("ArmosKnights"),
+                                                                                ],
+                                                                                expr: Or([
+                                                                                    Name([
+                                                                                        ("Sword"),
+                                                                                    ]),
+                                                                                    Name([
+                                                                                        ("Hammer"),
+                                                                                    ]),
+                                                                                    Name([
+                                                                                        ("CanShootArrows"),
+                                                                                    ]),
+                                                                                    Name([
+                                                                                        ("Bluemerang"),
+                                                                                    ]),
+                                                                                    Name([
+                                                                                        ("Redmerang"),
+                                                                                    ]),
                                                                                     Grouped(And([
-                                                                                        Name(Id(("BlueCane"))),
+                                                                                        Grouped(Or([
+                                                                                            Name([
+                                                                                                ("FireRod"),
+                                                                                            ]),
+                                                                                            Name([
+                                                                                                ("IceRod"),
+                                                                                            ]),
+                                                                                        ])),
                                                                                         Bin(
-Bin(
-Name(Id(("n"))), Mul, Num(((1, [
-                                                                                                    5,
+Name([
+                                                                                                ("MagicBars"),
+                                                                                            ]), GT, Num(((1, [
+                                                                                                4,
+                                                                                            ]), (1, [
+                                                                                                1,
+                                                                                            ])))),
+                                                                                        ])),
+                                                                                        Grouped(And([
+                                                                                            Grouped(Or([
+                                                                                                Name([
+                                                                                                    ("RedCane"),
+                                                                                                ]),
+                                                                                                Name([
+                                                                                                    ("BlueCane"),
+                                                                                                ]),
+                                                                                            ])),
+                                                                                            Bin(
+Name([
+                                                                                                    ("MagicBars"),
+                                                                                                ]), GT, Num(((1, [
+                                                                                                    2,
                                                                                                 ]), (1, [
                                                                                                     1,
-                                                                                                ])))), LE, Name(Id(("MagicBars")))),
+                                                                                                ])))),
                                                                                             ])),
                                                                                         ]),
-                                                                                    })),
-                                                                                    Decl(Fn({
-                                                                                        name: {
-                                                                                            ident: ("CanGetGoldBee"),
-                                                                                            human: None,
-                                                                                        },
-                                                                                        params: [
+                                                                                    },
+                                                                                    {
+                                                                                        pat: [
+                                                                                            ("Lanmolas"),
                                                                                         ],
-                                                                                        ret_ty: None,
-                                                                                        body: And([
-                                                                                            Name(Id(("Net"))),
-                                                                                            Name(Id(("Bottle"))),
-                                                                                            Grouped(Or([
-                                                                                                Call(
-Name(Id(("CanCast"))), [
-                                                                                                        Name(Id(("Quake"))),
-                                                                                                    ]),
-                                                                                                    Name(Id(("Sword"))),
-                                                                                                ])),
+                                                                                        expr: Or([
+                                                                                            Name([
+                                                                                                ("Sword"),
                                                                                             ]),
-                                                                                        })),
-                                                                                        Decl(Enum({
-                                                                                            name: {
-                                                                                                ident: ("Boss"),
-                                                                                                human: None,
-                                                                                            },
-                                                                                            variants: [
-                                                                                                {
-                                                                                                    ident: ("ArmosKnights"),
-                                                                                                    human: None,
-                                                                                                },
-                                                                                                {
-                                                                                                    ident: ("Lanmolas"),
-                                                                                                    human: None,
-                                                                                                },
-                                                                                                {
-                                                                                                    ident: ("Moldorm"),
-                                                                                                    human: None,
-                                                                                                },
-                                                                                                {
-                                                                                                    ident: ("Agahnim1"),
-                                                                                                    human: None,
-                                                                                                },
-                                                                                                {
-                                                                                                    ident: ("HelmasaurKing"),
-                                                                                                    human: None,
-                                                                                                },
-                                                                                                {
-                                                                                                    ident: ("Arrghus"),
-                                                                                                    human: None,
-                                                                                                },
-                                                                                                {
-                                                                                                    ident: ("Mothula"),
-                                                                                                    human: None,
-                                                                                                },
-                                                                                                {
-                                                                                                    ident: ("Blind"),
-                                                                                                    human: None,
-                                                                                                },
-                                                                                                {
-                                                                                                    ident: ("Kholdstare"),
-                                                                                                    human: None,
-                                                                                                },
-                                                                                                {
-                                                                                                    ident: ("Vitreous"),
-                                                                                                    human: None,
-                                                                                                },
-                                                                                                {
-                                                                                                    ident: ("Trinexx"),
-                                                                                                    human: None,
-                                                                                                },
-                                                                                                {
-                                                                                                    ident: ("Agahnim2"),
-                                                                                                    human: None,
-                                                                                                },
-                                                                                                {
-                                                                                                    ident: ("Ganon"),
-                                                                                                    human: None,
-                                                                                                },
-                                                                                            ],
-                                                                                        })),
-                                                                                        Decl(Fn({
-                                                                                            name: {
-                                                                                                ident: ("CanDefeat"),
-                                                                                                human: None,
-                                                                                            },
-                                                                                            params: [
-                                                                                                {
-                                                                                                    name: ("boss"),
-                                                                                                    ty: None,
-                                                                                                },
-                                                                                            ],
-                                                                                            ret_ty: None,
-                                                                                            body: Match(
-Name(Id(("boss"))), [
-                                                                                                    {
-                                                                                                        pat: Id(("ArmosKnights")),
-                                                                                                        expr: Or([
-                                                                                                            Name(Id(("Sword"))),
-                                                                                                            Name(Id(("Hammer"))),
-                                                                                                            Name(Id(("CanShootArrows"))),
-                                                                                                            Name(Id(("Bluemerang"))),
-                                                                                                            Name(Id(("Redmerang"))),
+                                                                                            Name([
+                                                                                                ("Hammer"),
+                                                                                            ]),
+                                                                                            Name([
+                                                                                                ("CanShootArrows"),
+                                                                                            ]),
+                                                                                            Name([
+                                                                                                ("FireRod"),
+                                                                                            ]),
+                                                                                            Name([
+                                                                                                ("IceRod"),
+                                                                                            ]),
+                                                                                            Name([
+                                                                                                ("RedCane"),
+                                                                                            ]),
+                                                                                            Name([
+                                                                                                ("BlueCane"),
+                                                                                            ]),
+                                                                                        ]),
+                                                                                    },
+                                                                                    {
+                                                                                        pat: [
+                                                                                            ("Moldorm"),
+                                                                                        ],
+                                                                                        expr: Or([
+                                                                                            Name([
+                                                                                                ("Sword"),
+                                                                                            ]),
+                                                                                            Name([
+                                                                                                ("Hammer"),
+                                                                                            ]),
+                                                                                        ]),
+                                                                                    },
+                                                                                    {
+                                                                                        pat: [
+                                                                                            ("Agahnim"),
+                                                                                        ],
+                                                                                        expr: Or([
+                                                                                            Name([
+                                                                                                ("Sword"),
+                                                                                            ]),
+                                                                                            Name([
+                                                                                                ("Hammer"),
+                                                                                            ]),
+                                                                                            Name([
+                                                                                                ("Net"),
+                                                                                            ]),
+                                                                                        ]),
+                                                                                    },
+                                                                                    {
+                                                                                        pat: [
+                                                                                            ("HelmasaurKing"),
+                                                                                        ],
+                                                                                        expr: Or([
+                                                                                            Name([
+                                                                                                ("Sword"),
+                                                                                            ]),
+                                                                                            Name([
+                                                                                                ("Hammer"),
+                                                                                            ]),
+                                                                                            Name([
+                                                                                                ("CanShootArrows"),
+                                                                                            ]),
+                                                                                        ]),
+                                                                                    },
+                                                                                    {
+                                                                                        pat: [
+                                                                                            ("Arrghus"),
+                                                                                        ],
+                                                                                        expr: And([
+                                                                                            Name([
+                                                                                                ("Hookshot"),
+                                                                                            ]),
+                                                                                            Grouped(Or([
+                                                                                                Name([
+                                                                                                    ("Sword"),
+                                                                                                ]),
+                                                                                                Name([
+                                                                                                    ("Hammer"),
+                                                                                                ]),
+                                                                                                Grouped(And([
+                                                                                                    Name([
+                                                                                                        ("FireRod"),
+                                                                                                    ]),
+                                                                                                    Bin(
+Name([
+                                                                                                            ("MagicBars"),
+                                                                                                        ]), GT, Num(((1, [
+                                                                                                            2,
+                                                                                                        ]), (1, [
+                                                                                                            1,
+                                                                                                        ])))),
+                                                                                                    ])),
+                                                                                                    Grouped(And([
+                                                                                                        Name([
+                                                                                                            ("CanShootArrows"),
+                                                                                                        ]),
+                                                                                                        Grouped(Or([
+                                                                                                            Name([
+                                                                                                                ("FireRod"),
+                                                                                                            ]),
                                                                                                             Grouped(And([
-                                                                                                                Grouped(Or([
-                                                                                                                    Name(Id(("FireRod"))),
-                                                                                                                    Name(Id(("IceRod"))),
-                                                                                                                ])),
+                                                                                                                Name([
+                                                                                                                    ("IceRod"),
+                                                                                                                ]),
                                                                                                                 Bin(
-Name(Id(("MagicBars"))), GT, Num(((1, [
-                                                                                                                        4,
+Name([
+                                                                                                                        ("MagicBars"),
+                                                                                                                    ]), GT, Num(((1, [
+                                                                                                                        2,
                                                                                                                     ]), (1, [
                                                                                                                         1,
                                                                                                                     ])))),
                                                                                                                 ])),
-                                                                                                                Grouped(And([
-                                                                                                                    Grouped(Or([
-                                                                                                                        Name(Id(("RedCane"))),
-                                                                                                                        Name(Id(("BlueCane"))),
-                                                                                                                    ])),
+                                                                                                            ])),
+                                                                                                        ])),
+                                                                                                    ])),
+                                                                                                ]),
+                                                                                            },
+                                                                                            {
+                                                                                                pat: [
+                                                                                                    ("Mothula"),
+                                                                                                ],
+                                                                                                expr: Or([
+                                                                                                    Name([
+                                                                                                        ("Sword"),
+                                                                                                    ]),
+                                                                                                    Name([
+                                                                                                        ("Hammer"),
+                                                                                                    ]),
+                                                                                                    Grouped(And([
+                                                                                                        Name([
+                                                                                                            ("CanGetGoldBee"),
+                                                                                                        ]),
+                                                                                                        Name([
+                                                                                                            ("Net"),
+                                                                                                        ]),
+                                                                                                    ])),
+                                                                                                    Grouped(And([
+                                                                                                        Bin(
+Name([
+                                                                                                                ("MagicBars"),
+                                                                                                            ]), GT, Num(((1, [
+                                                                                                                2,
+                                                                                                            ]), (1, [
+                                                                                                                1,
+                                                                                                            ])))),
+                                                                                                            Grouped(Or([
+                                                                                                                Name([
+                                                                                                                    ("FireRod"),
+                                                                                                                ]),
+                                                                                                                Name([
+                                                                                                                    ("IceRod"),
+                                                                                                                ]),
+                                                                                                                Name([
+                                                                                                                    ("RedCane"),
+                                                                                                                ]),
+                                                                                                            ])),
+                                                                                                        ])),
+                                                                                                    ]),
+                                                                                                },
+                                                                                                {
+                                                                                                    pat: [
+                                                                                                        ("Blind"),
+                                                                                                    ],
+                                                                                                    expr: Or([
+                                                                                                        Name([
+                                                                                                            ("Sword"),
+                                                                                                        ]),
+                                                                                                        Name([
+                                                                                                            ("Hammer"),
+                                                                                                        ]),
+                                                                                                        Name([
+                                                                                                            ("RedCane"),
+                                                                                                        ]),
+                                                                                                        Name([
+                                                                                                            ("BlueCane"),
+                                                                                                        ]),
+                                                                                                    ]),
+                                                                                                },
+                                                                                                {
+                                                                                                    pat: [
+                                                                                                        ("Kholdstare"),
+                                                                                                    ],
+                                                                                                    expr: Or([
+                                                                                                        Grouped(And([
+                                                                                                            Name([
+                                                                                                                ("CanMeltIce"),
+                                                                                                            ]),
+                                                                                                            Grouped(Or([
+                                                                                                                Name([
+                                                                                                                    ("Sword"),
+                                                                                                                ]),
+                                                                                                                Name([
+                                                                                                                    ("Hammer"),
+                                                                                                                ]),
+                                                                                                            ])),
+                                                                                                        ])),
+                                                                                                        Grouped(And([
+                                                                                                            Name([
+                                                                                                                ("FireRod"),
+                                                                                                            ]),
+                                                                                                            Bin(
+Name([
+                                                                                                                    ("MagicBars"),
+                                                                                                                ]), GT, Num(((1, [
+                                                                                                                    3,
+                                                                                                                ]), (1, [
+                                                                                                                    1,
+                                                                                                                ])))),
+                                                                                                            ])),
+                                                                                                            Grouped(And([
+                                                                                                                Name([
+                                                                                                                    ("FireRod"),
+                                                                                                                ]),
+                                                                                                                Call(
+Name([
+                                                                                                                        ("CanCast"),
+                                                                                                                    ]), [
+                                                                                                                        Name([
+                                                                                                                            ("Bombos"),
+                                                                                                                        ]),
+                                                                                                                    ]),
                                                                                                                     Bin(
-Name(Id(("MagicBars"))), GT, Num(((1, [
+Name([
+                                                                                                                            ("MagicBars"),
+                                                                                                                        ]), GT, Num(((1, [
                                                                                                                             2,
                                                                                                                         ]), (1, [
                                                                                                                             1,
@@ -1271,232 +1645,154 @@ Name(Id(("MagicBars"))), GT, Num(((1, [
                                                                                                                 ]),
                                                                                                             },
                                                                                                             {
-                                                                                                                pat: Id(("Lanmolas")),
+                                                                                                                pat: [
+                                                                                                                    ("Vitreous"),
+                                                                                                                ],
                                                                                                                 expr: Or([
-                                                                                                                    Name(Id(("Sword"))),
-                                                                                                                    Name(Id(("Hammer"))),
-                                                                                                                    Name(Id(("CanShootArrows"))),
-                                                                                                                    Name(Id(("FireRod"))),
-                                                                                                                    Name(Id(("IceRod"))),
-                                                                                                                    Name(Id(("RedCane"))),
-                                                                                                                    Name(Id(("BlueCane"))),
+                                                                                                                    Name([
+                                                                                                                        ("Sword"),
+                                                                                                                    ]),
+                                                                                                                    Name([
+                                                                                                                        ("Hammer"),
+                                                                                                                    ]),
+                                                                                                                    Name([
+                                                                                                                        ("CanShootArrows"),
+                                                                                                                    ]),
                                                                                                                 ]),
                                                                                                             },
                                                                                                             {
-                                                                                                                pat: Id(("Moldorm")),
-                                                                                                                expr: Or([
-                                                                                                                    Name(Id(("Sword"))),
-                                                                                                                    Name(Id(("Hammer"))),
-                                                                                                                ]),
-                                                                                                            },
-                                                                                                            {
-                                                                                                                pat: Id(("Agahnim")),
-                                                                                                                expr: Or([
-                                                                                                                    Name(Id(("Sword"))),
-                                                                                                                    Name(Id(("Hammer"))),
-                                                                                                                    Name(Id(("Net"))),
-                                                                                                                ]),
-                                                                                                            },
-                                                                                                            {
-                                                                                                                pat: Id(("HelmasaurKing")),
-                                                                                                                expr: Or([
-                                                                                                                    Name(Id(("Sword"))),
-                                                                                                                    Name(Id(("Hammer"))),
-                                                                                                                    Name(Id(("CanShootArrows"))),
-                                                                                                                ]),
-                                                                                                            },
-                                                                                                            {
-                                                                                                                pat: Id(("Arrghus")),
+                                                                                                                pat: [
+                                                                                                                    ("Trinexx"),
+                                                                                                                ],
                                                                                                                 expr: And([
-                                                                                                                    Name(Id(("Hookshot"))),
+                                                                                                                    Name([
+                                                                                                                        ("FireRod"),
+                                                                                                                    ]),
+                                                                                                                    Name([
+                                                                                                                        ("IceRod"),
+                                                                                                                    ]),
                                                                                                                     Grouped(Or([
-                                                                                                                        Name(Id(("Sword"))),
-                                                                                                                        Name(Id(("Hammer"))),
+                                                                                                                        Name([
+                                                                                                                            ("Hammer"),
+                                                                                                                        ]),
+                                                                                                                        Name([
+                                                                                                                            ("L3Sword"),
+                                                                                                                        ]),
                                                                                                                         Grouped(And([
-                                                                                                                            Name(Id(("FireRod"))),
+                                                                                                                            Name([
+                                                                                                                                ("L2Sword"),
+                                                                                                                            ]),
                                                                                                                             Bin(
-Name(Id(("MagicBars"))), GT, Num(((1, [
+Name([
+                                                                                                                                    ("MagicBars"),
+                                                                                                                                ]), GT, Num(((1, [
                                                                                                                                     2,
                                                                                                                                 ]), (1, [
                                                                                                                                     1,
                                                                                                                                 ])))),
                                                                                                                             ])),
                                                                                                                             Grouped(And([
-                                                                                                                                Name(Id(("CanShootArrows"))),
-                                                                                                                                Grouped(Or([
-                                                                                                                                    Name(Id(("FireRod"))),
-                                                                                                                                    Grouped(And([
-                                                                                                                                        Name(Id(("IceRod"))),
-                                                                                                                                        Bin(
-Name(Id(("MagicBars"))), GT, Num(((1, [
-                                                                                                                                                2,
-                                                                                                                                            ]), (1, [
-                                                                                                                                                1,
-                                                                                                                                            ])))),
-                                                                                                                                        ])),
-                                                                                                                                    ])),
+                                                                                                                                Name([
+                                                                                                                                    ("L1Sword"),
+                                                                                                                                ]),
+                                                                                                                                Bin(
+Name([
+                                                                                                                                        ("MagicBars"),
+                                                                                                                                    ]), GT, Num(((1, [
+                                                                                                                                        4,
+                                                                                                                                    ]), (1, [
+                                                                                                                                        1,
+                                                                                                                                    ])))),
                                                                                                                                 ])),
                                                                                                                             ])),
                                                                                                                         ]),
                                                                                                                     },
                                                                                                                     {
-                                                                                                                        pat: Id(("Mothula")),
+                                                                                                                        pat: [
+                                                                                                                            ("Agahnim2"),
+                                                                                                                        ],
                                                                                                                         expr: Or([
-                                                                                                                            Name(Id(("Sword"))),
-                                                                                                                            Name(Id(("Hammer"))),
-                                                                                                                            Grouped(And([
-                                                                                                                                Name(Id(("CanGetGoldBee"))),
-                                                                                                                                Name(Id(("Net"))),
-                                                                                                                            ])),
-                                                                                                                            Grouped(And([
-                                                                                                                                Bin(
-Name(Id(("MagicBars"))), GT, Num(((1, [
-                                                                                                                                        2,
-                                                                                                                                    ]), (1, [
-                                                                                                                                        1,
-                                                                                                                                    ])))),
-                                                                                                                                    Grouped(Or([
-                                                                                                                                        Name(Id(("FireRod"))),
-                                                                                                                                        Name(Id(("IceRod"))),
-                                                                                                                                        Name(Id(("RedCane"))),
-                                                                                                                                    ])),
-                                                                                                                                ])),
+                                                                                                                            Name([
+                                                                                                                                ("Sword"),
                                                                                                                             ]),
-                                                                                                                        },
-                                                                                                                        {
-                                                                                                                            pat: Id(("Blind")),
-                                                                                                                            expr: Or([
-                                                                                                                                Name(Id(("Sword"))),
-                                                                                                                                Name(Id(("Hammer"))),
-                                                                                                                                Name(Id(("RedCane"))),
-                                                                                                                                Name(Id(("BlueCane"))),
+                                                                                                                            Name([
+                                                                                                                                ("Hammer"),
                                                                                                                             ]),
-                                                                                                                        },
-                                                                                                                        {
-                                                                                                                            pat: Id(("Kholdstare")),
-                                                                                                                            expr: Or([
-                                                                                                                                Grouped(And([
-                                                                                                                                    Name(Id(("CanMeltIce"))),
-                                                                                                                                    Grouped(Or([
-                                                                                                                                        Name(Id(("Sword"))),
-                                                                                                                                        Name(Id(("Hammer"))),
-                                                                                                                                    ])),
-                                                                                                                                ])),
-                                                                                                                                Grouped(And([
-                                                                                                                                    Name(Id(("FireRod"))),
-                                                                                                                                    Bin(
-Name(Id(("MagicBars"))), GT, Num(((1, [
-                                                                                                                                            3,
-                                                                                                                                        ]), (1, [
-                                                                                                                                            1,
-                                                                                                                                        ])))),
-                                                                                                                                    ])),
+                                                                                                                            Name([
+                                                                                                                                ("Net"),
+                                                                                                                            ]),
+                                                                                                                        ]),
+                                                                                                                    },
+                                                                                                                    {
+                                                                                                                        pat: [
+                                                                                                                            ("Ganon"),
+                                                                                                                        ],
+                                                                                                                        expr: And([
+                                                                                                                            Grouped(Or([
+                                                                                                                                Grouped(Or([
+                                                                                                                                    Name([
+                                                                                                                                        ("MasterSword"),
+                                                                                                                                    ]),
                                                                                                                                     Grouped(And([
-                                                                                                                                        Name(Id(("FireRod"))),
-                                                                                                                                        Call(
-Name(Id(("CanCast"))), [
-                                                                                                                                                Name(Id(("Bombos"))),
+                                                                                                                                        Bin(
+Name([
+                                                                                                                                                ("Modes"),
+                                                                                                                                                ("Swords"),
+                                                                                                                                            ]), Eq, Name([
+                                                                                                                                                ("Modes"),
+                                                                                                                                                ("Swordless"),
+                                                                                                                                            ])),
+                                                                                                                                            Name([
+                                                                                                                                                ("Hammer"),
                                                                                                                                             ]),
+                                                                                                                                        ])),
+                                                                                                                                    ])),
+                                                                                                                                    Grouped(Or([
+                                                                                                                                        Name([
+                                                                                                                                            ("SilverArrows"),
+                                                                                                                                        ]),
+                                                                                                                                        Name([
+                                                                                                                                            ("Skills"),
+                                                                                                                                            ("SilverlessGanon"),
+                                                                                                                                        ]),
+                                                                                                                                    ])),
+                                                                                                                                ])),
+                                                                                                                                Grouped(Or([
+                                                                                                                                    Name([
+                                                                                                                                        ("Lamp"),
+                                                                                                                                    ]),
+                                                                                                                                    Grouped(And([
+                                                                                                                                        Name([
+                                                                                                                                            ("FireRod"),
+                                                                                                                                        ]),
+                                                                                                                                        Grouped(Or([
                                                                                                                                             Bin(
-Name(Id(("MagicBars"))), GT, Num(((1, [
-                                                                                                                                                    2,
+Name([
+                                                                                                                                                    ("MagicBars"),
+                                                                                                                                                ]), GT, Num(((1, [
+                                                                                                                                                    3,
                                                                                                                                                 ]), (1, [
                                                                                                                                                     1,
                                                                                                                                                 ])))),
-                                                                                                                                            ])),
-                                                                                                                                        ]),
-                                                                                                                                    },
-                                                                                                                                    {
-                                                                                                                                        pat: Id(("Vitreous")),
-                                                                                                                                        expr: Or([
-                                                                                                                                            Name(Id(("Sword"))),
-                                                                                                                                            Name(Id(("Hammer"))),
-                                                                                                                                            Name(Id(("CanShootArrows"))),
-                                                                                                                                        ]),
-                                                                                                                                    },
-                                                                                                                                    {
-                                                                                                                                        pat: Id(("Trinexx")),
-                                                                                                                                        expr: And([
-                                                                                                                                            Name(Id(("FireRod"))),
-                                                                                                                                            Name(Id(("IceRod"))),
-                                                                                                                                            Grouped(Or([
-                                                                                                                                                Name(Id(("Hammer"))),
-                                                                                                                                                Name(Id(("L3Sword"))),
                                                                                                                                                 Grouped(And([
-                                                                                                                                                    Name(Id(("L2Sword"))),
+                                                                                                                                                    Name([
+                                                                                                                                                        ("TemperedSword"),
+                                                                                                                                                    ]),
                                                                                                                                                     Bin(
-Name(Id(("MagicBars"))), GT, Num(((1, [
+Name([
+                                                                                                                                                            ("MagicBars"),
+                                                                                                                                                        ]), GT, Num(((1, [
                                                                                                                                                             2,
                                                                                                                                                         ]), (1, [
                                                                                                                                                             1,
                                                                                                                                                         ])))),
                                                                                                                                                     ])),
-                                                                                                                                                    Grouped(And([
-                                                                                                                                                        Name(Id(("L1Sword"))),
-                                                                                                                                                        Bin(
-Name(Id(("MagicBars"))), GT, Num(((1, [
-                                                                                                                                                                4,
-                                                                                                                                                            ]), (1, [
-                                                                                                                                                                1,
-                                                                                                                                                            ])))),
-                                                                                                                                                        ])),
-                                                                                                                                                    ])),
-                                                                                                                                                ]),
-                                                                                                                                            },
-                                                                                                                                            {
-                                                                                                                                                pat: Id(("Agahnim2")),
-                                                                                                                                                expr: Or([
-                                                                                                                                                    Name(Id(("Sword"))),
-                                                                                                                                                    Name(Id(("Hammer"))),
-                                                                                                                                                    Name(Id(("Net"))),
-                                                                                                                                                ]),
-                                                                                                                                            },
-                                                                                                                                            {
-                                                                                                                                                pat: Id(("Ganon")),
-                                                                                                                                                expr: And([
-                                                                                                                                                    Grouped(Or([
-                                                                                                                                                        Grouped(Or([
-                                                                                                                                                            Name(Id(("MasterSword"))),
-                                                                                                                                                            Grouped(And([
-                                                                                                                                                                Bin(
-Name(Sub(
-Id(("Modes")), ("Swords"))), Eq, Name(Sub(
-Id(("Modes")), ("Swordless")))),
-                                                                                                                                                                            Name(Id(("Hammer"))),
-                                                                                                                                                                        ])),
-                                                                                                                                                                    ])),
-                                                                                                                                                                    Grouped(Or([
-                                                                                                                                                                        Name(Id(("SilverArrows"))),
-                                                                                                                                                                        Name(Sub(
-Id(("Skills")), ("SilverlessGanon"))),
-                                                                                                                                                                        ])),
-                                                                                                                                                                    ])),
-                                                                                                                                                                    Grouped(Or([
-                                                                                                                                                                        Name(Id(("Lamp"))),
-                                                                                                                                                                        Grouped(And([
-                                                                                                                                                                            Name(Id(("FireRod"))),
-                                                                                                                                                                            Grouped(Or([
-                                                                                                                                                                                Bin(
-Name(Id(("MagicBars"))), GT, Num(((1, [
-                                                                                                                                                                                        3,
-                                                                                                                                                                                    ]), (1, [
-                                                                                                                                                                                        1,
-                                                                                                                                                                                    ])))),
-                                                                                                                                                                                    Grouped(And([
-                                                                                                                                                                                        Name(Id(("TemperedSword"))),
-                                                                                                                                                                                        Bin(
-Name(Id(("MagicBars"))), GT, Num(((1, [
-                                                                                                                                                                                                2,
-                                                                                                                                                                                            ]), (1, [
-                                                                                                                                                                                                1,
-                                                                                                                                                                                            ])))),
-                                                                                                                                                                                        ])),
-                                                                                                                                                                                    ])),
-                                                                                                                                                                                ])),
-                                                                                                                                                                            ])),
-                                                                                                                                                                        ]),
-                                                                                                                                                                    },
-                                                                                                                                                                ]),
-                                                                                                                                                            })),
-                                                                                                                                                        ],
-                                                                                                                                                    }
+                                                                                                                                                ])),
+                                                                                                                                            ])),
+                                                                                                                                        ])),
+                                                                                                                                    ]),
+                                                                                                                                },
+                                                                                                                            ]),
+                                                                                                                        })),
+                                                                                                                    ],
+                                                                                                                }

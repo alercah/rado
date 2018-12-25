@@ -6,17 +6,6 @@ region LightWorld {
       Uncle "Link's Uncle"
       Chest
     }
-
-    if Modes.State == Modes.Standard {
-      modify location Uncle {
-        restrict to Weapon
-      }
-    }
-    if Modes.Swords == Modes.UncleAssured {
-      modify location Uncle {
-        restrict to Sword
-      }
-    }
   }
 
   region HyruleCastle {
@@ -30,13 +19,6 @@ region LightWorld {
       RescueZelda
     }
 
-    if not Modes.KeySanity {
-      modify items {
-        BigKey { restrict to HyruleCastle }
-        Map { restrict to HyruleCastle }
-        SmallKey { restrict to HyruleCastle }
-      }
-    }
     if Modes.State == Modes.Open {
       start with FetchZelda, RescueZelda
     }
@@ -78,7 +60,9 @@ region LightWorld {
         link with Mid { unlock SmallKey }
         link to LightWorld { grants RescueZelda }
         link from LightWorld { requires Gloves }
-        location SideRoom { count 3 }
+        location SideRoomLeft
+        location SideRoomMiddle
+        location SideRoomRight
       }
     }
   }

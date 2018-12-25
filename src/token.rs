@@ -78,7 +78,6 @@ toks! { Kw;
     Val <- "val",
     Max <- "max",
     Consumable <- "consumable",
-    Restrict <- "restrict",
     Avail <- "avail",
     Infinity <- "infinity",
     Grants <- "grants",

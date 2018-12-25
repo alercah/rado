@@ -24,7 +24,9 @@
                             human: None,
                         },
                     ],
-                    default: Some(Name(Id(("Standard")))),
+                    default: Some(Name([
+                        ("Standard"),
+                    ])),
                 })),
                 Decl(ConfigEnum({
                     name: {
@@ -45,7 +47,9 @@
                             human: None,
                         },
                     ],
-                    default: Some(Name(Id(("Swords")))),
+                    default: Some(Name([
+                        ("Swords"),
+                    ])),
                 })),
                 Decl(Config({
                     name: {
@@ -82,7 +86,9 @@
                             human: None,
                         },
                     ],
-                    default: Some(Name(Id(("Normal")))),
+                    default: Some(Name([
+                        ("Normal"),
+                    ])),
                 })),
             ],
         })),
@@ -148,11 +154,21 @@
                         human: None,
                     },
                     vals: [
-                        (Id(("WaterWalk")), Bool(true)),
-                        (Id(("BombJumps")), Bool(true)),
-                        (Id(("DarkRooms")), Bool(true)),
-                        (Id(("SuperBunny")), Bool(true)),
-                        (Id(("Hover")), Bool(true)),
+                        ([
+                            ("WaterWalk"),
+                        ], Bool(true)),
+                        ([
+                            ("BombJumps"),
+                        ], Bool(true)),
+                        ([
+                            ("DarkRooms"),
+                        ], Bool(true)),
+                        ([
+                            ("SuperBunny"),
+                        ], Bool(true)),
+                        ([
+                            ("Hover"),
+                        ], Bool(true)),
                     ],
                     configsets: [
                     ],
@@ -163,10 +179,14 @@
                         human: None,
                     },
                     vals: [
-                        (Id(("Screenwraps")), Bool(true)),
+                        ([
+                            ("Screenwraps"),
+                        ], Bool(true)),
                     ],
                     configsets: [
-                        Id(("MinorGlitches")),
+                        [
+                            ("MinorGlitches"),
+                        ],
                     ],
                 })),
             ],

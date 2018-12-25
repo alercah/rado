@@ -207,11 +207,6 @@ pub struct Max {
 }
 
 #[derive(Clone, Hash, Debug, Serialize, Deserialize)]
-pub struct Restrict {
-    pub entities: ModVec<(bool, Path)>,
-}
-
-#[derive(Clone, Hash, Debug, Serialize, Deserialize)]
 pub struct Avail {
     pub items: ModVec<(bool, Path, Option<Num>)>,
 }
@@ -219,11 +214,6 @@ pub struct Avail {
 #[derive(Clone, Hash, Debug, Serialize, Deserialize)]
 pub struct Grants {
     pub items: ModVec<(bool, Path)>,
-}
-
-#[derive(Clone, Hash, Debug, Serialize, Deserialize)]
-pub struct Count {
-    pub count: Num,
 }
 
 #[derive(Clone, Hash, Debug, Serialize, Deserialize)]
@@ -248,10 +238,8 @@ pub enum Prop {
     Val(Val),
     Max(Max),
     Consumable,
-    Restrict(Restrict),
     Avail(Avail),
     Grants(Grants),
-    Count(Count),
     StartWith(StartWith),
     StartIn(StartIn),
 }
