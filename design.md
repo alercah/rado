@@ -81,70 +81,84 @@ of locations (a type of metadata, perhaps?).
 Below follows a list of requirements that the language and engine should be able
 to meet. Requirements that I feel are required for a minimum viable product
 (largely, those required for a version version of ALttP and Super Metroid
-support) will be marked with (\*) at the beginning; the other requirements need
-not be implemented or even fully specced early on, so long as we can design with
-the possibility of later adding them in mind. Examples will be added for most
-requirements.
+support) will be marked with :heavy_exclamation_mark: at the beginning; the
+other requirements need not be implemented or even fully specced early on, so
+long as we can design with the possibility of later adding them in mind.
+Examples will be added for most requirements.
+
+Items marked with a :heavy_check_mark: were, in my estimation, properly
+supported in the most recent version of the design when I updated this file. If
+something is unmarked but looks complete, it's because I feel there's something
+missing in the design.
 
 ### Basic logic
 
-1. (\*) It should be possible to describe a list of locations, a list of items,
-   and the requirements to acquire the items at each location.
-1. (\*) It should be possible to write logical expressions (AND and OR) for the
-   requirements to acquire an item. *Example: ALttP requires the bow and the
-   hammer to defeat Helmasaur and acquire his item.*
-1. (\*) It should be possible to require multiples of a certain item, rather
-   than just one. *Example: ALttP requires the Master Sword, which is
-   equivalent to two progressive swords, to acquire the items on the Bombos and
-   Ether tablets.*
-1. (\*) It should be possible to write functions expressing requirements to
-   reuse across different parts of the code. *Example: Super Metroid requires
-   jumping while in Morph Ball form in various places; this requirement is met
-   by having Bombs, Power Bombs, or Spring Ball.*
-1. (\*) It must be possible to perform basic arithmetic, not just boolean
-   expressions. *Example: ALttP requires certain a minimum amount of magic for
-   certain actions; the available magic is a function that requires multiplying
-   the number of bottles by a factor based on magic reduction level.*
-1. (\*) It should be possible to describe a randomized requirement and a list of
-   items that it can require. *Example: ALttP requires a random medallion to
-   enter Misery Mire.*
-1. It should be possible for a randomized requirement to take on other types,
-   such as booleans, integers, and enumerations.
-1. (\*) It must be possible for a negative requirement to exist. *Example: In
-   Metroid Prime, triggering the floaty jump bug requires that the player not
-   have the Gravity Suit.*
-1. (\*) It should be possible for every location, item, and randomized
-   requirement to be given both a human-readable name and one or more
-   identifiers which can be easily referred to.
-1. (\*) It should be possible to factor out access requirements common to a
-   group of locations. This may simply be by expressing locations as a nested
-   set of regions. *Example: Super Metroid requires that the player pass through
-   the lava at the entrance to Lower Norfair to enter and access any of its
-   items.*
-1. (\*) It should be possible to support configuration parameters with various
-   types and values (at the least, boolean, integer, enumeration) and use values
-   of these parameters in requirements.
-1. (\*) It should be possible to define a single configuration item which
-   applies its values to a number of other items. *Example: An author defining a
-   logic with a number of glitches wishes to define "all glitches" and "no
-   glitches" mode which enable and disable each glitch configuration
-   separately.*
+1. :heavy_check_mark: :heavy_exclamation_mark: It should be possible to describe
+   a list of locations, a list of items, and the requirements to acquire the
+   items at each location.
+1. :heavy_check_mark: :heavy_exclamation_mark: It should be possible to write
+   logical expressions (AND and OR) for the requirements to acquire an item.
+   *Example: ALttP requires the bow and the hammer to defeat Helmasaur and
+   acquire his item.*
+1. :heavy_check_mark: :heavy_exclamation_mark: It should be possible to require
+   multiples of a certain item, rather than just one. *Example: ALttP requires
+   the Master Sword, which is equivalent to two progressive swords, to acquire
+   the items on the Bombos and Ether tablets.*
+1. :heavy_check_mark: :heavy_exclamation_mark: It should be possible to write
+   functions expressing requirements to reuse across different parts of the
+   code. *Example: Super Metroid requires jumping while in Morph Ball form in
+   various places; this requirement is met by having Bombs, Power Bombs, or
+   Spring Ball.*
+1. :heavy_check_mark: :heavy_exclamation_mark: It must be possible to perform
+   basic arithmetic, not just boolean expressions. *Example: ALttP requires
+   certain a minimum amount of magic for certain actions; the available magic is
+   a function that requires multiplying the number of bottles by a factor based
+   on magic reduction level.*
+1. :heavy_check_mark: :heavy_exclamation_mark: It should be possible to describe
+   a randomized requirement and a list of items that it can require. *Example:
+   ALttP requires a random medallion to enter Misery Mire.*
+1. :heavy_check_mark: It should be possible for a randomized requirement to take
+   on other types, such as booleans, integers, and enumerations.
+1. :heavy_exclamation_mark: It must be possible for a negative requirement to
+   exist. *Example: In Metroid Prime, triggering the floaty jump bug requires
+   that the player not have the Gravity Suit.*
+1. :heavy_check_mark: :heavy_exclamation_mark: It should be possible for every
+   location, item, and randomized requirement to be given both a human-readable
+   name and one or more identifiers which can be easily referred to.
+1. :heavy_check_mark: :heavy_exclamation_mark: It should be possible to factor
+   out access requirements common to a group of locations. This may simply be by
+   expressing locations as a nested set of regions. *Example: Super Metroid
+   requires that the player pass through the lava at the entrance to Lower
+   Norfair to enter and access any of its items.*
+1. :heavy_check_mark: :heavy_exclamation_mark: It should be possible to support
+   configuration parameters with various types and values (at the least,
+   boolean, integer, enumeration) and use values of these parameters in
+   requirements.
+1. :heavy_check_mark: :heavy_exclamation_mark: It should be possible to define a
+   single configuration item which applies its values to a number of other
+   items. *Example: An author defining a logic with a number of glitches wishes
+   to define "all glitches" and "no glitches" mode which enable and disable each
+   glitch configuration separately.*
 
 ### Items
 
-1. It should be possible to mark an item as consumable, where it can be used in
-   multiple places but only once. It must be easy to use in the context of
-   complex expressions. *Exampe: Small keys in ALttP are one-use only.*
-1. It should be possible to track the maximum and current values of an item, and
-   express when the player can or cannot refill it. *I don't have an example off
-   the top of my head, but I believe that the Metroid Prime 2 logic uses this
-   for energy in the Dark World. It may also be relevant in Super Metroid
-   romhacks or door randomizers where many missile doors in a row are required
-   and the ability or inability to refill in between matters.*
-1. It should be possible to mark certain items as already possessed at the start
-   of the game, conditional on configuration. *Example: ALttP requires that
-   Zelda be rescued to access most items, but Open Mode starts with Zelda
-   rescued.*
+1. :heavy_check_mark: It should be possible to mark an item as consumable, where
+   it can be used in multiple places but only once. It must be easy to use in
+   the context of complex expressions. *Example: Small keys in ALttP are one-use
+   only.*
+1. :heavy_check_mark: It should be possible to track the maximum and current
+   values of an item, and express when the player can or cannot refill it.
+   *Example: In Super Metroid, some sequences require a large amount of some
+   items, such as hellruns in general but especially Lower Norfair, and refill
+   points are vital such as whether the player can reach a farm spot from Bubble
+   Mountain.*
+1. It should be possible to express that acquiring an item has some effect on
+   consumables. *Example: In Super Metroid, acquiring an energy tank refills
+   health, which may make certain hellruns possible that weren't otherwise.*
+1. :heavy_check_mark: It should be possible to mark certain items as already
+   possessed at the start of the game, conditional on configuration. *Example:
+   ALttP requires that Zelda be rescued to access most items, but Open Mode
+   starts with Zelda rescued.*
 
 ### Locations
 
@@ -152,10 +166,10 @@ requirements.
    requirements to move from one location to another. *Example: ALttP Entrance
    Randomizer.*
 1. It should be possible to describe as randomized the way locations are
-   connected. If regions are supported, then this must be able to remove the
-   parenting effects of regions if desired. *Example: ALttP Entrance Randomizer
-   may move an entrance located in Dark World Death Mountain, which has many
-   access requirements, to the Light World, which has none.*
+   connected. If regions are supported, then this must be able to remove any
+   relevant parenting effects of regions if desired. *Example: ALttP Entrance
+   Randomizer may move an entrance located in Dark World Death Mountain, which
+   has many access requirements, to the Light World, which has none.*
 1. It should be possible to provide an alternate set of requirements in order to
    learn what is at a location without being able to collect it. *Example: In
    ALttP, a player can check the item at the Lumberjack Cave with no
@@ -164,77 +178,83 @@ requirements.
 
 ### Placements
 
-1. (\*) It should be possible to require a placement ensure that all items are
-   accessible.
-1. (\*) It should be possible to divide the items into subsets which have
-   restrictions on their placement. This includes one-item subsets which have a
-   fixed location. *Example: In ALttP, keys, maps, and compasses are restricted
-   to the dungeon in which they occur. In Super Metroid, each boss always gives
-   its own completion event regardless of randomization.*
+1. :heavy_check_mark: :heavy_exclamation_mark: It should be possible to require
+   a placement ensure that all items are accessible.
+1. :heavy_exclamation_mark: It should be possible to divide the items into
+   subsets which have restrictions on their placement. This includes one-item
+   subsets which have a fixed location. *Example: In ALttP, keys, maps, and
+   compasses are restricted to the dungeon in which they occur. In Super
+   Metroid, each boss always gives its own completion event regardless of
+   randomization.*
 1. It should be possible to permit some subsets of items or locations to be
-   inaccessible. *Example: In ALttP randomizer, keys and only keys are
-   permitted to be inaccessible.*
-1. It should be possible to permit placements, for at least some subset of items
-   or locations, where the player may risk having to reset if they do not have
-   the required items. *Example: In Super Metroid, if such placements are
-   permitted, a player may have to fight Draygon in order to receive an item
-   which will allow them to leave the area, possibly forcing them to reset if
-   they do not find it and get stuck. If not permitted, the player would never
-   have to fight Draygon without first knowing that they will be able to leave.*
-1. (\*) It should be possible to define a game-winning condition.
+   inaccessible. *Example: In ALttP randomizer, keys and only keys are permitted
+   to be inaccessible.*
+1. It should be possible to control where softlocks are permitted. *Example: In
+   Super Metroid, if such placements are permitted, a player may have to fight
+   Draygon in order to receive an item which will allow them to leave the area,
+   possibly forcing them to reset if they do not find it and get stuck. If not
+   permitted, the player would never have to fight Draygon without first knowing
+   that they will be able to leave. In harder difficulties, this is permitted.
+   By contrast, in ALttPR, there are potential key layouts of some dungeons such
+   as Ice Palace and Misery Mire where uncareful use of small keys could make
+   the dungeon uncompleteable, and the randomizer wishes to prevent these from
+   occurring.*
+1. :heavy_exclamation_mark: It should be possible to define a game-winning
+   condition.
 
 ### Composability
 
-1. (\*) It should be possible to divide a single logic modules across multiple
-   files.
-1. It should be possible to have later definitions override or update
-   earlier ones, possibly conditional on configuration. The overrides apply even
-   in earlier definitions. *Example: A developer wants to account for a new
-   glitch in the logic. They do so by writing a file which adds a configuration
-   option for the glitch and updates several requirement functions to refer to
-   it. The new definitions replace the previous ones for all purposes, and all
-   logic is based only on the additional definitions.*
-1. (\*) It should be possible to make definitions, overrides, or updates
-   conditional on configuration. *Example: A developer wants to write the logic
-   for a configuration that radically changes the game without needing to put
-   conditionals in every requirement function; instead, they write the logic as
-   a series of overrides and make it conditional on the configuration.*
+1. :heavy_exclamation_mark: It should be possible to divide a single logic
+   modules across multiple files.
+1. :heavy_check_mark: :heavy_exclamation_mark: It should be possible to have
+   later definitions override or update earlier ones, possibly conditional on
+   configuration. The overrides apply even in earlier definitions. *Example: A
+   developer wants to account for a new glitch in the logic. They do so by
+   writing a file which adds a configuration option for the glitch and updates
+   several requirement functions to refer to it. The new definitions replace the
+   previous ones for all purposes, and all logic is based only on the additional
+   definitions.*
+1. :heavy_check_mark: :heavy_exclamation_mark: It should be possible to make
+   definitions, overrides, or updates conditional on configuration. *Example: A
+   developer wants to write the logic for a configuration that radically changes
+   the game without needing to put conditionals in every requirement function;
+   instead, they write the logic as a series of overrides and make it
+   conditional on the configuration.*
 
 ### Functionality
 
-1. (\*) Peri should provide a library which can be used to parse and work with
-   logic files.
-1. (\*) The library should allow specifying the files composing a module, and
-   the order in which they are loaded.
+1. :heavy_exclamation_mark: Peri should provide a library which can be used to
+   parse and work with logic files.
+1. :heavy_exclamation_mark: The library should allow specifying the files
+   composing a module, and the order in which they are loaded.
 1. The library should allow dynamically adding additional files or updated
    definitions to an already-loaded module.
-1. (\*) The library should allow querying which locations are accessible given a
-   set of current items and configuration. *Example: A tracker wishes to know
-   which locations can be obtained, given the current items and configuration.*
+1. :heavy_exclamation_mark: The library should allow querying which locations
+   are accessible given a set of current items and configuration. *Example: A
+   tracker wishes to know which locations can be obtained, given the current
+   items and configuration.*
 1. The library should provide queries about what is required to reach a
    location. *Example: A tracker wishes to display what items remain to reach a
    location.*
 1. The library should provide queries about visibility in addition to
    accessibility.
-1. (\*) The library should allow queries about whether a placement obeys all the
-   provided restrictions, given a configuration. *Example: A naive randomizer
-   that shuffles items completely randomly wishes to query whether the result is
-   valid.*
-1. (\*) The library should allow queries that query possible locations to place
-   an item, given the configuration, existing placements and the remaining items
-   which are assumed to be accessible. *Example: A more intelligent randomizer
-   wants to know where it can legally place an item.*
+1. :heavy_exclamation_mark: The library should allow queries about whether a
+   placement obeys all the provided restrictions, given a configuration.
+   *Example: A naive randomizer that shuffles items completely randomly wishes
+   to query whether the result is valid.*
+1. :heavy_exclamation_mark: The library should allow queries that query possible
+   locations to place an item, given the configuration, existing placements and
+   the remaining items which are assumed to be accessible. *Example: A more
+   intelligent randomizer wants to know where it can legally place an item.*
 
 ### Nice-to-Haves
 
 The following are nice-to-haves, but it is unlikely they would ever truly be
 necessary for the language:
+
 1. It would be nice to be able to provide human-readable names for functions
    used in evaluations, for functionality like producing a human-readable list
    of missing requirements for an item.
-1. Supporting multiple items at a single location would avoid the need to name
-   every spot in places where there are many available, at some cost to
-   expressivity and specificness.
 1. It would be nice to support some form of simplification or coalescing in
    order to be able to do things like automatically calculate the requirements
    to complete a dungeon.
@@ -243,6 +263,13 @@ necessary for the language:
 
 There are also a number of non-requirements that need not be implemented. Here
 are some that have been thought of, with reasoning:
+
 1. A separate description of an event as a concept distinct from an item is not
    required. They can simply be represented as items; possibly non-randomized
    ones.
+1. After experimentation, I've decided that it does not make sense to allow
+   multiple items at a single location, in the context of the current thinking
+   around nodes and locations; a single item simplifies things somewhat and in
+   practice most existing randomizers treat things as distinct; failing to
+   distinguish between, say, left and right items in a room would likely be seen
+   by many as a regression in comparison.
