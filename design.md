@@ -175,6 +175,18 @@ missing in the design.
    ALttP, a player can check the item at the Lumberjack Cave with no
    requirements, even though defeating Agahnim and the Pegasus Boots are
    required to collect it.*
+1. It should be possible to require links between locations to be randomized in
+   tandem. *Example: In ALttPR's Entrance Randomizer, some modes randomize
+   multi-entrance caves/buildings only amongst themselves, to preserve
+   overworld connectivity.*
+1. It should be possible, when links are randomized, to account for states that
+   are set in certain areas that might normally be described as requirements.
+   *Example: In ALttPR's Entrance Randomizer, some modes allow randomizing Light
+   and Dark World entrances interchangeably. Link is only a bunny when entering
+   from the Dark World, so while normally the Moon Pearl can be described as a
+   requirement on all DW locations, the bunny state needs to be much more
+   explicitly tracked in these variations, especially given the increased
+   variety of potential applications for the superbunny glitch.*
 
 ### Placements
 
