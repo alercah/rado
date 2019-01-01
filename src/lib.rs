@@ -1,6 +1,5 @@
 #![feature(uniform_paths)]
 #![feature(unrestricted_attribute_tokens)]
-#![feature(stmt_expr_attributes)]
 
 pub mod ast;
 pub mod token;
