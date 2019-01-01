@@ -56,7 +56,7 @@ required.
 
 ## General Syntax
 
-A Rado specification is composed of several files (usual extension `.pr`) put
+A Rado specification is composed of several files (usual extension `.rado`) put
 together. Each file is a series of *statements*, which always start with a
 keyword indicating the type of statement. A statement can span multiple lines,
 and multiple statements can appear on the same line. Semicolons are permitted

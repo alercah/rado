@@ -357,7 +357,7 @@ mod test {
         };
     }
 
-    sample!(sample_alttp_items, "samples/alttp/items.pr");
-    sample!(sample_alttp_regions, "samples/alttp/regions.pr");
-    sample!(sample_alttp_config, "samples/alttp/config.pr");
+    sample!(sample_alttp_items, "samples/alttp/items.rado");
+    sample!(sample_alttp_regions, "samples/alttp/regions.rado");
+    sample!(sample_alttp_config, "samples/alttp/config.rado");
 }
