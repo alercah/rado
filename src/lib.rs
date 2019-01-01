@@ -13,7 +13,7 @@ use mixed_ref::MixedRef;
 use std::collections::{HashMap, HashSet};
 use string_interner::DefaultStringInterner;
 
-/// An identifier in a Peri program.
+/// An identifier in a Rado program.
 ///
 /// Identifiers are interned within a single Program, so they cannot be directly
 /// converted to strings.
@@ -46,7 +46,7 @@ impl Path {
     }
 }
 
-/// An untyped Id for an entity in a Peri program.
+/// An untyped Id for an entity in a Rado program.
 ///
 /// Ids are only unique within a given type; two entities of different types may
 /// have the same Id. Use EntityId instead to get uniqueness.
@@ -59,7 +59,7 @@ impl From<Id> for id_map::Id {
     }
 }
 
-/// A typed id for an entity in a Peri program. Every entity has a unique
+/// A typed id for an entity in a Rado program. Every entity has a unique
 /// EntityId.
 #[derive(Copy, Clone, Hash, PartialEq, Eq, PartialOrd, Ord, Debug)]
 pub enum EntityId {
@@ -89,13 +89,13 @@ impl EntityId {
     unwrap_entity_id!(unwrap_tag, Tag, Ident);
 }
 
-/// A trait that abstracts over the various entities in Peri.
+/// A trait that abstracts over the various entities in Rado.
 pub trait Entity {
     /// Retrieve the entity's parent scope.
     fn parent(&self) -> ScopeId;
 }
 
-/// An identifier for a scope in a Peri program.
+/// An identifier for a scope in a Rado program.
 #[derive(Copy, Clone, Hash, PartialEq, Eq, PartialOrd, Ord, Debug)]
 pub enum ScopeId {
     Global,
@@ -107,7 +107,7 @@ pub enum ScopeId {
 /// outside this module, because you cannot construct the hack.
 pub struct PrivateHack(());
 
-/// A trait that abstracts over the various scopes in Peri. Almost all
+/// A trait that abstracts over the various scopes in Rado. Almost all
 /// implementations are also entities, but Program implements the global scope.
 pub trait Scope {
     /// Retrieve the scope's parent. Only the global scope does not have a parent.
@@ -122,7 +122,7 @@ pub trait Scope {
     fn insert_child(&mut self, i: Ident, e: EntityId, _: PrivateHack);
 }
 
-/// A Peri program represents the abstract state of a Peri program prior to it
+/// A Rado program represents the abstract state of a Rado program prior to it
 /// being configured or used.
 pub struct Program {
     items: IdMap<Item>,
@@ -228,7 +228,7 @@ impl Program {
     }
 }
 
-/// A Peri region.
+/// A Rado region.
 pub struct Region {
     parent: ScopeId,
     name: Name,

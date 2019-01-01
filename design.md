@@ -1,6 +1,6 @@
 ## Underlying Philosophy
 
-The first questions that Peri aims to tackle are of the form "Can the player
+The first questions that Rado aims to tackle are of the form "Can the player
 accomplish this goal, given certain parameters?" In the simplest case, the goals
 are of the form "retrieve the item at a given location". The most important
 other goal is "complete the game's win condition", since ultimately, completing
@@ -49,7 +49,7 @@ navigate between them.
 
 A major piece from the logic side is configurations. Randomizers often have many
 inputs that are user-configurable, to tweak difficulty or provide for
-interesting new modes. Peri should be able to represent these. There are also
+interesting new modes. Rado should be able to represent these. There are also
 various options that the user may wish to set representing the techniques that
 they know, and even if a randomizer does not take account for them, it is useful
 for a tracker to be able to understand when an item is accessible but not by the
@@ -235,7 +235,7 @@ missing in the design.
 
 ### Functionality
 
-1. :heavy_exclamation_mark: Peri should provide a library which can be used to
+1. :heavy_exclamation_mark: Rado should provide a library which can be used to
    parse and work with logic files.
 1. :heavy_exclamation_mark: The library should allow specifying the files
    composing a module, and the order in which they are loaded.

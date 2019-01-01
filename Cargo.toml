@@ -1,5 +1,5 @@
 [package]
-name = "peri-lang"
+name = "rado"
 version = "0.1.0"
 authors = ["Alexis Hunt <alercah@gmail.com>"]
 edition = '2018'

@@ -46,7 +46,7 @@ macro_rules! toks {
     };
 }
 
-/// Peri keywords.
+/// Rado keywords.
 toks! { Kw;
     err ParseKwError;
     // Declarations
@@ -105,7 +105,7 @@ toks! { Kw;
     Default <- "default",
 }
 
-/// Peri symbol tokens. Each operator is a distinct token, so some tokens are
+/// Rado symbol tokens. Each operator is a distinct token, so some tokens are
 /// multiple characters long.
 toks! { Sym;
     err ParseSymError;
@@ -159,7 +159,7 @@ impl fmt::Display for Sign {
     }
 }
 
-/// A Peri token.
+/// A Rado token.
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
 pub enum Tok<'a> {
     /// A keyword.

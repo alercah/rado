@@ -1,46 +1,46 @@
 # Language Description
 
-Peri is a declarative language that expresses logical systems. For the most
-part, there is no state, input/output, or side effects in Peri. Later
+Rado is a declarative language that expresses logical systems. For the most
+part, there is no state, input/output, or side effects in Rado. Later
 declarations can modify earlier ones, however, all declarations are processed
-fully before any evaluation can occur. The logical system described by a Peri
+fully before any evaluation can occur. The logical system described by a Rado
 specification can be queried using a suitable interpreter.
 
 ## Overview
 
-In Peri, the most basic concepts are *items* and *locations*. In a randomizer
+In Rado, the most basic concepts are *items* and *locations*. In a randomizer
 game, the available items are shuffled and placed in the various locations. To
-Peri, an item is little more than a piece of data with some properties, and a
+Rado, an item is little more than a piece of data with some properties, and a
 location is a place where an item can go.
 
 Not all locations are equal, of course. Some require that the player have
 already collected a certain item, have reached a particular event trigger, or
-any number of other conditions. In Peri, these are expressed as *requirements*.
+any number of other conditions. In Rado, these are expressed as *requirements*.
 
-In order to facilitate organizing locations, Peri has the concept of *regions*,
+In order to facilitate organizing locations, Rado has the concept of *regions*,
 which correspond to areas in the game that a player can visit. Regions can have
 *links* between each other, defining how the player can traverse the game and
 the requirements to do so.
 
-In order to allow for code reuse, Peri allows items to have *tags* indicating
+In order to allow for code reuse, Rado allows items to have *tags* indicating
 common properties, as well as associated *values* such as numerical parameters.
 These can be referenced in requirements or in *functions* used to compute values
 (particularly requirements).
 
-Values are generally numeric (arbitrary rational numbers) or boolean, but Peri
+Values are generally numeric (arbitrary rational numbers) or boolean, but Rado
 also supports strings, user-defined enumerations, and lists. Items are also a
 type of their own.
 
-Names in Peri follow a rudimentary scoping system. Regions introduce scopes
+Names in Rado follow a rudimentary scoping system. Regions introduce scopes
 implicitly, and a scope can be explicitly declared with a *module*.
 
-Finally, to support customization, Peri supports *configs*, which are values
+Finally, to support customization, Rado supports *configs*, which are values
 describing various input parameters to the randomization process, such as the
 game mode or a player's known techniques.
 
 ## Scoping
 
-Scoping in Peri is quite simple. Each region introduces a new scope. When a name
+Scoping in Rado is quite simple. Each region introduces a new scope. When a name
 is used, it can refer to any name declared in the same or an enclosing scope
 (even if it is declared after the point of use). Names in other scopes can be
 referred to with a dot syntax `Outer.Inner`; dot syntax is also used to refer to
@@ -56,7 +56,7 @@ required.
 
 ## General Syntax
 
-A Peri specification is composed of several files (usual extension `.pr`) put
+A Rado specification is composed of several files (usual extension `.pr`) put
 together. Each file is a series of *statements*, which always start with a
 keyword indicating the type of statement. A statement can span multiple lines,
 and multiple statements can appear on the same line. Semicolons are permitted
@@ -65,7 +65,7 @@ disambiguate. They are encouraged when multiple statements appear on a single
 line. Many statements include a *block*, which is a series of statements inside
 a pair of braces `{ }`.
 
-Peri's expression syntax supports basic arithmetic operators (`+`, `-`, `*`,
+Rado's expression syntax supports basic arithmetic operators (`+`, `-`, `*`,
 `/`, and `%`), comparison operators (`<`, `<=`, `>`, `>=`, `==`, and `!=`), and
 logical operators (`and`, `or`, `not`), as well as function calls (`f()`). For
 conditional evaluation, `if ... then ... else ...` can be used, or a `match`
@@ -553,7 +553,7 @@ logic's purposes.
 
 ## Types
 
-Peri has the following types:
+Rado has the following types:
 
 * `num`: arbitrary-precision rational numbers
 * `item`: a declared item or tag
@@ -576,7 +576,7 @@ functions are stateless, this is equivalent to a `T`.
 
 ## Expressions
 
-Expressions are fairly straightforward in Peri. The following are supported, in
+Expressions are fairly straightforward in Rado. The following are supported, in
 order of precedence:
 
 1.  Parenthesized expressions
