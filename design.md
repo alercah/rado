@@ -69,21 +69,24 @@ design is to require you to use an item immediately after acquiring it to escape
 the immediate area; without permitting this, you make the vanilla placement
 unacceptable.
 
-Placement restrictions must also be encodeable, limiting where items can be or
-possibly even requiring them to be in certain locations. While not strictly
-required for trackers, in practice the ability to do so may make it easier to
-handle some cases more elegantly, and be more extensible to different cases.
-Probably, a tracker would be more interested in understanding different classes
-of locations (a type of metadata, perhaps?).
+In the longer term, it's also valuable to encode placement restrictions on
+items, which aren't really a part of the gameplay but are inherent in the
+randomizer. If we can express them nicely, then this opens up future options,
+such as a smar tracker that can help narrow down locations that are currently
+sequence broken, or which can help provide smart guides to an area. This could
+also allow some placement algorithms (such as the naive "place everything
+uniformly at random and then validate") to be implemented generically. Entirely
+bespoke algorithms will, however, always be beyond the reaches of a language
+like Rado.
 
 ## Specific Requirements
 
 Below follows a list of requirements that the language and engine should be able
 to meet. Requirements that I feel are required for a minimum viable product
-(largely, those required for a version version of ALttP and Super Metroid
-support) will be marked with :heavy_exclamation_mark: at the beginning; the
-other requirements need not be implemented or even fully specced early on, so
-long as we can design with the possibility of later adding them in mind.
+(largely, but not exactly those required for a version of ALttP and Super
+Metroid support) will be marked with :heavy_exclamation_mark: at the beginning;
+the other requirements need not be implemented or even fully specced early on,
+so long as we can design with the possibility of later adding them in mind.
 Examples will be added for most requirements.
 
 Items marked with a :heavy_check_mark: were, in my estimation, properly
@@ -285,3 +288,22 @@ are some that have been thought of, with reasoning:
    practice most existing randomizers treat things as distinct; failing to
    distinguish between, say, left and right items in a room would likely be seen
    by many as a regression in comparison.
+
+## Choice of Language
+
+Rust was chosen as the language to write Rado in because, although it is not the
+easiest language for newer developers, it was my (alercah's) newest language at
+the time, and its solid C FFI support, combined with WebAssembly under active
+development, offers a lot of opportunity to write one single library with interfaces in
+a number of other languages. By doing this (and, similarly, by choosing to
+design a DSL with an interpreter rather than just making a standard data
+structure in JSON or the like), it means that the work to interpret and perform
+the logic only needs to be done once.
+
+In the longer term, implementing queries against arbitrary logics will be
+extremely computationally intense; it's likely that the logics will at some
+point be accidentally Turing-complete with careful abuse of state (although
+realistically I'd prefer to keep them in, say, `PSPACE` if feasible). The
+logics will certainly be `NP`-hard at least, since they can include arbitrary
+logical expressions. As a result, efficient algorithms will be needed to analyze
+especially complex logics, making a high-performance language a boon.

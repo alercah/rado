@@ -1,117 +1,66 @@
 # Language Description
 
-**This is currently undergoing major revision**
+**This is the previous version of the language design. It is kept for reference
+only while the new design is being fleshed out.**
 
 Rado is a declarative language that expresses logical systems. For the most
-part, there is no state, input/output, or side effects in Rado itself. The
-language does support delcarations that override or modify earlier declarations,
-however, in order to facilitate composability and dynamic configuration.
-
-Once a program is fully loaded and configurations selected, resolving all of the
-overrides and modifications, the resulting Rado program represents a logical
-system that can be queried programmatically to determine things like whether a
-goal is achievable (and how) or what options a player has next. These logical
-systems do have a concept of state, which is vital to their interpretation. 
+part, there is no state, input/output, or side effects in Rado. Later
+declarations can modify earlier ones, however, all declarations are processed
+fully before any evaluation can occur. The logical system described by a Rado
+specification can be queried using a suitable interpreter.
 
 ## Overview
 
-In Rado, the most basic concepts are *nodes* and *actions*. A node represents
-some location (possibly abstract) in the game being described, and an action is
-some activity that a player can perform, such as traveling to a different node
-or picking up an item.
-
-In a typical randomizer game, the available *items* are shuffled and placed in
-the various locations. To Rado, an item is little more than a piece of data with
-some properties, with an associated state of whether the player possesses it or
-not. The locations items can be placed would be nodes, which would get actions
-to allow the player to collect the item. In addition to items, other kinds of
-kinds of player state like *inventories* can have extra functionality.
+In Rado, the most basic concepts are *items* and *locations*. In a randomizer
+game, the available items are shuffled and placed in the various locations. To
+Rado, an item is little more than a piece of data with some properties, and a
+location is a place where an item can go.
 
 Not all locations are equal, of course. Some require that the player have
 already collected a certain item, have reached a particular event trigger, or
-any number of other conditions. In Rado, these are expressed as *requirements*
-on the actions. A typical setup would be to have a node with an action to pick
-up an item, and have every link to that node require the various prerequisites.
+any number of other conditions. In Rado, these are expressed as *requirements*.
 
-*Regions* are one of the two main kinds of scoping in Rado (the others are modules,
-which will be covered later), and can play a direct role in structure. Regions
-can have properties and available actions that apply everywhere inside them, so
-that they do not have to be assigned to every individual link. Regions can also
-be used for namespacing purposes.
+In order to facilitate organizing locations, Rado has the concept of *regions*,
+which correspond to areas in the game that a player can visit. Regions can have
+*links* between each other, defining how the player can traverse the game and
+the requirements to do so.
 
-An action is usually deliberately done by a player, but in some cases they will
-happen automatically. These *triggers* can be used, for instance, to describe a
-state change that happens when a player enters or leaves a region.
+In order to allow for code reuse, Rado allows items to have *tags* indicating
+common properties, as well as associated *values* such as numerical parameters.
+These can be referenced in requirements or in *functions* used to compute values
+(particularly requirements).
 
-Regions, nodes, actions, and a few other entities like items can have *tags*,
-which are simply indicators that make it easy to refer to many similar entities.
-They can also have *values*, which store additional data on them. Rado supports
-definition of *functions* as well, which can be used to compose and reuse
-calculations, requirements, and actions. Note that while functions in Rado are
-stateless, they can be used to compose actions which may have effects on
-the game state when performed by the player.
+Values are generally numeric (arbitrary rational numbers) or boolean, but Rado
+also supports strings, user-defined enumerations, and lists. Items are also a
+type of their own.
 
-The type system is simple, featuring mostly built-in types, but with support for
-user-defined enumerations. The other types are mostly primitives, as well as
-lists and functions.
+Names in Rado follow a rudimentary scoping system. Regions introduce scopes
+implicitly, and a scope can be explicitly declared with a *module*.
 
-The final pieces of the language are to allow for greater flexibility in the use
-of Rado programs. *Configs* are option values, which can be used to set
-randomization modes or difficulties, but are specified by the user of Rado
-and become built into the logic system. Configs can be grouped into
-*configsets*, which can provide condensed presets. Code can be made
-*conditional* on configuration values, and conditional code can be used to
-override or otherwise modify other code, so that the conditional logic can be
-isolated to one part of the proram.
-
-*Random parameters* are a similar concept, but represent features chosen
-randomly by the randomizer and therefore are a part of the game logic.
-
-Finally, Rado supports *modules*, which are self-contained parts of a Rado
-program, like libraries in other languages. The can be used for reusable code
-like libraries, but also to fuse two programs together into a larger one, such
-as with a combo randomizer. As with conditionals, code can override the contents
-of a module it loads, such as to patch the two bases of a combo randomizer
-together.
-
-## File Structure
-
-Rado programs are written in one or more files (usual extension `.rado`), and
-one file represents the base file. It specifies which other files to load (which
-can in turn specify additional files, etc.) when specifying modules and regions.
-
-A module can have one or more files in it; these files are all compiled together
-as part of a single program (so, for instance, they can have mutual references
-between them). Modules, on the other hand, cannot see any modules that they did
-not load directly. This ensures that there are no namespace collisions, etc.
-Modules can also be declared inline within a single file (mostly for testing
-purposes).
+Finally, to support customization, Rado supports *configs*, which are values
+describing various input parameters to the randomization process, such as the
+game mode or a player's known techniques.
 
 ## Scoping
 
-Scoping in Rado is generally quite simple lexical scope. Paths use `.` as a
-separator as in `Outer.Inner`; there is no distinction between accessing
-properties on entities and namespace scoping. The first name in a path must
-always name an entity (never a member/property of the entity), with a few
-exceptions, and is looked up in successive scopes outward from where it is used.
+Scoping in Rado is quite simple. Each region introduces a new scope. When a name
+is used, it can refer to any name declared in the same or an enclosing scope
+(even if it is declared after the point of use). Names in other scopes can be
+referred to with a dot syntax `Outer.Inner`; dot syntax is also used to refer to
+values on items.
 
-Lookup can never travel out of a module or into a conditional block; names
-declared in modules are not visible in inner modules, and names declared in
-conditional blocks are only visible inside that block. Note that when overriding
-a module, this does not apply, since an override is outside the module.
+Conditional blocks also introduce scopes, however, they are anonymous so they
+cannot be referred to from outside.
 
 Almost all names are declared in the innermost scope in which they appear. Name
 shadowing is not permitted; a declaration cannot use the same name as something
-else in the same or an enclosing scope. This is true even for modules; a program
-can't import a module and declare somthing of the same name as part of the
-module in an outer scope. This is because overrides can do name lookup in the
-context of the module, but with the ability to escape it. The only exception is
-values, since values cannot be looked up except through the entity they are
-attached to.
+else in the same or an enclosing scope. This means that absolute paths are not
+required.
 
 ## General Syntax
 
-A Rado file is a series of *statements*, which always start with a
+A Rado specification is composed of several files (usual extension `.rado`) put
+together. Each file is a series of *statements*, which always start with a
 keyword indicating the type of statement. A statement can span multiple lines,
 and multiple statements can appear on the same line. Semicolons are permitted
 between statements, but are not necessary; the starting keyword is enough to
@@ -119,15 +68,15 @@ disambiguate. They are encouraged when multiple statements appear on a single
 line. Many statements include a *block*, which is a series of statements inside
 a pair of braces `{ }`.
 
-Rado's [expression](#expressions) syntax supports basic arithmetic operators
-(`+`, `-`, `*`, `/`, and `%`), comparison operators (`<`, `<=`, `>`, `>=`, `==`,
-and `!=`), and logical operators (`and`, `or`, `not`), as well as function calls
-(`f()`). For conditional evaluation, `if ... then ... else ...` can be used, or
-a `match` expression can be used to perform a rudimentary switch-case operation
-on an enumeration (`match val { Foo => ..., Bar => ... }`). Expressions can be
-grouped in parentheses to disambiguate `( ... )` precedence, which is mostly
-like in `C` except that it is an error to try to associate `and` and `or`
-without nesting one operator or the other in parentheses.
+Rado's expression syntax supports basic arithmetic operators (`+`, `-`, `*`,
+`/`, and `%`), comparison operators (`<`, `<=`, `>`, `>=`, `==`, and `!=`), and
+logical operators (`and`, `or`, `not`), as well as function calls (`f()`). For
+conditional evaluation, `if ... then ... else ...` can be used, or a `match`
+expression can be used to perform a rudimentary switch-case operation on an
+enumeration (`match val { Foo => ..., Bar => ... }`). Expressions can be grouped
+in parentheses to disambiguate `( ... )` precedence, which is mostly like in `C`
+except that it is an error to try to associate `and` and `or` without nesting
+one operator or the other in parentheses.
 
 Comments are in C++ style: `//` for line comments, `/* */` for block comments.
 Unlike in C and C++, however, block comments can be nested.
@@ -148,7 +97,7 @@ They are UTF-8 encoded.
 
 ## Declarations
 
-A *declaration* is a statement which creates an entity and gives it a name. Most
+A *declaration* is a statement which creates something and gives it a name. Most
 declarations have of the general form `decl Name "Human Name" ...`.
 
 *  `decl` is a keyword which indicates the type of declaration. It is mandatory
@@ -160,93 +109,98 @@ declarations have of the general form `decl Name "Human Name" ...`.
    thing being declared. Only some types of declarations allow them, and they
    are always optional. If one is not provided, the compiler will construct a
    human-readable name by adding spaces in between words of an `UpperCamelCase`
-   name. This can be used to make spoiler output more readable, for instance.
+   name.
 *  `...` is the rest of the declaration. The syntax varies depending on the kind
    of declaration and may be disallowed, optional, or mandatory.
 
-Some kinds of declarations can be [modified, replaced, or deleted](#overrides) in
-conditional blocks or modules; see the section on overrides for more details. A
-few also support fixing them to specific values. The specific effects of
-overriding any given kind of declaration are described below. Note that, in
-general, deleting a declaration does not truly remove it from the program; it
-actually replaces it with a special *null entity* of that type, so that name
-lookup continues to work. For the most part, any reference to null entities is
-aan error, although not always. The cases where they are allowed are where it is
-safe to remove them from the semantics without requiring manually updating each
-location as part of the override.
+Some kinds of declarations can be modified or overridden in conditional blocks,
+as described below. Restrictions are noted on each kind of declaration are noted
+in the section for that declaration.
 
-Tags, values, and alias statements are [property
-statements](#property-statements) that also declare names. They have special
-properties, however, and are described in their respective sections. Enum (and
-config-enum) declarations also declare the names of their enumerator values in
-addition to the type.
+Tags, values, and alias statements also declare names, but tags implicitly live
+in the global namespace rather than being explicitly declared, values have their
+own namespace, and aliases only give new names to already-existing things.
 
-All declarations can be declared in any module or region scope, except that
-modules cannot be declared inside regions. The gobal scope at the root of the
-program is considered to be a module.
+### Region Declaration
 
-### Module & Region Declarations
+> Syntax: `region` *identifier* (*string-literal*)? *block*
 
-> Syntax: (`module` | `region`) *identifier* (*string-literal*?) (*block* | *string-literal*)
+A region declaration declares a region. Generally, the logic engine considers a
+region to be a place where the player is able to be, assuming that the player is
+actually able to make it there. Additionally, items can be located in regions,
+so that the player can pick them up.
 
-Modules and regions are declared the same way. They either contain a block with
-the statements in the module or region, or a filename denoting the file
-containing the code for that scope. The filename is always looked up relative to
-the directory containing the declaration, or the current working directory if
-the statement doesn't originate in a file (for instance, because it's added
-programmatically).
+Regions double as namespaces; regions introduce new scopes and declarations can
+be placed in them. There is no actual semantic meaning to the nesting property
+of regions. They are not separate concepts because there is currently no need to
+actually distinguish between them.
 
-Modules and regions can both be modified; this is part of the core of the
-override system. Deleting a module or region deletes every declaration inside
-it. Replacing a module or region deletes every declaration that isn't redeclared
-in the replaced scope. If for some reason the declarations cannot be deleted,
-then it is an error.
+Note that a region's accessibility is declared by its links, so a region with no
+links will be inaccessible (unless the player starts there) and can be used just
+to introduce a scope without affecting the logic.
+
+A region declaration cannot be deleted if it contains non-deleteable
+declarations.
+
+### Link Declaration
+
+> Syntax: `link` (*identifier* (*string-literal*))? (`with` | `to` | `from`) list(*name*) (*block*)?
+
+A link declaration declares a link between two regions. The logic uses links to
+work out how the player can move around in the game. A link declares a
+connection with the named regions based on the second word: `to` is a one-way
+link to those regions, `from` is a one-way link from them, and `with` is a
+two-way link.
+
+On a modifying declaration, the `with`, `to`, or `from` and list can be omitted.
+If it is not, the direction must match, and the list is optionally a modifier
+list.
+
+**Links are planned to be significantly changed and will not be implemented
+anything like described.**
 
 ### Item Declaration
 
 > Syntax: `item` *identifier* (*string-literal*)? (*block*)?
 
-An item declaration introduces a kind of state into the logic system,
-representing, more or less, how many of some item or trigger the player has hit.
-The optional block in the declaration can be used to declare properties of an
-item. Otherwise, by default, the player can accumulate any number of a given
-item (though cannot go below 0).
+An item declaration introduces a new item into the logic. To the logic engine,
+an item is something that the player can acquire, possibly in multiples. The
+logic assumes that items are randomized among their locations.
 
-Note that the term "item" is a bit misleading and narrow. An item declaration
-can be used to represent a wide variety of player state properties, not just
-in-game items. For instance, items can represent story progression or other
-event triggers, or special states that the player might acquire. In some cases,
-a flag may be more appropriate. The primary difference between the two is that a
-flag must always have some value, while an item is something that a player can
-acquire potentially in multiples. They support different functionality as a
-result.
+#### Multi-Item Declaration
 
-Item declarations can be overridden; when an item is deleted a null item takes
-its place. A null item can never be possessed by the player.
+> Syntax: `items` list(*identifier*) *block*
 
-### Flag Declaration
+A multi-item declaration is a shortcut for declaring multiple items. Inside its
+block, only item declarations and nested multi-item declarations are allowed.
+Item declarations must omit the leading `item` keyword.
 
-> Syntax: `flag` *identifier* (*string-literal*)? `:` *type* *block*
+The list of names in the declaration is a list of tags which are declared on
+every item inside. When multi-item declarations are nested, all the tags from
+all the nested declarations are declared on each item.
 
-A flag declaration is the other primary kind of state in the logic system. It
-must declare a type of `num`, `bool`, or an enum type. It must always have a
-value, but the value can change over time. As a result, the block is mandatory;
-it must contain a default statement.
+Multi-item declarations can be nested; the effect is to declare all the tags on
+the contents.
 
-Flag declarations can be overridden, but their type cannot be changed. A null
-flag cannot be referenced anywhere; flags can also be fixed.
+Items declarations can be prefixed with `modify` or `override`, in which case
+they behave as if every declaration in them is as well. In modifying
+multi-item declarations, the tag list must be a modifier list.
 
-### Inventory Declaration
+### Location Declaration
 
-> Syntax: `inventory` *identifier* (*string-literal*)? (*block*)?
+> Syntax: `location` *identifier* (*string-literal*)? (*block*)?
 
-An inventory is an abstract container that can store items of multiple different
-kinds. It's used in conjunction with the `inventory` property on items to allow
-multiple different items to share a common capacity. The optional block can
-contain property statements.  The default maximum quantity is 1.
+A location declaration introduces a new location into the logic, which serves as
+a place for an item to be located.
 
-Inventory declarations can be overridden. It's an error for an item to use a
-null inventory for its capacity.
+#### Multi-Location Declaration
+
+> Syntax: `locations` *block*
+
+A multi-location declaration is a block where many locations can be declared,
+omitting the leading `location` keyword, similar to a multi-item declaration. It
+can be prefixed with `modify` or `override` to make each declaration contained
+into a modifying or overriding declaration.
 
 ### Function Declaration
 
@@ -258,12 +212,9 @@ Likewise, the argument and return types can be omitted; if they are, then they
 are inferred.
 
 A function can be used anywhere an expression is legal. If it has no arguments,
-then it is called automatically without needing a call expression `()`, so
-functions with no arguments can be used like constants.
+then it is called automatically without needing a call expression `()`.
 
-Functions can be replaced or deleted, but not modified. A replaced function must
-have the same signature as the one it replaces. A null function cannot be
-referenced in a context where it could be called.
+Functions can be overridden, but not modified or deleted.
 
 ### Enum Declaration
 
@@ -274,35 +225,38 @@ block must consist only of an identifier and possibly a human-readable name;
 each one is the name of a value of the enumeration. The declaration declares
 both the type name and the names of each value in the surrounding scope.
 
-Enums cannot be replaced, but can be deleted or modified. A null enumeration
-type cannot be used anywhere; a null enumerator value cannot be used anywhere
-except as the operand to a comparison or in a `match` arm. A null enumeration's
-values are all also null.
+Enums cannot be modified or overridden.
 
 ### Config Declaration
 
-> Syntax: `config` *identifier* (*string-literal*)? `:` *type* (*block*)?
+> Syntax: `config` *identifier* (*string-literal*)? `:` *type* (`default` *expression*)?
 
 A config declaration introduces a new configuration option for the logic. A type
-must be explicitly specified. Optionally, a default statement can be included in
-a block.
+must be explicitly specified. Optionally, a default value can be included; the
+default must be a constant.
 
-Configs can be modified to change the default value only, and cannot be
-replaced otherwise. Configs cannot be deleted but can be fixed.
+Enums cannot be modified, overridden, or deleted.
 
 ### Config-Enum Declaration
 
-> Syntax: `config` *identifier* (*string-literal*)? `:` `enum` *block*
+> Syntax: `config` *identifier* (*string-literal*)? `:` `enum` (`default` *expression*)
 
 A config-enum declaration is a hybrid declaration that declares both an enum
 type and a config with the same name. The config's type is that of the enum.
 Since enums are types and configs are values, this does not cause ambiguity. It
 is a shorthand for declaring the config and enum separately, but also allows
-them to share a name which is not otherwise possible. The block may, in addition
-to enum declarations, include a `default` statement.
+them to share a name which is not otherwise possible.
 
-Config-enums cannot be replaced, but can be modified as either enums or configs
-can. They can also be fixed like configs can.
+Config-enums cannot be modified, overridden, or deleted.
+
+### Multi-Config Declaration
+
+> Syntax: `configs` `:` *type* *block*
+
+A multi-config declaration declares many configs in one block, all of the same
+type. The block must contain only config declarations without the leading
+`config` keyword. Config-enum declarations may not be declared in this fashion;
+declare the enum separately.
 
 ### Configset Declaration
 
@@ -323,8 +277,19 @@ in the other configset as well, as modified by any explicit assignments. A
 configset cannot contain multiple overlapping configsets, nor can it contain
 itself directly or indirectly.
 
-Configsets cannot be modified, but they can be replaced, deleted, and fixed to a
-boolean value. A null or fixed configset cannot be referred to elsewhere.
+Configsets cannot be modified, overridden, or deleted.
+
+### Random Declarations
+
+> Syntax: `random` *identifier* (*string-literal*)? `=` `[` list(*expression*) `]`
+
+A random declaration declares a randomized parameter that isn't an item or
+location, but still needs to be accounted for in logic. The expression list must
+all be the same type and must be distinct constants.
+
+Random declarations can be modified and overridden. In a modifying declaration,
+the expression list is optionally a modifier list. Random declarations cannot be
+deleted.
 
 ## Conditional Blocks
 
