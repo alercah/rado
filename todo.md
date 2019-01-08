@@ -14,7 +14,7 @@ These are the areas of work left in the redesign, in no particular order.
     them (like total amount healed). Also address numeric types, and in
     particular whether there should be an `int` type (probably) and whether
     types with infinities are needed (probably yes, also?)
-1.  Implement randomized parameters.
+1.  Implement randomized parameters, including for links.
 1.  Define the effect of division by 0 or other runtime errros.
 
 Ideas:
@@ -29,6 +29,9 @@ Ideas:
 *   For 6, can they reasonably be implemented on top of flags (rename to
     variables?)?
 *   For 7, remember to include visibility statement.
+*   For 7, randomized links are probaly some kind of randomized tagged action?
+    Randomization should definitely not require that it be done as a
+    permutation; it ought to be possible to define what can go in its place.
 *   6 and 7 may need to be done together, to ensure that randomized item
     locations are quite easy to do.
 *   Standard library of templates.
