@@ -1,5 +1,5 @@
-#![feature(uniform_paths)]
-#![feature(unrestricted_attribute_tokens)]
+#![warn(clippy::all)]
+#![feature(copied)]
 
 pub mod ast;
 pub mod token;
@@ -73,7 +73,11 @@ pub enum EntityId {
 
 macro_rules! unwrap_entity_id {
   ($name:ident, $variant:ident, $ty:ident) => {
-    #[doc(concat!("Unwrap this EntityId as a ", stringify!($variant), ".\n\n# Panics\n\nPanics if `self` is a different variant."))]
+    /// Unwrap this `EntityId` to the specific variant.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `self` is a different variant.
     pub fn $name(&self) -> $ty {
       match self {
         EntityId::$variant(x) => *x,
@@ -136,7 +140,7 @@ impl Scope for Program {
     None
   }
   fn lookup_ident(&self, i: Ident) -> Option<EntityId> {
-    self.global_decls.get(&i).map(|&e| e)
+    self.global_decls.get(&i).copied()
   }
   fn insert_child(&mut self, i: Ident, e: EntityId, _: PrivateHack) {
     if self.global_decls.insert(i, e).is_some() {
@@ -182,7 +186,7 @@ impl Program {
     let mut segs = path.0.iter();
     let mut cur = self
       .lookup(scope, *segs.next().unwrap())
-      .ok_or(format_err!("first identifier in path not found in lookup"))?;
+      .ok_or_else(|| format_err!("first identifier in path not found in lookup"))?;
     for next in segs {
       let child: &dyn Scope;
       match cur {
@@ -191,7 +195,7 @@ impl Program {
       }
       cur = child
         .lookup_ident(*next)
-        .ok_or(format_err!("next segment not found in child scope"))?;
+        .ok_or_else(|| format_err!("next segment not found in child scope"))?;
     }
     Ok(cur)
   }
@@ -246,7 +250,7 @@ impl Scope for Region {
     Some(self.parent)
   }
   fn lookup_ident(&self, i: Ident) -> Option<EntityId> {
-    self.children.get(&i).map(|&e| e)
+    self.children.get(&i).copied()
   }
   fn insert_child(&mut self, i: Ident, e: EntityId, _: PrivateHack) {
     if self.children.insert(i, e).is_some() {
@@ -305,7 +309,7 @@ impl FromAST {
     Ok(self.0)
   }
 
-  fn populate_scope(&mut self, scope: ScopeId, stmts: &Vec<ast::Stmt>) -> Result<(), Error> {
+  fn populate_scope(&mut self, scope: ScopeId, stmts: &[ast::Stmt]) -> Result<(), Error> {
     // First pass: load all the entities, so that name lookup becomes
     // possible. Tags are the only properties loaded.
     for s in stmts {
@@ -324,7 +328,7 @@ impl FromAST {
     self.validate_name_collisions(parent, n.ident)?;
 
     let r = Region {
-      parent: parent,
+      parent,
       name: n,
       children: HashMap::new(),
     };
@@ -346,7 +350,7 @@ impl FromAST {
     // We put properties off until the second pass ordinarily, except that
     // tags actually declare the tag names, so we process them now.
     let i = Item {
-      parent: parent,
+      parent,
       name: n,
       tags: HashSet::new(),
     };
@@ -407,6 +411,7 @@ impl FromAST {
           }
           return Err(format_err!("tag declared with same name as entity"));
         }
+        #[allow(clippy::single_match)]
         match e {
           EntityId::Region(r) => to_check.push(self.regions.get(r.0).unwrap()),
           _ => {}

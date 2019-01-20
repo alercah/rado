@@ -1,7 +1,7 @@
 use lalrpop_util::lalrpop_mod;
 use serde_derive::{Deserialize, Serialize};
 
-lalrpop_mod!(pub parse, "/ast/parse.rs");
+lalrpop_mod!(#[allow(clippy::all)] pub parse, "/ast/parse.rs");
 
 use std::vec::Vec;
 

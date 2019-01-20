@@ -186,9 +186,9 @@ impl<'a> Tok<'a> {
   /// Convert any `Cow` strings owned by this token to owned versions, making
   /// copies if needed. After this, calling `to_owned` on them will be a
   /// no-op.
-  pub fn into_owned(t: Tok<'a>) -> Tok<'static> {
+  pub fn into_owned(self) -> Tok<'static> {
     use Tok::*;
-    match t {
+    match self {
       Kw(k) => Kw(k),
       Sym(s) => Sym(s),
       Ident(i) => Ident(Cow::Owned(i.into_owned())),
@@ -235,7 +235,7 @@ fn skip_block_comment(mut s: &str) -> Result<&str, Error> {
   loop {
     let end = s
       .find("*/")
-      .ok_or(format_err!("unterminated block comment"))?;
+      .ok_or_else(|| format_err!("unterminated block comment"))?;
     match s.find("/*") {
       Some(inner) if inner < end => s = &skip_block_comment(&s[inner..])?,
       _ => break Ok(unsafe { s.get_debug_checked(end + 2..) }),
@@ -244,15 +244,20 @@ fn skip_block_comment(mut s: &str) -> Result<&str, Error> {
 }
 
 /// Lex a numeric literal.
-fn lex_num_lit<'a>(mut s: &'a str) -> Result<(Cow<'a, str>, Option<Cow<'a, str>>, &'a str), Error> {
-  let i = s.find(|c: char| !c.is_ascii_digit()).unwrap_or(s.len());
+#[allow(clippy::type_complexity, clippy::many_single_char_names)]
+fn lex_num_lit(mut s: &str) -> Result<(Cow<'_, str>, Option<Cow<'_, str>>, &str), Error> {
+  let i = s
+    .find(|c: char| !c.is_ascii_digit())
+    .unwrap_or_else(|| s.len());
   let (w, mut f) = (unsafe { s.get_debug_checked(0..i).into() }, None);
   s = unsafe { s.get_debug_checked(i..) };
 
   let mut r = s.chars();
   if r.next() == Some('.') && r.next().map_or(false, |c| c.is_ascii_digit()) {
     s = unsafe { s.get_debug_checked(1..) };
-    let i = s.find(|c: char| !c.is_ascii_digit()).unwrap_or(s.len());
+    let i = s
+      .find(|c: char| !c.is_ascii_digit())
+      .unwrap_or_else(|| s.len());
     f = Some(unsafe { s.get_debug_checked(0..i) }.into());
     s = unsafe { s.get_debug_checked(i..) };
   }
@@ -265,13 +270,13 @@ fn lex_num_lit<'a>(mut s: &'a str) -> Result<(Cow<'a, str>, Option<Cow<'a, str>>
 /// Lex a string literal, and return the contents (with escapes processed) in the first position,
 /// and the remainder of the source in the second. s is expected to already have had the opening quote
 /// removed.
-fn lex_string_lit<'a>(mut s: &'a str) -> Result<(Cow<'a, str>, &'a str), Error> {
+fn lex_string_lit(mut s: &str) -> Result<(Cow<'_, str>, &str), Error> {
   // Easy case: there is no escape sequence, so we can just borrow the
   // contents directly.
-  let escape = s.find("\\").unwrap_or(s.len());
+  let escape = s.find('\\').unwrap_or_else(|| s.len());
   let quote = s
-    .find("\"")
-    .ok_or(format_err!("unterminated string literal"))?;
+    .find('\"')
+    .ok_or_else(|| format_err!("unterminated string literal"))?;
   if quote < escape {
     return Ok(unsafe {
       (
@@ -282,7 +287,7 @@ fn lex_string_lit<'a>(mut s: &'a str) -> Result<(Cow<'a, str>, &'a str), Error> 
   }
 
   let mut l = String::new();
-  while let Some(escape) = s.find("\\") {
+  while let Some(escape) = s.find('\\') {
     l += unsafe { s.get_debug_checked(0..escape) };
     s = unsafe { s.get_debug_checked(escape + 1..) };
     match s.chars().next() {
@@ -298,10 +303,10 @@ fn lex_string_lit<'a>(mut s: &'a str) -> Result<(Cow<'a, str>, &'a str), Error> 
     s = unsafe { s.get_debug_checked(1..) };
   }
   let quote = s
-    .find("\"")
-    .ok_or(format_err!("unterminated string literal"))?;
+    .find('\"')
+    .ok_or_else(|| format_err!("unterminated string literal"))?;
   l += unsafe { s.get_debug_checked(0..quote) };
-  return Ok((l.into(), unsafe { s.get_debug_checked(quote + 1..) }));
+  Ok((l.into(), unsafe { s.get_debug_checked(quote + 1..) }))
 }
 
 /// Lex a string into a token vector. An error occurs if the string is not made of legal tokens.
@@ -376,7 +381,7 @@ pub fn lex<'a>(mut s: &'a str) -> Result<Vec<Tok<'a>>, Error> {
         }
       },
       '!' => {
-        if rest.chars().next() == Some('=') {
+        if rest.starts_with('=') {
           toks.push(Tok::Sym(Sym::NEq));
           s = unsafe { s.get_debug_checked(2..) };
         } else {
@@ -398,7 +403,7 @@ pub fn lex<'a>(mut s: &'a str) -> Result<Vec<Tok<'a>>, Error> {
         }
       },
       '>' => {
-        if rest.chars().next() == Some('=') {
+        if rest.starts_with('=') {
           toks.push(Tok::Sym(Sym::GE));
           s = unsafe { s.get_debug_checked(2..) };
         } else {
@@ -407,7 +412,7 @@ pub fn lex<'a>(mut s: &'a str) -> Result<Vec<Tok<'a>>, Error> {
         }
       }
       '<' => {
-        if rest.chars().next() == Some('=') {
+        if rest.starts_with('=') {
           toks.push(Tok::Sym(Sym::LE));
           s = unsafe { s.get_debug_checked(2..) };
         } else {
@@ -443,7 +448,7 @@ pub fn lex<'a>(mut s: &'a str) -> Result<Vec<Tok<'a>>, Error> {
       c if c == '_' || c.is_ascii_alphabetic() => {
         let i = s
           .find(|c: char| c != '_' && !c.is_ascii_alphanumeric())
-          .unwrap_or(s.len());
+          .unwrap_or_else(|| s.len());
         let ident = unsafe { s.get_debug_checked(0..i) };
         s = unsafe { s.get_debug_checked(i..) };
         if let Ok(k) = ident.parse() {
