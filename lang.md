@@ -64,7 +64,7 @@ external source), a Rado *schema* is compiled into a single Rado *program*, and
 can be queried for information. A valid assignment of random parameters is
 called a *model*.
 
-Fro reusable components that can be mixed in, such as to declare reusable
+For reusable components that can be mixed in, such as to declare reusable
 combinations of flags and code, *templates* can be used. They are somewhat like
 macros but fully scoped.
 
@@ -415,10 +415,10 @@ A template cannot be instantiated recursively.
 
 ## Conditional Blocks
 
-> Syntax: `if` *expression* *block* (`else` *block*)?
+> Syntax: *tags*? `if` *expression* *block* (`else` *block*)?
 
 A conditional block makes it so that its contents take effect conditionally. The
-expression must be a constat expression of type `bool`. When the schema is
+expression must be a constant expression of type `bool`. When the schema is
 evaluated, the declarations within the main block are evaluated if and only if
 the condition is true. If an else block is present, it is evaluated if and only
 if the condition is false.
@@ -426,9 +426,42 @@ if the condition is false.
 When evaluated, the declarations in the conditional block are semantically
 introduced into the surrounding scope. This does not allow name lookup to
 penetrate into the conditional block; it is treated as its own anonymous scope
-for name kookup.
+for name lookup.
+
+The tag list for a conditional block may optionally prefix any tag with `not`;
+this inverts the tag's meaning. The tag as declared applies to the `if` block,
+and the negation applies to the `else` block. Thus, `#[Tag] if A { } else { }`
+has the same meaning as `#[not Tag] if not A { } else { }`.
 
 Conditional blocks cannot be overridden.
+
+### Exclusive Statement
+
+> Syntax: `exclusive` (`not`? *ident*)*-list*
+
+Conditional blocks containing conflicting overrides are not permitted to be
+simultaneously active (see below). In order to reduce the possibility of errors,
+the compiler may give errors when it detects that two conditional blocks have a
+potential for conflict, even if it doesn't directly observe them being active
+together.
+
+It's generally not viable for the compiler to attempt to reason through every
+possibile configuration to determine if two blocks can be active at the same
+time or not, so instead, if two blocks cannot be active at the same time, this
+must be explicitly declared. The exclusive statement declares that, of the tags
+(or their negations) in the list, only one of them will be active at a time. The
+compiler will allow conflicts between the conditionals so tagged, and will error
+if it ever does detect them simultaneously active (regardless of whether or not
+they conflict).
+
+The only exception to the principle of needing explicit declarations of
+exclusivity is that a tag and its negation are automatically exclusive.
+
+It's an error for a single block to have multiple exclusive tags declared on it.
+
+Currently, exclusive statements must occur at top level of a module and apply to
+the tags declared in that module, or its children. They may not themselves be
+conditional. They may not be overridden.
 
 ## Overrides
 
@@ -620,7 +653,7 @@ value's type.
 
 ### Gain Item
 
-> Syntax `gain` (*num-literal*) *name*
+> Syntax: `gain` (*num-literal*) *name*
 
 A gain action causes the player to gain or lose a specified item. If a quantity
 (which must be an integer) is specified, then then player gains or loses that
@@ -630,16 +663,36 @@ quantity instead of only one.
 
 ### Link
 
-> Syntax `link` *name*
+> Syntax: `link` *name*
 
 A link action causes the player to move to the specified node.
+
+### Victory
+
+> Syntax: `victory`
+
+A victory action indicates that the player wins the game. It is the objective
+representing completion of the game.
+
+### Failure
+
+> Syntax: `failure`
+
+A failure action represents the player failing their objective and losing the
+game. No progress can occur past this point. Note that in some games, death does
+not necessarily reset progress to a previous save point; `failure` is
+inappropriate for these.
+
+### Panic
+
+A call to the builtin `panic()` can be used as an action. It causes a panic.
 
 ## Types
 
 Rado has the following types:
 
+* `int`: arbitrary-precision integers
 * `num`: arbitrary-precision rational numbers
-* `num\*`: `num` plus positive and negative infinities.
 * `item`: an item
 * `bool`: a boolean
 * `action`: an action
@@ -648,17 +701,17 @@ Rado has the following types:
 * `fn (A1, A2, ...) -> T`: a function
 * lists: `[T]` is a list of `T`s
 * enums: for any declared enum `E`, `E` is the type of that enum
+* references: `&T` is a reference to a variable (flag or item) of type `T`; `T`
+  must be a scalar type or `item`.
 
-Most of these types are quite straightforward. There are no function types without arguments, as in `fn () -> T`, because functions are stateless. Instead, functions with no argument just return `T`.
+Most of these types are quite straightforward. There are no function types
+without arguments, as in `fn () -> T`, because functions are stateless. Instead,
+functions with no argument just return `T`.
 
-`item` coerces to `bool` when used as an argument to an `if` condition or to a
-boolean operator. In this case, its value is equal to "Does the player have one
-or more of the item?"
+`item` coerces to `bool`; the value is equal to "Does the player have one or
+more of the item?" References coerce to the referred type.
 
 `bool`, `num`, and enum types are collectively called *scalar types*.
-
-**During item work, reconsider numeric types: infinities and whether there
-should be an `int` type (there probably should).**
 
 ## Expressions
 
@@ -673,7 +726,7 @@ order of precedence:
 1.  Explicit list creation (`[a, b, c]`)
 1.  Function calls (`fn(...)`)
 1.  Boolean negation (`not`)
-1.  Multiplication, division, and modulus (`\*`, `/`, and `%`)
+1.  Multiplication, division, integer division, and remainder (`*`, `/`, `//`, and `%`)
 1.  Addition and subtraction for numbers (`+` and `-`)
 1.  Comparison (`==`, `!=`, `<`, `<=`, `>`, `>=`)
 1.  Boolean conjunction and disjunction (`and` and `or`)
@@ -682,26 +735,37 @@ order of precedence:
 Because arithmetic is infinitely precise, assocativity of most arithmetic binary
 operations doesn't matter. In order to reduce errors and avoid having to decide
 associativity otherwise, `and` and `or` do not associate with each other; one
-must be parenthesized. Similarly `%` does not associate with `\*` or `/`.
+must be parenthesized. Similarly `%` does not associate with `*`, `/`, or `//`.
 
-`num\*` can currently only be used in comparisons. `infinity` is the infinity
-literal.
+Division of `int`s with `/` returns a `num`. Integer division with `//` returns
+the result rounded down (not towards 0 for negative numbers). Integer remainder
+with `%` returns the remainder so that `p == (p // q) * q + (p % q)`; it will
+always have absolute value less than `q`'s and it will share `q`'s sign (if it
+is nonzero). Any attempt to divide by 0 will ccause a panic.
 
-If a declared name is encountered as a value, it represents that entity or its
-value, as appropriate. If a tag name is encountered, it represents a list of all
-entities or values that have that tag.
+If a declared name is encountered as a value, it represents the value of that
+entity, unless a reference is taken. If a tag name is encountered, it represents
+a list of all entities or values that have that tag. References cannot be taken
+to tags.
+
+Actions are values that can be passed around, but are not executed during
+expression evaluation. They're only executed during action evaluation.
 
 If a function has a single argument that is a list `[T]`, then it can also be
 called with any number of `T` arguments, and a list is implicitly created.
+Function arguments are passed by value; in particular, if a variable is passed
+into a function then the value will not change once the function starts
+executing, even if the function returns an action which updates the value.
 
 `else` branches are mandatory on `if` expressions unless the type is `action`,
 in which case the default is `do {}` i.e. the empty action.
 
-`match` expressions are used on enums only right now; each arm must be either an
-enumerator value or `_` to mean "anything". `_` must come last and must be
-present if not all enum values are covered (this can make overriding enums to
-add new elements difficult!). The comma between arms is currently mandatory; it
-is optional on the last arm and encouraged unless the `}` is on the same line.
+`match` expressions are used on enums only right now; each arm must be either
+one or more enumerator values separated by `|`, or `_` to mean "anything". `_`
+must come last and must be present if not all enum values are covered (this can
+make overriding enums to add new elements difficult!). The comma between arms is
+currently mandatory; it is optional on the last arm and encouraged unless the
+`}` is on the same line.
 
 ### Constant expressions
 
@@ -720,5 +784,25 @@ may be non-constant without making the expression fail to be constant.
 * `any([bool]) -> bool` returns `true` if any elements of the list are true.
 * `all([bool])` -> bool` returns `true` if all elements of the list are true.
 * `map(fn(T) -> U, [T]) -> [U]` maps over a list.
-* `capacity(item) -> num\*` returns how many more of the specified item the
-  player can obtain before they are full.
+* `capacity(item) -> int` returns how many more of the specified item the player
+  can obtain before they are full. Returns 2¹²⁸-1 (the maximum value of an
+  unsigned 128-bit integer) if there is no limit.
+*  `panic(...)`, see below.
+
+*TODO: Figure out how to handle infinite capacity more elegantly.*
+
+### Panicking
+
+A panic is an error in expression evaluation that cannot be recovered from. They
+can occur either because of expressions that cannot be evaluated, such as
+division by 0, or by an explicit call to `panic()`.
+
+The built-in function `panic()` is magical. It can be called with no arguments,
+or with a message (a string literal). The message is a rudimentary format
+string; `%` in the message is used to format an argument into the string. `%%`
+escapes a literal `%`. The number of formatting `%` in the message must match
+the number of additional arguments. There are no additional specifiers provided.
+
+When a panic occurs, the compilation or evaluation (depending on when it occurs)
+aborts with the error message specified, if any. No meaningful results can come
+out of a panic, so they represent truly dire situations.

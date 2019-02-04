@@ -3,7 +3,7 @@ These are the areas of work left in the redesign, in no particular order.
 1.  Develop a formal model of conditional, template, and override evaluation,
     and prove it sound.
 1.  Determine a way to handle undecideability of whether two config blocks can
-    be simultaneously active.
+    be simultaneously active. (DONE)
 1.  Determine if interactions between configurable flags via conditionals and
     overrides can be soundly added to the model without too much trouble.
 1.  Settle on a syntax for overrides (taking into account the major revised
@@ -15,7 +15,6 @@ These are the areas of work left in the redesign, in no particular order.
     particular whether there should be an `int` type (probably) and whether
     types with infinities are needed (probably yes, also?)
 1.  Implement randomized parameters, including for links.
-1.  Define the effect of division by 0 or other runtime errros.
 
 Ideas:
 
@@ -35,4 +34,3 @@ Ideas:
 *   6 and 7 may need to be done together, to ensure that randomized item
     locations are quite easy to do.
 *   Standard library of templates.
-*   `x / 0 = 0` might be viable? Runtime errors seem awful.
