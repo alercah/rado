@@ -1,6 +1,6 @@
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-  println!("cargo:rerun-if-changed=src/ast/parse.lalrpop");
   lalrpop::Configuration::new()
     .use_cargo_dir_conventions()
+    .emit_rerun_directives(true)
     .process_file("src/ast/parse.lalrpop")
 }

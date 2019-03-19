@@ -699,6 +699,7 @@ Rado has the following types:
 * `node`: a node
 * `inventory`: an inventory
 * `fn (A1, A2, ...) -> T`: a function
+* `(T1, T2, T3, ...)`: a tuple
 * lists: `[T]` is a list of `T`s
 * enums: for any declared enum `E`, `E` is the type of that enum
 * references: `&T` is a reference to a variable (flag or item) of type `T`; `T`
@@ -706,7 +707,9 @@ Rado has the following types:
 
 Most of these types are quite straightforward. There are no function types
 without arguments, as in `fn () -> T`, because functions are stateless. Instead,
-functions with no argument just return `T`.
+functions with no arguments are just of type `T`. There are no 1-tuples since
+they are just regular types, but there is also no explicit unit type because
+without side effects, the unit type is entirely meaningless.
 
 `item` coerces to `bool`; the value is equal to "Does the player have one or
 more of the item?" References coerce to the referred type.
