@@ -7,8 +7,9 @@ particular:
 
 Future work in the language itself:
 
- 1. Create a fuller type system allowing for easy factoring out of common
-    patterns like inventories and current/max items.
+ 1. Consider a fuller type system allowing for easy factoring out of common
+    patterns like inventories and current/max items. This might go all the way
+    to ADTs.
  1. Investigate restrictions on randomized variables to allow computation of
     things like "what are my legal placements?"
  1. Experiment with the language and ergonomics and see where improvements are
@@ -16,6 +17,12 @@ Future work in the language itself:
  1. Build out a standard library.
  1. The current logic is incapable of ensuring that, say, all items are
     accessible. Create a way to do this (probably multiple victory conditions?)
+
+Potential syntactic sugar:
+
+ 1. Declarations of multiple of the same kind of thing quickly.
+ 1. Immediately modifying instances.
+ 1. If actions are too long, shortening them?
 
 Next steps:
 
