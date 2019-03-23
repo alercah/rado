@@ -16,3 +16,10 @@ Future work in the language itself:
  1. Build out a standard library.
  1. The current logic is incapable of ensuring that, say, all items are
     accessible. Create a way to do this (probably multiple victory conditions?)
+
+Next steps:
+
+ 1. Scrap the start of semantic work
+ 1. Rewrite the parser (replace the bespoke lexer with lalrpop's built-in)
+ 1. Rewrite the samples, using the parser to check that they match the intent
+ 1. Implement the language
