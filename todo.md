@@ -1,36 +1,18 @@
-These are the areas of work left in the redesign, in no particular order.
+Proof still needed that the whole override/conditional system works out. In
+particular:
 
-1.  Develop a formal model of conditional, template, and override evaluation,
-    and prove it sound.
-1.  Determine a way to handle undecideability of whether two config blocks can
-    be simultaneously active. (DONE)
-1.  Determine if interactions between configurable flags via conditionals and
-    overrides can be soundly added to the model without too much trouble.
-1.  Settle on a syntax for overrides (taking into account the major revised
-    program structure, greater applicability of overrides, and simplified
-    properties other than tags).
-1.  Update samples.
-1.  Determine how items and capacities, etc. can work, including parameters on
-    them (like total amount healed). Also address numeric types, and in
-    particular whether there should be an `int` type (probably) and whether
-    types with infinities are needed (probably yes, also?)
-1.  Implement randomized parameters, including for links.
+ 1. Prove commutativity of overrides that don't conflict or supersede.
+ 1. Prove that configuration variables can have values provided in a way which
+    never leads to paradox or ambiguity.
 
-Ideas:
+Future work in the language itself:
 
-*   For 2, conditionals can be tagged; new property `exclusive T, not F`
-    expresses that it will never be the case that a `T`'s true block and a `F`'s
-    false block will be active at the same time. Interaction with override model
-    might be tricky?
-*   For 2 and 4, tag modifiers: `#+[ ... ]` for adding tags and `#-[ ... ]` for
-    removing them on modifying declarations, and `#not [ ... ]` for negating
-    conditional tags.
-*   For 6, can they reasonably be implemented on top of flags (rename to
-    variables?)?
-*   For 7, remember to include visibility statement.
-*   For 7, randomized links are probaly some kind of randomized tagged action?
-    Randomization should definitely not require that it be done as a
-    permutation; it ought to be possible to define what can go in its place.
-*   6 and 7 may need to be done together, to ensure that randomized item
-    locations are quite easy to do.
-*   Standard library of templates.
+ 1. Create a fuller type system allowing for easy factoring out of common
+    patterns like inventories and current/max items.
+ 1. Investigate restrictions on randomized variables to allow computation of
+    things like "what are my legal placements?"
+ 1. Experiment with the language and ergonomics and see where improvements are
+    needed, or if tweaks are needed for the more complex rule systems.
+ 1. Build out a standard library.
+ 1. The current logic is incapable of ensuring that, say, all items are
+    accessible. Create a way to do this (probably multiple victory conditions?)

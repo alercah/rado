@@ -1,7 +1,5 @@
 # Language Description
 
-**This is currently undergoing major revision**
-
 Rado is a declarative language that expresses logical systems. For the most
 part, there is no state, input/output, or side effects in Rado itself. The
 language does support delcarations that override or modify earlier declarations,
@@ -13,6 +11,9 @@ system that can be queried programmatically to determine things like whether a
 goal is achievable (and how) or what options a player has next. These logical
 systems do have a concept of state, which is vital to their interpretation.
 
+In a few parts of this document, a more exact formal model is needed to explain
+behaviour precissely. Such formalisms are found in [formalisms.md].
+
 ## Overview
 
 In Rado, the most basic concepts are *nodes* and *actions*. A node represents
@@ -22,8 +23,7 @@ or picking up an item.
 
 In a typical randomizer game, the available items are shuffled and placed in
 the various locations, and then the player plays through them. To keep track of
-this, *items* and *flags* can be defined in order to store the state of the
-game.
+this, *variables* can be defined in order to store the state of the game.
 
 Not all locations are equal, of course. Some require that the player have
 already collected a certain item, have reached a particular event trigger, or
@@ -41,32 +41,29 @@ An action is usually deliberately done by a player, but in some cases they will
 happen automatically. These *triggers* can be used, for instance, to describe a
 state change that happens when a player enters or leaves a region.
 
-Regions, nodes, actions, and a few other entities like items can have *tags*,
-which are simply indicators that make it easy to refer to many similar entities.
-They can also have *values*, which store additional data on them. Rado supports
-definition of *functions* as well, which can be used to compose and reuse
-calculations, requirements, and actions. Note that while functions in Rado are
-stateless, they can be used to compose actions which may have effects on
-the game state when performed by the player.
+Many entities can have *tags*, which are simply indicators that make it easy to
+refer to many similar entities. They can also have *values*, which store
+additional data on them. Rado supports definition of *functions* as well, which
+can be used to compose and reuse calculations, requirements, and actions. Note
+that while functions in Rado are stateless, they can be used to compose actions
+which may have effects on the game state when performed by the player.
 
 The type system is simple, featuring mostly built-in types, but with support for
 user-defined enumerations. The other types are mostly primitives, as well as
 lists and functions.
 
-*Random parameters* are a similar concept, but represent features chosen
-randomly by the randomizer and therefore are a potentially a part of the game
-logic. **Random parameters are not yet in the design.**
-
-In order to specify conditionals, such as difficulty settings, some flags are
-*configurable*. These flags are not specified at run-time, but instead at
-compile time. When all the values of configurable flags are specified (by some
+In order to specify conditionals, such as difficulty settings, some variables are
+*configurable*. These varirables are not specified at run-time, but instead at
+compile time. When all the values of configurable variables are specified (by some
 external source), a Rado *schema* is compiled into a single Rado *program*, and
-can be queried for information. A valid assignment of random parameters is
-called a *model*.
+can be queried for information. *Randomized variables* represent the parts of
+the program that are set or modified by the client working with the program; a
+valid assignment of some or all random variables is called a *model*, with an
+assignment of all of them called a *complete model*.
 
 For reusable components that can be mixed in, such as to declare reusable
-combinations of flags and code, *templates* can be used. They are somewhat like
-macros but fully scoped.
+combinations of variables and code, *templates* can be used. They are somewhat
+like macros but fully scoped.
 
 Finally, Rado supports *modules*, which are self-contained parts of a Rado
 schema, like libraries in other languages. The can be used for reusable code
@@ -94,23 +91,27 @@ The recommended content type for Rado programs is, for the time being,
 
 ## Scoping
 
-Scoping in Rado is generally quite simple lexical scope. Paths use `.` as a
-separator as in `Outer.Inner`; there is no distinction between accessing
-properties on entities and namespace scoping. The first name in a path must
-always name an entity (never a member/property of the entity), with a few
-exceptions, and is looked up in successive scopes outward from where it is used.
+Scoping in Rado is mostly based on simple nesting, mostly-lexical, scopes. Paths
+use `.` as a separator as in `Outer.Inner`. In most cases, lookup for the
+leading path segment simply proceeds outwards until a matching name is found,
+but never passes outside the module in which the name occurs.
 
-Lookup can never travel out of a module or into a conditional block; names
-declared in modules are not visible in inner modules, and names declared in
-conditional blocks are only visible inside that block. Note that when overriding
-a module, this does not apply, since an override is outside the module.
+Overrides, which allow a declaration to be changed from a different location,
+normally do lookup from the location of the original declaration. The keyword
+`outer` can be used at the start of a path in overrides in order cause the rest
+of the path to be looked up in the lexical context of the override. The `outer`
+keyword applies only to the outermost override, and it is an error if it is used
+elsewhere. There is no facility for escaping to the context of any other
+override when multiple are nested.
 
 Almost all names are declared in the innermost scope in which they appear. Name
-shadowing is not permitted; a declaration cannot use the same name as something
-else in the same or an enclosing scope. This is true even for modules; a program
-can't import a module and declare somthing of the same name as part of the
-module in an outer scope. This is because overrides can do name lookup in the
-context of the module, but with the ability to escape it.
+shadowing is generally not permitted; a declaration cannot use the same name as
+something else in the same or an enclosing scope. The exception is where lookup
+would never notice the difference: names in one module can shadow names in
+another, and 
+
+Declarations made in conditional blocks are declared in the same scope as the ,
+but cannot be referred to if the conditional block is not active.
 
 ## General Syntax
 
@@ -175,14 +176,15 @@ which serve to mark sets of entities. To do so, a comma-separated list of paths
 must appear inside `#[ ... ]` immediately in front of the declaration. Unlike
 most names, tags are always scoped to an entire module and declared implicitly.
 Thus, a multi-segment path such as `Parent.Tag` will only be required to declare
-a tag in another module. Tags occupy the same namespace as other names, and thus
-their names must be unique within a module. All entities with the same tag must
-have the same type.
+or use a tag in another module. Tags occupy the same namespace as other names,
+and thus their names must be unique within a module. All entities with the same
+tag must have the same kind and, where applicable, type. The tag name can in
+some circumstances be used to refer to the collection of all entities with a
+tag.
 
-Some kinds of declarations can be [modified, replaced, fixed, or
-deleted](#overrides) in conditional blocks or modules. The specific effects of
-overriding any given kind of declaration are described below. Unless
-specifically mentioned, a kind of declaration cannot be fixed.
+Some kinds of declarations can be [modified, replaced, or deleted](#overrides).
+The specific effects of overriding any given kind of declaration are described
+below.
 
 Enum declarations also declare the names of their enumerator values in addition
 to their type.
@@ -197,7 +199,7 @@ instantiated and a copy made.
 
 ### Module & Region Declarations
 
-> Syntax: *tags* (`module` | `region`) *identifier* (*string-literal*?) (*block* | *string-literal*)
+> Syntax: *tags* (`module` | `region`) *identifier* (*string-literal*?) (*block* | `:` *string-literal*)
 
 Modules and regions are declared the same way. They either contain a block with
 the statements in the module or region, or a filename denoting the file
@@ -206,6 +208,8 @@ the directory containing the declaration, or the current working directory if
 the statement doesn't originate in a file (for instance, because it's added
 programmatically). There is no semantic difference between a module or region
 defined inline versus in another file.
+
+If a module is referred to 
 
 Modules and regions can both be modified; this is part of the core of the
 override system. Deleting a module or region deletes every declaration inside
@@ -218,46 +222,37 @@ it.
 There is very little to say about a node declaration other than that it declares
 a node.
 
-### Item Declaration
+### Variable Declaration
 
-> Syntax: *tags* `item` *decl-name* (*block*)?
+> Syntax: *tags* `var` *decl-name* `:` *type* (*block*)?
 
-An item declaration introduces a kind of state into the logic system,
-representing, more or less, how many of some item or trigger the player has hit.
-The optional block in the declaration can be used to declare properties of an
-item. Otherwise, by default, the player can accumulate any number of a given
-item (though cannot go below 0 or have a fractional number).
+A variable holds state in the logic system, and are used for a wide variety of
+purposes. The optional block can contain property statements.
 
-Note that the term "item" is a bit misleading and narrow. An item declaration
-can be used to represent a wide variety of player state properties, not just
-in-game items. For instance, items can represent story progression or other
-event triggers, or special states that the player might acquire. In many cases,
-however, a flag may be more appropriate. The primary difference between the two
-is that a flag must always have some value, while an item is something that a
-player can acquire potentially in multiples. They support different
-functionality as a result.
+Variables come in three kinds, depending on where they are set: dynamic, the
+default, which are modifiable by actions and represent changes to state coming
+from gameplay; configuration, which are pre-specified when compiling a schema
+into a program; and randomizable, which are specified by the client working with
+the program to produce models.
 
-Item declarations can be overridden. Items can be fixed to a valid quantity
-value; the player can never otherwise gain or lose any of that item. It is an
-error for an action to do so, even if the action is never evaluated.
+Dynamic and configuration variables must be of one of the following types (with
+the associated default values for variables without a default specified:
 
-**Item declarations need some work for storing dynamic values and may get rolled
-into flags?**
+  * `int` (default 0)
+  * `num` (default 0)
+  * `bool` (default `false`)
+  * tuple of any legal type(s) (each field follows its type's default)
+  * list of any legal type(s) (default to empty list)
+  * enum (no default)
 
-### Flag Declaration
+Randomized variables can have any of the above types, plus:
 
-> Syntax: *tags* `flag` *decl-name* (`:` *type*)? (*block*)?
+  * `action`
+  * `node`
+  * function
+  * reference
 
-A flag declaration is the other primary kind of state in the logic system. It
-must be of scalar type; if none is specified, then `bool` is default. It must
-always have a value, but the value can change over time. If not specified, the
-default value is `false` for `bool` flags, or `0` for `num` flags, but a default
-must be specified for enum flags.
-
-Flag declarations can be overridden. Flags can be fixed; a fixed flag's value
-cannot be changed through any means and it is an error for an action to attempt
-nt items to share a common capacity. The optional block can
-contain property statements.  The default maximum quantity is 1.
+Variable declarations can be overridden.
 
 ### Function Declaration
 
@@ -269,11 +264,10 @@ Likewise, the argument and return types can be omitted; if they are, then they
 are inferred.
 
 A function can be used anywhere an expression is legal. If it has no arguments,
-then it is called automatically without needing a call expression `()`, so
-functions with no arguments can be used like constants.
+then it is simply a constant and its body is evaluated when it is declared.
 
 Functions can be replaced or deleted, but not modified. A replaced function must
-have the same signature as the one it replaces.
+have the same signature (type) as the one it replaces.
 
 ### Action Declaration
 
@@ -316,33 +310,11 @@ execution, interrupting the rest of the action. If a trigger fails, then the
 entire action fails; this behaviour can be avoided by using a `sub` action.
 Note, however, that any state changes that already happened will not be undone.
 
-In order for the outcome of triggers not to depend on the order of declaration,
-it must be possible to evaluate them in a consistent fashion. In order to do so,
-any two triggers on the same event may be *ordered* based on the first of the
-following rules to apply. For the purposes of the following rules, the content
-of an action is evaluated by considering the entire action, expanded through all
-calls, conditionals, and other evaluations, but unevaluated operands of
-conditionals whose conditions are constant are not considered.
-
-1.  If one or both of the triggers contains an ordering statement
-    referring to the other, and they con't contradict, then they are ordered as
-    specified.
-1.  If one consists only of requirements, and the other does not, then the
-    former comes before the latter.
-1.  An `enter` trigger comes before an `exit` trigger.
-
-For any possible triggering event, the applicable triggers must meet the
-following requirements:
-
-1.  The ordering of applicable triggers must not contain any cycles.
-1.  If one action can potentially alter an aspect of state and the other either
-    can fail or has behaviour potentially dependent on that state (such as by
-    containing a reference to a flag that the first action can set), then those
-    actions must be ordered with respect to each other.
-
-If these requirements are not met, then the program is in error. If they are
-met, then the execution of triggers will happen following some refinement of the
-order on those triggers.
+Triggers can be explicitly ordered relative to each other with `before` and
+`after` statements. When order is not explicitly specified, then triggers that
+only impose requirements are ordered first, and then `enter` triggers are
+ordered before `exit` triggers. If the result is contradictory or ambiguous,
+then it is an error; see the [formalisms](formalisms.md) for more.
 
 Triggers can be suppressed in an inner scope by noinherit statements, and
 ignored on actions by ignore statements. They can be overridden. Triggers must
@@ -358,9 +330,10 @@ enumeration. This is an exception to the general syntax of declarations. The
 declaration declares both the type name and the names of each value in the
 surrounding scope.
 
-Enums cannot be replaced, but can be deleted or modified. When modifying an enum
-declaration, new values can be declared and old values deleted. Deleting an
-enumerator also deletes all its values. Deleted enum values can still be
+Enums can be overridden. When modifying an enum declaration, new values can be
+declared and old values deleted. Deleting an enumerator also deletes all its
+values, and replacing it is the same as declaring new values and deleting those
+that don't appear in the replacement. ones. Deleted enum values can still be
 referred to in `match` arms; they simply cannot be matched.
 
 ### Template Declaration
@@ -369,7 +342,7 @@ referred to in `match` arms; they simply cannot be matched.
 
 A template declares a reusable series of declarations that can be mixed in to
 other blocks. The keyword in the declaration is the keyword that introduces
-another kind of declaration, one of the following: `region`, `item`, or `node`.
+another kind of declaration, which must be either `region` or `node`, 
 
 The block can contain any statement that could occur in the named kind of
 declaration. The statements have no meaning in the template itself; they are
@@ -379,7 +352,8 @@ Optionally, a parameter list can be included with the same syntax as in function
 declarations. The parameters are bound within the block based on the arguments
 provided in the instantiation.
 
-A template declaration can be overridden, but its kind cannot be changed.
+A template declaration can be overridden, but its kind cannot be changed. If it
+is modified or replaced, this will affect every instance.
 
 ### Instance Declaration
 
@@ -409,9 +383,11 @@ way to make a template that expands differently in multiple contexts.
 
 A declaration inside an instance can be overridden from outside it, or by
 overriding the declaration on the template. Such overrides are subject to the
-same rules about about conflicts that apply to overrides generally.
+same rules about about conflicts that apply to overrides generally. The
+instance declaration itself `
 
-A template cannot be instantiated recursively.
+A template cannot be instantiated recursively, conditionally or unconditionally;
+this is checked when the templates are defined.
 
 ## Conditional Blocks
 
@@ -423,57 +399,99 @@ evaluated, the declarations within the main block are evaluated if and only if
 the condition is true. If an else block is present, it is evaluated if and only
 if the condition is false.
 
-When evaluated, the declarations in the conditional block are semantically
-introduced into the surrounding scope. This does not allow name lookup to
-penetrate into the conditional block; it is treated as its own anonymous scope
-for name lookup.
+The block itself is a modifying block on the enclosing scope, and is treated as
+if the declarations appeared in a modifying override, with the exception that
+the `outer` keyword is not applicable because it would do nothing (unless the
+conditional block itself is in another override). However, entities newly
+declared within a conditional block may only be referred to within conditional
+other conditional blocks per the rules in the next section, unless they are
+being deleted or replaced (which can happen unconditionally) from outside the
+module or instance that contains them. Replacing a declaration in this fashion
+makes it unconditional.
 
-The tag list for a conditional block may optionally prefix any tag with `not`;
-this inverts the tag's meaning. The tag as declared applies to the `if` block,
-and the negation applies to the `else` block. Thus, `#[Tag] if A { } else { }`
-has the same meaning as `#[not Tag] if not A { } else { }`.
+Overrides present in conditional blocks may not conflict except in accordance
+with the rules in the next section.
 
 Conditional blocks cannot be overridden.
 
+### Relationships Between Conditionals
+
+In general, Rado requires everything to resolve unamgiuously. This means that,
+for conditionals, nothing may refer to anything in a conditional unless it is
+guaranteed to be active, and two conditionals may not conflict unless they are
+guaranteed not to simultaneously be active. Only detecting conflicts when they
+occur would increase the possibility of mistakes going undetected, particularly
+when there are a large variety of configuration options. On the other hand, it
+is infeasible to have the compiler attempt to reason out every possible
+permutation when compiling a schema.
+
+A tag on a conditional block is therefore intended to represent some abstract
+condition and allow for explicit specifications of how conditionals interact.
+For instance, if there are to be no flying enemies in some configurations, a
+`FlyingEnemies` tag could be created and applied to all conditional blocks that
+work on the assumption that there are flying enemies. Tags for conditional
+blocks (only) can be negated: thus the tag `not FlyingEnemies` indicates the
+assumption that there are no flying enemies.
+
+The tags present on the conditional block have inverted meaning to the `else`
+block if one is present. Thus `#[FlyingEnemies] if A { ... } else { ... }` is
+the same as `#[FlyingEnemies] if A { ...} #[not FlyingEnemies] if not A { ...
+}`. When conditionals are nested, inner conditionals inherit all the tags of
+outer ones.
+
+The rules for tags are as follows:
+
+  * Two conditional blocks may not both be active if they have mutually
+    exclusive tags. This is true for `A` and `not A`, but see also the next
+    section.
+  * If one conditional block has all the tags that a second one does (and
+    possibly more), then any time the first block is active, the second one must
+    be as well. As an exception for ease of use, this rule does not apply when
+    the second block has no tags at all.
+
+The compiler will not detect violations of these rules until they occur in a
+specific configuration, unless as single conditional block has multiple exlusive
+tags. The rules do, however, allow the tags to be relied on, so that the
+following are allowed:
+
+  * Two conditional blocks may contain conflicting overrides if their tags are
+    mutually exclusive, or if they are an `if`-`else` pair regardless of tags.
+  * A name declared in one conditional block may be referred to from another if
+    the second one has all of the tags of the first (plus possibly more), and
+    the first one has at least one tag.
+
 ### Exclusive Statement
 
-> Syntax: `exclusive` (`not`? *ident*)*-list*
+> Syntax: `exclusive` list(`not`? *tag*)
 
-Conditional blocks containing conflicting overrides are not permitted to be
-simultaneously active (see below). In order to reduce the possibility of errors,
-the compiler may give errors when it detects that two conditional blocks have a
-potential for conflict, even if it doesn't directly observe them being active
-together.
+An exclusive statement names (positive or negative) conditional tags that must
+be mutually exclusive. This makes it an error for the active blocks of the
+program to collectively have two or more of the listed tags, and allows blocks
+that have distinct tags from the list to contain distinct tags.
 
-It's generally not viable for the compiler to attempt to reason through every
-possibile configuration to determine if two blocks can be active at the same
-time or not, so instead, if two blocks cannot be active at the same time, this
-must be explicitly declared. The exclusive statement declares that, of the tags
-(or their negations) in the list, only one of them will be active at a time. The
-compiler will allow conflicts between the conditionals so tagged, and will error
-if it ever does detect them simultaneously active (regardless of whether or not
-they conflict).
+No `exclusive` statement is required for `A` and `not A`, which are always
+exclusive.
 
-The only exception to the principle of needing explicit declarations of
-exclusivity is that a tag and its negation are automatically exclusive.
+### Dependency Loops
 
-It's an error for a single block to have multiple exclusive tags declared on it.
+A conditional block's condition will usually depend on some configuration
+variable, which may have its value fixed by another conditional block. It could
+also depend on a function whose definition might be replaced. This could lead to
+circular conflicts. To resolve this, dependency loops are forbidden.
 
-Currently, exclusive statements must occur at top level of a module and apply to
-the tags declared in that module, or its children. They may not themselves be
-conditional. They may not be overridden.
+A conditional block depends on a configuration variable if the variable appears,
+directly or indirectly, anywhere in the conditional expression of the block or
+any containing conditional block (even in an unevaluated context, because
+overrides might make it be evaluated). A conditional block is considered to
+modify a variable if it overrides any part of the variable in any way.
+
+See the page on [formalisms](formalisms.md) for a precise specification.
 
 ## Overrides
 
 An override is a statement which modifies a previous statement, used inside
 conditionals to change behaviour based on configuration, or in modules to change
 behaviour of inner modules.
-
-There is, in general, no fixed evaluation order, and all conflicts between
-conditional blocks that could possibly depend on their order of evaluation are
-forbidden. If the compiler does not catch that the schema contains a potential
-conflict, it will error when trying to evaluate the schema in a manner that does
-conflict.
 
 Overrides come in three forms:
 
@@ -489,16 +507,95 @@ Overrides come in three forms:
     declaration also deletes all its contents, if applicable.
 
 For clarity and to reduce mistakes, overrides can only be used in contexts where
-the original statement could not just be edited by hand. These are where the 
+the original statement could not just be edited by hand. These are:
 
-**The syntax and further semantics of overrides will be decided later.**
+1.  When the override is outside the module containing the original.
+2.  When the override is in a conditional block, and the original is outside it.
+3.  When the original statement is created by an instance of a template, and the
+    override is outside the instance.
+4.  Overrides can appear in modifying declarations.
+
+Overriding statements cannot themselves be overridden.
+
+### Replacements
+
+> Syntax: `replace` (*declaration* | *property*)
+
+A replacement statement is written in the same form as the original one was,
+with the name in a declaration being permitted to be any path that refers to the
+declaration to be replaced. The new statement completely replaces the original.
+For properties, normally the effect is only to undelete a statement, but some
+properties can be modified by way of replacement.
+
+Name lookup in replacing declarations is done as if it were from the location of
+the original declaration, unless the `outer` keyword is used.
+
+### Modifications
+
+> Syntax: `modify` *kind* *name* *block*
+
+Modifying a statement is done by specifying the kind and name of the declaration
+to modify (as in `modify module Utility { ... }`), and specifying the
+modifications inside the block. Within the block, overrides can be specified for
+anything in the original, and any non-overriding declarations or statements are
+treated as if they appeared in the original context.
+
+Names declared by a modifying declaration must obey shadowing rules and,
+additionally, it is an error for them to be referred to from a context that
+cannot refer to the scope containing the modifying declaration. For instance,
+a name introduced by a modifying declaration in an outer module cannot be
+referred to in except if the reference is also in that outer module (or a module
+that further encloses it).
+
+Names within the modifying declaration are looked up from the location of the
+original declaration, unless the `outer` keyword is used.
+
+### Deletions
+
+> Syntax: `delete` (*kind* *name* | *property*)
+
+Deleting a statement is done by specifying either the kind and name of the
+declaration to be deleted (as in, `delete region Alpha`), or specifying a
+property statement to delete (as in, `delete before EmergencyTeleport`). A
+property statement can only be deleted from a modifying block on the declaration
+containing it, and need not match the original exactly as long as it is
+semantically equivalent (e.g. they may refer to the same declared entity by
+different paths). It is an error if the deleted entity doesn't exist or is
+mismatched with the delete statement, although it's not an error to delete it
+multiple times.
+
+### Conflicting Overrides
+
+It is possible for multiple overrides to specify mutually-contradictory things
+to be done. Specifically, two overrides on the same entity or property conflict
+unless they either are both deletions or are both modifications and they do not
+declare entities with the same name, modify the properties of the same entity,
+or contain conflicting overrides. Overrides on parent entities that affect inner
+entities conflict on individual inner entities in the same way.
+
+In general, conflicting overrides are not permitted, with two exceptions. The
+first is that mutually exclusive blocks may contain contradictions, since they
+can't both be active. The second is where one override occurs in an outer
+context and has more knowledge, so should be taken as authoritative.
+
+Thus, an override supersedes another if it is in an outer module, outside an
+instance containing the latter, or if neither of those situations apply and it
+is more deeply nested in conditionals than the latter. In such a case the
+superseding override takes precedence; modifications apply to the result of
+applying the superseded override(s). It is an error if a modification tries to
+modify a deleted entity this way.
+
+Otherwise, evaluation of overrides is commutative, and it is an error if a
+conflict occurs.
 
 ## Properties
 
 Property statements are used to give properties to declared entities. They are
 applied to an entity by placing them in the block in its declaration; if it has
 no block, then it cannot have any properties. Each property only applies to
-some kinds of declarations as specified below.
+some kinds of declarations as specified below. Unless otherwise specified,
+property statements can be deleted and replaced; for the most part, replacing a
+statement is only useful to undelete it.
 
 ### Noinherit Statement
 
@@ -531,73 +628,67 @@ before or after another named trigger, which must trigger on the same event, and
 is used to clarify the order of triggers. Order statements cannot be
 contradictory. 
 
-### Value Statement
-
-**I have no idea what the semantics of `val` should be right now, or even
-whether they should actually exist.**
-
-### Max Statement
-
-> Can appear in: items
-
-> Syntax: `max` *expression*
-
-A max statement declares the maximum amount of an item that a player can
-possess. Above this limit, more instances of the item cannot be acquired. The
-expression must be a constant expression.
-
-**Need to figure out how to handle shared/dynamic capacities (e.g. LttP bottles)
-and pickup griggers (e.g. ammo expansions)**
-
-The default, if no maximum is specified, is infinity.
-
 ### Default Statement
 
-> Can appear in: items, flags
+> Can appear in: variables
 
 > Syncax: `default` *expression*
 
-A default statement sets the starting value of a flag or starting quantity of an
-item. For a `num` flag or an item, the starting value or quantiy is 0 if no
-default statement is used. For a `bool` flag, it is `false`. Enum flags must
-have a default specified.
+A default statement sets the default value of a variable. It cannot
+appear in randomized variables. If not present in a dynamic or configuration
+value, the variable will either have a default based on its type or it will be
+an error. The default value must be a constant expression.
+
+Replacing a default statement changes the default value, as there can only be
+one such value. A default statement cannot be deleted.
 
 ### Fix Statement
 
-> Can appear in: items, flags
+> Can appear in: variables
 
 > Syntax: `fix` *expression*
 
-A fix statement fixes the value of a flag, or the quantity of an item, to a
-constant expression, thus effectively turning the flag or item into a constant.
-Its primary purpose is to be used in overrides to replace the flag or item with
-a constant value without having to update every use to remove it. It is an error
-to create a set action that corresponds to a fixed flag.
+A fix statement fixes the value of a variable, thus effectively turning it into
+a constant. Its primary purpose is to be used in overrides to replace the
+variable with a constant value without having to update every use to remove it.
+The fixed value must be a constant expression.
 
-### Configurable Statement
+Replacing a fix statement changes the fixed value, as there can only be one such
+value. A variable cannot have both a fixed and default value.
 
-> Can appear in: flags
+### Config Statement
 
-> Syntax: `configurable`
+> Can appear in: variables
 
-A configurable statement declares that a user or client of the Rado schema can
-provide a value for use in evaluating the schema into a program. A configurable
-flag can also be fixed, in which case the configurability is ignored. Either
-way, like a fix flag, its value cannot be set using a set action.
+> Syntax: `config`
+
+A config statement declares that a variable is a configuration variable,
+specified by the user to create parameters in the schema. A configuration
+variable can be fixed, in which case the configurability is ignored.
+
+Config statements can neither be added nor removed by overrides.
+
+### Random Statmeent
+
+> Can appear in: variables
+
+> Syntax: `random`
+
+A random statement declares that a variable is a randomizable variable,
+specified by the client working with a program to create a model.
+
+Config statements can neither be added nor removed by overrides.
 
 ### Disallow Statement
 
-> Can appear in: configurable enum-typed flags
+> Can appear in: enum-typed configuration variables
 
 > Syntax: `disallow` *name*
 
-A disallow statement must name one of the enum values for the flag's type; the
-flag cannot take on that value. The flag must then be set to one of the
-remaining values. It is an error to disallow all values or a fixed flag's value.
-
-Disallowance is not presently taken into account when determining if an
-expression is constant, and thus matching on a flag wth disallowed values will
-still consider the corresponding arms to be potentially evaluated.
+A disallow statement must name one of the enum values for the variable's type;
+the variable cannot take on that value. The variable must then be set to one of
+the remaining values. It is an error to disallow all values or a fixed
+variable's value.
 
 ### Start Statement
 
@@ -647,19 +738,8 @@ If it is `false`, then the action fails. Otherwise, it continues executing.
 
 > Syntax: `set` *name* `=` *expression*
 
-A set action sets the value of the specified flag to the specified value. The
-flag must not be fixed or configurable, and the expression must match the
-value's type.
-
-### Gain Item
-
-> Syntax: `gain` (*num-literal*) *name*
-
-A gain action causes the player to gain or lose a specified item. If a quantity
-(which must be an integer) is specified, then then player gains or loses that
-quantity instead of only one.
-
-**This is likely to be revised along with other item stuff.**
+A set action sets a specified variable to the specified value. The variable must
+be dynamic and unfixed.
 
 ### Link
 
@@ -693,28 +773,26 @@ Rado has the following types:
 
 * `int`: arbitrary-precision integers
 * `num`: arbitrary-precision rational numbers
-* `item`: an item
 * `bool`: a boolean
 * `action`: an action
 * `node`: a node
-* `inventory`: an inventory
 * `fn (A1, A2, ...) -> T`: a function
 * `(T1, T2, T3, ...)`: a tuple
 * lists: `[T]` is a list of `T`s
 * enums: for any declared enum `E`, `E` is the type of that enum
-* references: `&T` is a reference to a variable (flag or item) of type `T`; `T`
-  must be a scalar type or `item`.
+* references: `&T` is a reference to a dynamic variable of type `T`; `T`
+  must be a valid type for dynamic variables.
+* `!`: the never (empty) type.
 
 Most of these types are quite straightforward. There are no function types
-without arguments, as in `fn () -> T`, because functions are stateless. Instead,
-functions with no arguments are just of type `T`. There are no 1-tuples since
-they are just regular types, but there is also no explicit unit type because
-without side effects, the unit type is entirely meaningless.
+without arguments, as in `fn () -> T`, because functions are stateless and this
+would be meaningless. There are no 1-tuples since they are just regular types,
+nor is there a unit type as it is never needed. The `!` type is empty and is the
+return type of `panic()`; it indicates a function doesn't return or that a value
+can't exist. `!` can be coerced to anything, though such a coercion will never
+be executed.
 
-`item` coerces to `bool`; the value is equal to "Does the player have one or
-more of the item?" References coerce to the referred type.
-
-`bool`, `num`, and enum types are collectively called *scalar types*.
+References coerce to the referred type.
 
 ## Expressions
 
@@ -723,7 +801,7 @@ order of precedence:
 
 1.  Parenthesized expressions
 1.  Literals and values (`foo`, `3`, etc.)
-    1.  Value access (`i.Val`)
+    1.  Value access (`i.1`)
 1.  Referencing (`&flg`)
 1.  Action expression (`do A` or `sub { ... }`)
 1.  Explicit list creation (`[a, b, c]`)
@@ -734,6 +812,9 @@ order of precedence:
 1.  Comparison (`==`, `!=`, `<`, `<=`, `>`, `>=`)
 1.  Boolean conjunction and disjunction (`and` and `or`)
 1.  `if A then B else C` and `match E { V => R, V => R, ... }`
+
+Value access is used with numeric indices, 0-indexed, to access elements of
+tuples. E.g. `a.0` is the first element of `a`.
 
 Because arithmetic is infinitely precise, assocativity of most arithmetic binary
 operations doesn't matter. In order to reduce errors and avoid having to decide
@@ -773,39 +854,36 @@ currently mandatory; it is optional on the last arm and encouraged unless the
 ### Constant expressions
 
 A constant expression is one whose value can be computed at compile-time,
-without circularity. These include literals, the values of configurable flags,
-fixed flags or items, and expressions computed from them. Unevaluated operands
-may be non-constant without making the expression fail to be constant.
+without circularity. These include literals, the values of configuration
+variables, fixed variables, and expressions computed from them. Unevaluated
+operands must also be constant, because overrides could make them be evaluated.
 
 ### Built-in functions
 
-* `min([num]) -> num` and `max([num]) -> num` take a list of numeric expressions
-  and return the least or greatest value, respectively.
-* `count([item]) -> num` returns the total count of items `i` possessed by the
-  player at evaluation time.
-* `sum([num]) -> num` returns the sum of a list.
-* `any([bool]) -> bool` returns `true` if any elements of the list are true.
-* `all([bool])` -> bool` returns `true` if all elements of the list are true.
-* `map(fn(T) -> U, [T]) -> [U]` maps over a list.
-* `capacity(item) -> int` returns how many more of the specified item the player
-  can obtain before they are full. Returns 2¹²⁸-1 (the maximum value of an
-  unsigned 128-bit integer) if there is no limit.
-*  `panic(...)`, see below.
-
-*TODO: Figure out how to handle infinite capacity more elegantly.*
+The magical `panic()` function, described below, is always available (its name
+is a keyword). Many functions in the standard library are built-in, or
+implemented in terms of built-ins, and intended to act as the building blocks
+for other functions. They act like normal functions otherwise.
 
 ### Panicking
 
 A panic is an error in expression evaluation that cannot be recovered from. They
 can occur either because of expressions that cannot be evaluated, such as
-division by 0, or by an explicit call to `panic()`.
+division by 0, or by an explicit call to the magical built-in `panic()`.
 
-The built-in function `panic()` is magical. It can be called with no arguments,
-or with a message (a string literal). The message is a rudimentary format
-string; `%` in the message is used to format an argument into the string. `%%`
-escapes a literal `%`. The number of formatting `%` in the message must match
-the number of additional arguments. There are no additional specifiers provided.
+`panic()` can be called with no arguments, or with a message (a string literal)
+as the first argument. The message is a rudimentary format string; `%` in the
+message is used to format an argument into the string. `%%` escapes a literal
+`%`. The number of formatting `%` in the message must match the number of
+additional arguments. There are no additional specifiers provided. Panic's
+return type is `!`.
 
 When a panic occurs, the compilation or evaluation (depending on when it occurs)
 aborts with the error message specified, if any. No meaningful results can come
 out of a panic, so they represent truly dire situations.
+
+## Standard Library
+
+The standard library is a module with the name `std` and is predeclared
+immediately inside each module's scope, as if by `module std:
+"some/path/to/stdlib.rado"`. Declarations in `std` cannot be overridden.
