@@ -90,13 +90,15 @@ so long as we can design with the possibility of later adding them in mind.
 Examples will be added for most requirements.
 
 Items marked with a :heavy_check_mark: were, in my estimation, properly
-supported in the most recent version of the design when I updated this file. If
-something is unmarked but looks complete, it's because I feel there's something
-missing in the design.
+supported in the most recent version of the design when I updated this file.
+Items marked with a :o: are ones that I feel are technically supported, but
+may require more work from developers than would be ideal, or I am uncertain
+about its viability in practice. For these, more work such as library facilities
+or syntactic sugar should be added to make them easier.
 
 ### Basic logic
 
-1. :heavy_check_mark: :heavy_exclamation_mark: It should be possible to describe
+1. :o: :heavy_exclamation_mark: It should be possible to describe
    a list of locations, a list of items, and the requirements to acquire the
    items at each location.
 1. :heavy_check_mark: :heavy_exclamation_mark: It should be possible to write
@@ -117,7 +119,7 @@ missing in the design.
    certain a minimum amount of magic for certain actions; the available magic is
    a function that requires multiplying the number of bottles by a factor based
    on magic reduction level.*
-1. :heavy_check_mark: :heavy_exclamation_mark: It should be possible to describe
+1. :o: :heavy_exclamation_mark: It should be possible to describe
    a randomized requirement and a list of items that it can require. *Example:
    ALttP requires a random medallion to enter Misery Mire.*
 1. :heavy_check_mark: It should be possible for a randomized requirement to take
@@ -125,7 +127,7 @@ missing in the design.
 1. :heavy_exclamation_mark: It must be possible for a negative requirement to
    exist. *Example: In Metroid Prime, triggering the floaty jump bug requires
    that the player not have the Gravity Suit.*
-1. :heavy_check_mark: :heavy_exclamation_mark: It should be possible for every
+1. :o: :heavy_exclamation_mark: It should be possible for every
    location, item, and randomized requirement to be given both a human-readable
    name and one or more identifiers which can be easily referred to.
 1. :heavy_check_mark: :heavy_exclamation_mark: It should be possible to factor
@@ -145,18 +147,18 @@ missing in the design.
 
 ### Items
 
-1. :heavy_check_mark: It should be possible to mark an item as consumable, where
+1. :o: It should be possible to mark an item as consumable, where
    it can be used in multiple places but only once. It must be easy to use in
    the context of complex expressions. *Example: Small keys in ALttP are one-use
    only.*
-1. :heavy_check_mark: It should be possible to track the maximum and current
+1. :o: It should be possible to track the maximum and current
    values of an item, and express when the player can or cannot refill it.
    *Example: In Super Metroid, some sequences require a large amount of some
    items, such as hellruns in general but especially Lower Norfair, and refill
    points are vital such as whether the player can reach a farm spot from Bubble
    Mountain.*
-1. It should be possible to express that acquiring an item has some effect on
-   consumables. *Example: In Super Metroid, acquiring an energy tank refills
+1. :o: It should be possible to express that acquiring an item has some effect
+   on consumables. *Example: In Super Metroid, acquiring an energy tank refills
    health, which may make certain hellruns possible that weren't otherwise.*
 1. :heavy_check_mark: It should be possible to mark certain items as already
    possessed at the start of the game, conditional on configuration. *Example:
@@ -165,14 +167,15 @@ missing in the design.
 
 ### Locations
 
-1. It should be possible to describe locations that do not have any items, and
-   requirements to move from one location to another. *Example: ALttP Entrance
-   Randomizer.*
-1. It should be possible to describe as randomized the way locations are
-   connected. If regions are supported, then this must be able to remove any
-   relevant parenting effects of regions if desired. *Example: ALttP Entrance
-   Randomizer may move an entrance located in Dark World Death Mountain, which
-   has many access requirements, to the Light World, which has none.*
+1. :heavy_check_mark: It should be possible to describe locations that do not
+   have any items, and requirements to move from one location to another.
+   *Example: ALttP Entrance Randomizer.*
+1. :o: It should be possible to describe as randomized the way
+   locations are connected. If regions are supported, then this must be able to
+   remove any relevant parenting effects of regions if desired. *Example: ALttP
+   Entrance Randomizer may move an entrance located in Dark World Death
+   Mountain, which has many access requirements, to the Light World, which has
+   none.*
 1. It should be possible to provide an alternate set of requirements in order to
    learn what is at a location without being able to collect it. *Example: In
    ALttP, a player can check the item at the Lumberjack Cave with no
@@ -193,15 +196,14 @@ missing in the design.
 
 ### Placements
 
-1. :heavy_check_mark: :heavy_exclamation_mark: It should be possible to require
+1. :o: :heavy_exclamation_mark: It should be possible to require
    a placement ensure that all items are accessible.
-1. :heavy_exclamation_mark: It should be possible to divide the items into
-   subsets which have restrictions on their placement. This includes one-item
-   subsets which have a fixed location. *Example: In ALttP, keys, maps, and
-   compasses are restricted to the dungeon in which they occur. In Super
-   Metroid, each boss always gives its own completion event regardless of
-   randomization.*
-1. It should be possible to permit some subsets of items or locations to be
+1. It should be possible to divide the items into subsets which have
+   restrictions on their placement. This includes one-item subsets which have a
+   fixed location. *Example: In ALttP, keys, maps, and compasses are restricted
+   to the dungeon in which they occur. In Super Metroid, each boss always gives
+   its own completion event regardless of randomization.*
+1. :o: It should be possible to permit some subsets of items or locations to be
    inaccessible. *Example: In ALttP randomizer, keys and only keys are permitted
    to be inaccessible.*
 1. It should be possible to control where softlocks are permitted. *Example: In
@@ -214,8 +216,16 @@ missing in the design.
    as Ice Palace and Misery Mire where uncareful use of small keys could make
    the dungeon uncompleteable, and the randomizer wishes to prevent these from
    occurring.*
-1. :heavy_exclamation_mark: It should be possible to define a game-winning
-   condition.
+1. It should be possible to define cuts beyond which there may not be
+   backtracking; every possible route through cuts must be completeable.
+   *Example: In Metroid games, there is typically no way to load a file other
+   than in the state it was saved. In some cases, a player may save their game
+   in a way that renders it uncompleteable. As a specific example, a player who
+   does a hellrun to Bubble Mountain in Super Metroid, relying on an energy tank
+   in Cathedral to refill their energy mid-way, could save their game at Bubble
+   Mountain and then have no way of escaping.*
+1. :heavy_check_mark: :heavy_exclamation_mark: It should be possible to define a
+   game-winning condition.
 
 ### Composability
 
@@ -268,8 +278,8 @@ The following are nice-to-haves, but it is unlikely they would ever truly be
 necessary for the language:
 
 1. It would be nice to be able to provide human-readable names for functions
-   used in evaluations, for functionality like producing a human-readable list
-   of missing requirements for an item.
+   and other intermediates used in evaluations, for functionality like
+   producing a human-readable list of missing requirements for an item.
 1. It would be nice to support some form of simplification or coalescing in
    order to be able to do things like automatically calculate the requirements
    to complete a dungeon.
@@ -282,12 +292,14 @@ are some that have been thought of, with reasoning:
 1. A separate description of an event as a concept distinct from an item is not
    required. They can simply be represented as items; possibly non-randomized
    ones.
-1. After experimentation, I've decided that it does not make sense to allow
+1. ~~After experimentation, I've decided that it does not make sense to allow
    multiple items at a single location, in the context of the current thinking
    around nodes and locations; a single item simplifies things somewhat and in
    practice most existing randomizers treat things as distinct; failing to
    distinguish between, say, left and right items in a room would likely be seen
-   by many as a regression in comparison.
+   by many as a regression in comparison.~~ Revised: this is now permitted as
+   locations are not treated specially. It is up to the randomizer author how to
+   handle this.
 
 ## Choice of Language
 
@@ -301,9 +313,6 @@ structure in JSON or the like), it means that the work to interpret and perform
 the logic only needs to be done once.
 
 In the longer term, implementing queries against arbitrary logics will be
-extremely computationally intense; it's likely that the logics will at some
-point be accidentally Turing-complete with careful abuse of state (although
-realistically I'd prefer to keep them in, say, `PSPACE` if feasible). The
-logics will certainly be `NP`-hard at least, since they can include arbitrary
-logical expressions. As a result, efficient algorithms will be needed to analyze
-especially complex logics, making a high-performance language a boon.
+extremely computationally intense; evaluating logics will almost certainly be
+Turing complete at the most general. As a result, efficient code with minimal
+overhead will be needed for evaluating large logics.

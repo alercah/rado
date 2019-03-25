@@ -16,13 +16,19 @@ Future work in the language itself:
     needed, or if tweaks are needed for the more complex rule systems.
  1. Build out a standard library.
  1. The current logic is incapable of ensuring that, say, all items are
-    accessible. Create a way to do this (probably multiple victory conditions?)
+    accessible, in an ergonomic way. Create a way to do this (probably multiple
+    victory conditions?)
+ 1. Properties to verify optimization properties, e.g. `monotonic` for
+    variables.
 
-Potential syntactic sugar:
+Potential syntactic sugar/library functionality:
 
  1. Declarations of multiple of the same kind of thing quickly.
  1. Immediately modifying instances.
  1. If actions are too long, shortening them?
+ 1. Calculations where a player may break logic in such a way as to soft lock,
+    requiring more subtlety (especially if a player may be required to use the
+    same trick to get out.
 
 Next steps:
 
