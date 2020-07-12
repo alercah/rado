@@ -1,4 +1,3 @@
-use crate::exts::GetDebug;
 use failure::{format_err, Error, Fail};
 use std::borrow::Cow;
 use std::fmt;
@@ -19,9 +18,16 @@ pub struct ParseSymError {
 }
 
 macro_rules! toks {
-  {$name:ident; err $err:ident; $($kw:ident <- $spl:expr),*,} => {
+  {
+    $(#[$outer:meta])*
+    $v:vis enum $name:ident {
+      err $err:ident;
+      $($kw:ident <- $spl:expr),*,
+    }
+  } => {
+    $(#[$outer])*
     #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
-    pub enum $name {
+    $v enum $name {
       $($kw),*,
     }
 
@@ -46,98 +52,102 @@ macro_rules! toks {
   };
 }
 
-/// Rado keywords.
-toks! { Kw;
-  err ParseKwError;
-  // Declarations
-  Region <- "region",
-  Link <- "link",
-  Item <- "item",
-  Items <- "items",
-  Location <- "location",
-  Locations <- "locations",
-  Fn <- "fn",
-  Enum <- "enum",
-  Config <- "config",
-  Configs <- "configs",
-  Configset <- "configset",
-  Random <- "random",
-  If <- "if",
-  Else <- "else",
-  Modify <- "modify",
-  Override <- "override",
+toks! {
+  /// "Rado keywords."
+  pub enum Kw {
+    err ParseKwError;
+    // Declarations
+    Region <- "region",
+    Link <- "link",
+    Item <- "item",
+    Items <- "items",
+    Location <- "location",
+    Locations <- "locations",
+    Fn <- "fn",
+    Enum <- "enum",
+    Config <- "config",
+    Configs <- "configs",
+    Configset <- "configset",
+    Random <- "random",
+    If <- "if",
+    Else <- "else",
+    Modify <- "modify",
+    Override <- "override",
 
-  // Properties
-  Requires <- "requires",
-  Visible <- "visible",
-  Unlock <- "unlock",
-  Tag <- "tag",
-  Alias <- "alias",
-  Provides <- "provides",
-  Progressive <- "progressive",
-  Val <- "val",
-  Max <- "max",
-  Consumable <- "consumable",
-  Avail <- "avail",
-  Infinity <- "infinity",
-  Grants <- "grants",
-  Count <- "count",
-  Start <- "start",
+    // Properties
+    Requires <- "requires",
+    Visible <- "visible",
+    Unlock <- "unlock",
+    Tag <- "tag",
+    Alias <- "alias",
+    Provides <- "provides",
+    Progressive <- "progressive",
+    Val <- "val",
+    Max <- "max",
+    Consumable <- "consumable",
+    Avail <- "avail",
+    Infinity <- "infinity",
+    Grants <- "grants",
+    Count <- "count",
+    Start <- "start",
 
-  // Expressions & types not covered above
-  Num <- "num",
-  Bool <- "bool",
-  Then <- "then",
-  Match <- "match",
-  True <- "true",
-  False <- "false",
-  Not <- "not",
-  And <- "and",
-  Or <- "or",
-  Min <- "min",
-  Sum <- "sum",
+    // Expressions & types not covered above
+    Num <- "num",
+    Bool <- "bool",
+    Then <- "then",
+    Match <- "match",
+    True <- "true",
+    False <- "false",
+    Not <- "not",
+    And <- "and",
+    Or <- "or",
+    Min <- "min",
+    Sum <- "sum",
 
-  // Miscellaneous
-  With <- "with",
-  To <- "to",
-  From <- "from",
-  In <- "in",
-  Default <- "default",
+    // Miscellaneous
+    With <- "with",
+    To <- "to",
+    From <- "from",
+    In <- "in",
+    Default <- "default",
+  }
 }
 
-/// Rado symbol tokens. Each operator is a distinct token, so some tokens are
-/// multiple characters long.
-toks! { Sym;
-  err ParseSymError;
-  // Delimeters
-  LParen <- "(",
-  RParen <- ")",
-  LBrack <- "[",
-  RBrack <- "]",
-  LBrace <- "{",
-  RBrace <- "}",
+toks! {
+  /// Rado symbol tokens. Each operator is a distinct token, so some tokens are
+  /// multiple characters long.
+  pub enum Sym {
+    err ParseSymError;
+    // Delimeters
+    LParen <- "(",
+    RParen <- ")",
+    LBrack <- "[",
+    RBrack <- "]",
+    LBrace <- "{",
+    RBrace <- "}",
 
-  // Punctuation
-  Semi <- ";",
-  Comma <- ",",
-  Colon <- ":",
-  Dot <- ".",
-  Assign <- "=",
-  Arrow <- "->",
-  DoubleArrow <- "=>",
+    // Punctuation
+    Semi <- ";",
+    Comma <- ",",
+    Colon <- ":",
+    Dot <- ".",
+    Assign <- "=",
+    Arrow <- "->",
+    DoubleArrow <- "=>",
 
-  // Operators
-  Plus <- "+",
-  Minus <- "-",
-  Star <- "*",
-  Slash <- "/",
-  Percent <-"%",
-  Eq <- "==",
-  NEq <- "!=",
-  LT <- "<",
-  LE <- "<=",
-  GT <- ">=",
-  GE <- ">",
+    // Operators
+    Plus <- "+",
+    Minus <- "-",
+    Star <- "*",
+    Slash <- "/",
+    Percent <-"%",
+    Eq <- "==",
+    NEq <- "!=",
+    LT <- "<",
+    LE <- "<=",
+    GT <- ">=",
+    GE <- ">",
+  }
 }
 
 /// The sign of a numeric literal. Zero is considered positive, since the minus
@@ -227,7 +237,7 @@ impl<'a> fmt::Display for Tok<'a> {
 fn skip_block_comment(mut s: &str) -> Result<&str, Error> {
   assert!(s.len() >= 2);
   assert!(s.starts_with("/*"));
-  s = unsafe { s.get_debug_checked(2..) };
+  s = &s[2..];
 
   // TODO: This feels kind of bad to search twice, but lazy_static/regex is a
   // lot of work for two two-character search patterns. Also this means every
@@ -238,7 +248,7 @@ fn skip_block_comment(mut s: &str) -> Result<&str, Error> {
       .ok_or_else(|| format_err!("unterminated block comment"))?;
     match s.find("/*") {
       Some(inner) if inner < end => s = &skip_block_comment(&s[inner..])?,
-      _ => break Ok(unsafe { s.get_debug_checked(end + 2..) }),
+      _ => break Ok(&s[end + 2..]),
     }
   }
 }
@@ -249,17 +259,17 @@ fn lex_num_lit(mut s: &str) -> Result<(Cow<'_, str>, Option<Cow<'_, str>>, &str)
   let i = s
     .find(|c: char| !c.is_ascii_digit())
     .unwrap_or_else(|| s.len());
-  let (w, mut f) = (unsafe { s.get_debug_checked(0..i).into() }, None);
-  s = unsafe { s.get_debug_checked(i..) };
+  let (w, mut f) = (s[0..i].into(), None);
+  s = &s[i..];
 
   let mut r = s.chars();
   if r.next() == Some('.') && r.next().map_or(false, |c| c.is_ascii_digit()) {
-    s = unsafe { s.get_debug_checked(1..) };
+    s = &s[1..];
     let i = s
       .find(|c: char| !c.is_ascii_digit())
       .unwrap_or_else(|| s.len());
-    f = Some(unsafe { s.get_debug_checked(0..i) }.into());
-    s = unsafe { s.get_debug_checked(i..) };
+    f = Some(s[0..i].into());
+    s = &s[i..];
   }
   if s.chars().next().map_or(false, |c| c.is_ascii_alphabetic()) {
     Err(format_err!("alphabetic character in numeric literal"))?;
@@ -278,18 +288,13 @@ fn lex_string_lit(mut s: &str) -> Result<(Cow<'_, str>, &str), Error> {
     .find('\"')
     .ok_or_else(|| format_err!("unterminated string literal"))?;
   if quote < escape {
-    return Ok(unsafe {
-      (
-        s.get_debug_checked(0..quote).into(),
-        s.get_debug_checked(quote + 1..),
-      )
-    });
+    return Ok((s[0..quote].into(), &s[quote + 1..]));
   }
 
   let mut l = String::new();
   while let Some(escape) = s.find('\\') {
-    l += unsafe { s.get_debug_checked(0..escape) };
-    s = unsafe { s.get_debug_checked(escape + 1..) };
+    l += &s[0..escape];
+    s = &s[escape + 1..];
     match s.chars().next() {
       None => Err(format_err!("unterminated string literal"))?,
       Some('"') => l += "\"",
@@ -300,20 +305,20 @@ fn lex_string_lit(mut s: &str) -> Result<(Cow<'_, str>, &str), Error> {
       Some(e) => Err(format_err!("unrecognized escape sequence: \\{}", e))?,
     }
     // Any escape sequence we actually accept is 1 ASCII character long.
-    s = unsafe { s.get_debug_checked(1..) };
+    s = &s[1..];
   }
   let quote = s
     .find('\"')
     .ok_or_else(|| format_err!("unterminated string literal"))?;
-  l += unsafe { s.get_debug_checked(0..quote) };
-  Ok((l.into(), unsafe { s.get_debug_checked(quote + 1..) }))
+  l += &s[0..quote];
+  Ok((l.into(), &s[quote + 1..]))
 }
 
 /// Lex a string into a token vector. An error occurs if the string is not made of legal tokens.
 pub fn lex<'a>(mut s: &'a str) -> Result<Vec<Tok<'a>>, Error> {
   let mut toks = Vec::new();
   while let Some(c) = s.chars().next() {
-    let rest = unsafe { s.get_debug_checked(c.len_utf8()..) };
+    let rest = &s[c.len_utf8()..];
     match c {
       '(' => {
         toks.push(Tok::Sym(Sym::LParen));
@@ -372,7 +377,7 @@ pub fn lex<'a>(mut s: &'a str) -> Result<Vec<Tok<'a>>, Error> {
           // If we don't find \n, we set i to s.len()-1 so that when we add 1 on the next
           // line, we end up right at the end of the string.
           let i = s.find('\n').unwrap_or(s.len() - 1);
-          s = unsafe { s.get_debug_checked(i + 1..) };
+          s = &s[i + 1..];
         }
         Some('*') => s = skip_block_comment(s)?,
         _ => {
@@ -383,7 +388,7 @@ pub fn lex<'a>(mut s: &'a str) -> Result<Vec<Tok<'a>>, Error> {
       '!' => {
         if rest.starts_with('=') {
           toks.push(Tok::Sym(Sym::NEq));
-          s = unsafe { s.get_debug_checked(2..) };
+          s = &s[2..];
         } else {
           Err(format_err!("expected = after ! to make != token"))?;
         }
@@ -391,11 +396,11 @@ pub fn lex<'a>(mut s: &'a str) -> Result<Vec<Tok<'a>>, Error> {
       '=' => match rest.chars().next() {
         Some('=') => {
           toks.push(Tok::Sym(Sym::Eq));
-          s = unsafe { s.get_debug_checked(2..) };
+          s = &s[2..];
         }
         Some('>') => {
           toks.push(Tok::Sym(Sym::DoubleArrow));
-          s = unsafe { s.get_debug_checked(2..) };
+          s = &s[2..];
         }
         _ => {
           toks.push(Tok::Sym(Sym::Assign));
@@ -405,7 +410,7 @@ pub fn lex<'a>(mut s: &'a str) -> Result<Vec<Tok<'a>>, Error> {
       '>' => {
         if rest.starts_with('=') {
           toks.push(Tok::Sym(Sym::GE));
-          s = unsafe { s.get_debug_checked(2..) };
+          s = &s[2..];
         } else {
           toks.push(Tok::Sym(Sym::GT));
           s = rest;
@@ -414,7 +419,7 @@ pub fn lex<'a>(mut s: &'a str) -> Result<Vec<Tok<'a>>, Error> {
       '<' => {
         if rest.starts_with('=') {
           toks.push(Tok::Sym(Sym::LE));
-          s = unsafe { s.get_debug_checked(2..) };
+          s = &s[2..];
         } else {
           toks.push(Tok::Sym(Sym::LT));
           s = rest;
@@ -423,7 +428,7 @@ pub fn lex<'a>(mut s: &'a str) -> Result<Vec<Tok<'a>>, Error> {
       '-' => match rest.chars().next() {
         Some('>') => {
           toks.push(Tok::Sym(Sym::Arrow));
-          s = unsafe { s.get_debug_checked(2..) };
+          s = &s[2..];
         }
         Some(c) if c.is_ascii_digit() => {
           let (w, f, s_) = lex_num_lit(rest)?;
@@ -449,8 +454,8 @@ pub fn lex<'a>(mut s: &'a str) -> Result<Vec<Tok<'a>>, Error> {
         let i = s
           .find(|c: char| c != '_' && !c.is_ascii_alphanumeric())
           .unwrap_or_else(|| s.len());
-        let ident = unsafe { s.get_debug_checked(0..i) };
-        s = unsafe { s.get_debug_checked(i..) };
+        let ident = &s[0..i];
+        s = &s[i..];
         if let Ok(k) = ident.parse() {
           toks.push(Tok::Kw(k));
         } else {
@@ -463,7 +468,7 @@ pub fn lex<'a>(mut s: &'a str) -> Result<Vec<Tok<'a>>, Error> {
         s = s_;
       }
       c if c.is_ascii_whitespace() => s = rest,
-      _ => Err(format_err!("unrecognized character: {:?}", c))?,
+      _ => return Err(format_err!("unrecognized character: {:?}", c)),
     }
   }
   Ok(toks)

@@ -1,10 +1,7 @@
 #![warn(clippy::all)]
-#![feature(copied)]
 
 pub mod ast;
-pub mod token;
-
-pub(crate) mod exts;
+pub(crate) mod token;
 
 use ast::{Decl, ModVec, Prop, Stmt};
 use failure::{format_err, Error};
