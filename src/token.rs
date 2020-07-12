@@ -2,6 +2,7 @@ use failure::{format_err, Error, Fail};
 use std::borrow::Cow;
 use std::fmt;
 use std::str::FromStr;
+use unic_ucd_ident::{is_xid_continue, is_xid_start};
 
 /// An error from failing to parse a [Kw].
 #[derive(Clone, Debug, Fail)]
@@ -271,8 +272,12 @@ fn lex_num_lit(mut s: &str) -> Result<(Cow<'_, str>, Option<Cow<'_, str>>, &str)
     f = Some(s[0..i].into());
     s = &s[i..];
   }
-  if s.chars().next().map_or(false, |c| c.is_ascii_alphabetic()) {
-    Err(format_err!("alphabetic character in numeric literal"))?;
+  if s
+    .chars()
+    .next()
+    .map_or(false, |c| c == '_' || is_xid_start(c) || is_xid_continue(c))
+  {
+    return Err(format_err!("numeric literal suffixes are not supported"));
   }
   Ok((w, f, s))
 }
@@ -296,13 +301,13 @@ fn lex_string_lit(mut s: &str) -> Result<(Cow<'_, str>, &str), Error> {
     l += &s[0..escape];
     s = &s[escape + 1..];
     match s.chars().next() {
-      None => Err(format_err!("unterminated string literal"))?,
+      None => return Err(format_err!("unterminated string literal")),
       Some('"') => l += "\"",
       Some('\\') => l += "\\",
       Some('n') => l += "\n",
       Some('r') => l += "\r",
       Some('t') => l += "\t",
-      Some(e) => Err(format_err!("unrecognized escape sequence: \\{}", e))?,
+      Some(e) => return Err(format_err!("unrecognized escape sequence: \\{}", e)),
     }
     // Any escape sequence we actually accept is 1 ASCII character long.
     s = &s[1..];
@@ -390,7 +395,7 @@ pub fn lex<'a>(mut s: &'a str) -> Result<Vec<Tok<'a>>, Error> {
           toks.push(Tok::Sym(Sym::NEq));
           s = &s[2..];
         } else {
-          Err(format_err!("expected = after ! to make != token"))?;
+          return Err(format_err!("expected = after ! to make != token"));
         }
       }
       '=' => match rest.chars().next() {
@@ -450,9 +455,9 @@ pub fn lex<'a>(mut s: &'a str) -> Result<Vec<Tok<'a>>, Error> {
         toks.push(Tok::Num(Sign::Positive, w, f));
         s = s_;
       }
-      c if c == '_' || c.is_ascii_alphabetic() => {
+      c if c == '_' || is_xid_start(c) => {
         let i = s
-          .find(|c: char| c != '_' && !c.is_ascii_alphanumeric())
+          .find(|c: char| c != '_' && !is_xid_continue(c))
           .unwrap_or_else(|| s.len());
         let ident = &s[0..i];
         s = &s[i..];
@@ -841,17 +846,43 @@ mod tests {
     let str = "\x12";
     assert!(lex(str).is_err());
 
-    let str = "é";
-    assert!(lex(str).is_err());
-
     let str = "=!";
-    assert!(lex(str).is_err());
-
-    let str = "\u{1034a}";
     assert!(lex(str).is_err());
 
     let str = "\u{ffef}hi";
     assert!(lex(str).is_err());
+
+    let str = "23l";
+    assert!(lex(str).is_err());
+
+    let str = "123é";
+    assert!(lex(str).is_err());
+
+    // A character that is XID_Continue but not XID_Start
+    let str = "\u{00B7}";
+    assert!(lex(str).is_err());
+  }
+
+  #[test]
+  fn lex_unicode_idents() {
+    use Tok::*;
+
+    // Thanks to Principia, a KSP mod, for some sample Unicode identifiers.
+    let str = "é";
+    let toks = vec![Ident("é".into())];
+    assert_eq!(toks, lex(str).unwrap());
+
+    let str = "DormandالمكاوىPrince1986RKN434FM";
+    let toks = vec![Ident("DormandالمكاوىPrince1986RKN434FM".into())];
+    assert_eq!(toks, lex(str).unwrap());
+
+    let str = "ЧебышёвSeries";
+    let toks = vec![Ident("ЧебышёвSeries".into())];
+    assert_eq!(toks, lex(str).unwrap());
+
+    let str = "名前";
+    let toks = vec![Ident("名前".into())];
+    assert_eq!(toks, lex(str).unwrap());
   }
 
   proptest! {

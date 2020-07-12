@@ -4,6 +4,7 @@ use num_bigint::BigInt;
 use num_rational::BigRational;
 use std::ops::Neg;
 use std::borrow::Cow;
+use unic_normal::StrNormalForm;
 use super::*;
 
 grammar<'input>;
@@ -51,7 +52,7 @@ OptNeg<T>: (bool, T) = {
 }
 
 Ident: Ident = {
-    "Ident" => Ident(<>.into_owned()),
+    "Ident" => Ident(<>.nfkc().collect::<String>()),
 }
 
 String: String = {
