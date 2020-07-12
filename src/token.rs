@@ -1,20 +1,38 @@
-use failure::{format_err, Error, Fail};
 use std::borrow::Cow;
 use std::fmt;
 use std::str::FromStr;
+use thiserror::Error;
 use unic_ucd_ident::{is_xid_continue, is_xid_start};
 
-/// An error from failing to parse a [Kw].
-#[derive(Clone, Debug, Fail)]
-#[fail(display = "{:?} is not a keyword", s)]
-pub struct ParseKwError {
+/// An error encountered during lexing of a Rado source file.
+#[derive(Copy, Clone, Debug, Error)]
+pub enum LexerError {
+  #[error("Unterminated /* block comment */")]
+  UnterminatedBlockComment,
+  #[error("Numeric literal suffixes are not supported")]
+  NumericLiteralSuffix,
+  #[error("Unterminated \"string literal\"")]
+  UnterminatedStringLiteral,
+  #[error("Unrecognized escape sequence character: {0:?}")]
+  UnrecognizedEscapeSequence(char),
+  #[error("! must be followed by = to make !=")]
+  LoneExclamationPoint,
+  #[error("Negative zero literal")]
+  NegativeZero,
+  #[error("Unrecognized character: {0:?}")]
+  UnrecognizedCharacter(char),
+}
+
+#[derive(Clone, Debug, Error)]
+#[error("{:?} is not a keyword", s)]
+pub struct LexKwError {
   s: String,
 }
 
-/// An error from failing to parse a [Sym].
-#[derive(Clone, Debug, Fail)]
-#[fail(display = "{:?} is not a symbol", s)]
-pub struct ParseSymError {
+/// An error from failing to lex a [Sym].
+#[derive(Clone, Debug, Error)]
+#[error("{:?} is not a symbol", s)]
+pub struct LexSymError {
   s: String,
 }
 
@@ -56,7 +74,7 @@ macro_rules! toks {
 toks! {
   /// "Rado keywords."
   pub enum Kw {
-    err ParseKwError;
+    err LexKwError;
     // Declarations
     Region <- "region",
     Link <- "link",
@@ -118,7 +136,7 @@ toks! {
   /// Rado symbol tokens. Each operator is a distinct token, so some tokens are
   /// multiple characters long.
   pub enum Sym {
-    err ParseSymError;
+    err LexSymError;
     // Delimeters
     LParen <- "(",
     RParen <- ")",
@@ -235,7 +253,7 @@ impl<'a> fmt::Display for Tok<'a> {
 /// For a string starting on a block comment marker, advance up to the last
 /// character of the block comment. It will recurse in order to handle nested
 /// comments.
-fn skip_block_comment(mut s: &str) -> Result<&str, Error> {
+fn skip_block_comment(mut s: &str) -> Result<&str, LexerError> {
   assert!(s.len() >= 2);
   assert!(s.starts_with("/*"));
   s = &s[2..];
@@ -246,7 +264,7 @@ fn skip_block_comment(mut s: &str) -> Result<&str, Error> {
   loop {
     let end = s
       .find("*/")
-      .ok_or_else(|| format_err!("unterminated block comment"))?;
+      .ok_or_else(|| LexerError::UnterminatedBlockComment)?;
     match s.find("/*") {
       Some(inner) if inner < end => s = &skip_block_comment(&s[inner..])?,
       _ => break Ok(&s[end + 2..]),
@@ -256,7 +274,7 @@ fn skip_block_comment(mut s: &str) -> Result<&str, Error> {
 
 /// Lex a numeric literal.
 #[allow(clippy::type_complexity, clippy::many_single_char_names)]
-fn lex_num_lit(mut s: &str) -> Result<(Cow<'_, str>, Option<Cow<'_, str>>, &str), Error> {
+fn lex_num_lit(mut s: &str) -> Result<(Cow<'_, str>, Option<Cow<'_, str>>, &str), LexerError> {
   let i = s
     .find(|c: char| !c.is_ascii_digit())
     .unwrap_or_else(|| s.len());
@@ -277,7 +295,7 @@ fn lex_num_lit(mut s: &str) -> Result<(Cow<'_, str>, Option<Cow<'_, str>>, &str)
     .next()
     .map_or(false, |c| c == '_' || is_xid_start(c) || is_xid_continue(c))
   {
-    return Err(format_err!("numeric literal suffixes are not supported"));
+    return Err(LexerError::NumericLiteralSuffix);
   }
   Ok((w, f, s))
 }
@@ -285,13 +303,13 @@ fn lex_num_lit(mut s: &str) -> Result<(Cow<'_, str>, Option<Cow<'_, str>>, &str)
 /// Lex a string literal, and return the contents (with escapes processed) in the first position,
 /// and the remainder of the source in the second. s is expected to already have had the opening quote
 /// removed.
-fn lex_string_lit(mut s: &str) -> Result<(Cow<'_, str>, &str), Error> {
+fn lex_string_lit(mut s: &str) -> Result<(Cow<'_, str>, &str), LexerError> {
   // Easy case: there is no escape sequence, so we can just borrow the
   // contents directly.
   let escape = s.find('\\').unwrap_or_else(|| s.len());
   let quote = s
     .find('\"')
-    .ok_or_else(|| format_err!("unterminated string literal"))?;
+    .ok_or_else(|| LexerError::UnterminatedStringLiteral)?;
   if quote < escape {
     return Ok((s[0..quote].into(), &s[quote + 1..]));
   }
@@ -301,26 +319,26 @@ fn lex_string_lit(mut s: &str) -> Result<(Cow<'_, str>, &str), Error> {
     l += &s[0..escape];
     s = &s[escape + 1..];
     match s.chars().next() {
-      None => return Err(format_err!("unterminated string literal")),
+      None => return Err(LexerError::UnterminatedStringLiteral),
       Some('"') => l += "\"",
       Some('\\') => l += "\\",
       Some('n') => l += "\n",
       Some('r') => l += "\r",
       Some('t') => l += "\t",
-      Some(e) => return Err(format_err!("unrecognized escape sequence: \\{}", e)),
+      Some(e) => return Err(LexerError::UnrecognizedEscapeSequence(e)),
     }
     // Any escape sequence we actually accept is 1 ASCII character long.
     s = &s[1..];
   }
   let quote = s
     .find('\"')
-    .ok_or_else(|| format_err!("unterminated string literal"))?;
+    .ok_or_else(|| LexerError::UnterminatedStringLiteral)?;
   l += &s[0..quote];
   Ok((l.into(), &s[quote + 1..]))
 }
 
 /// Lex a string into a token vector. An error occurs if the string is not made of legal tokens.
-pub fn lex<'a>(mut s: &'a str) -> Result<Vec<Tok<'a>>, Error> {
+pub fn lex<'a>(mut s: &'a str) -> Result<Vec<Tok<'a>>, LexerError> {
   let mut toks = Vec::new();
   while let Some(c) = s.chars().next() {
     let rest = &s[c.len_utf8()..];
@@ -395,7 +413,7 @@ pub fn lex<'a>(mut s: &'a str) -> Result<Vec<Tok<'a>>, Error> {
           toks.push(Tok::Sym(Sym::NEq));
           s = &s[2..];
         } else {
-          return Err(format_err!("expected = after ! to make != token"));
+          return Err(LexerError::LoneExclamationPoint);
         }
       }
       '=' => match rest.chars().next() {
@@ -440,7 +458,7 @@ pub fn lex<'a>(mut s: &'a str) -> Result<Vec<Tok<'a>>, Error> {
           if w.chars().all(|c| c == '0')
             && f.as_ref().unwrap_or(&"".into()).chars().all(|c| c == '0')
           {
-            return Err(format_err!("negative zero numeric literal"));
+            return Err(LexerError::NegativeZero);
           }
           toks.push(Tok::Num(Sign::Negative, w, f));
           s = s_;
@@ -473,7 +491,7 @@ pub fn lex<'a>(mut s: &'a str) -> Result<Vec<Tok<'a>>, Error> {
         s = s_;
       }
       c if c.is_ascii_whitespace() => s = rest,
-      _ => return Err(format_err!("unrecognized character: {:?}", c)),
+      _ => return Err(LexerError::UnrecognizedCharacter(c)),
     }
   }
   Ok(toks)

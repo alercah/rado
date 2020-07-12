@@ -9,7 +9,8 @@ lalrpop = "0.19.0"
 
 [dependencies]
 either = "1.5.0"
-failure = "0.1.1"
+anyhow = "1.0.31"
+thiserror = "1.0"
 guard = "0.5.0"
 id-map = "0.2.1"
 lalrpop-util = "0.19.0"

@@ -303,7 +303,7 @@ Ty: Ty = {
 }
 
 extern {
-    type Error = failure::Error;
+    type Error = crate::token::LexerError;
 
     enum Tok<'input> {
         "region" => Tok::Kw(Kw::Region),

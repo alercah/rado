@@ -3,8 +3,8 @@
 pub mod ast;
 pub(crate) mod token;
 
+use anyhow::{anyhow, Error};
 use ast::{Decl, ModVec, Prop, Stmt};
-use failure::{format_err, Error};
 use id_map::IdMap;
 use mixed_ref::MixedRef;
 use std::collections::{HashMap, HashSet};
@@ -36,7 +36,7 @@ impl Path {
   /// Construct a new path. Returns an error if `segments` is empty.
   pub fn new(segments: Vec<Ident>) -> Result<Path, Error> {
     if segments.is_empty() {
-      Err(format_err!("trying to construct empty path"))
+      Err(anyhow!("trying to construct empty path"))
     } else {
       Ok(Path(segments))
     }
@@ -183,16 +183,16 @@ impl Program {
     let mut segs = path.0.iter();
     let mut cur = self
       .lookup(scope, *segs.next().unwrap())
-      .ok_or_else(|| format_err!("first identifier in path not found in lookup"))?;
+      .ok_or_else(|| anyhow!("first identifier in path not found in lookup"))?;
     for next in segs {
       let child: &dyn Scope;
       match cur {
         EntityId::Region(r) => child = self.regions.get(r.0).unwrap(),
-        _ => return Err(format_err!("tried to lookup entity in non-scope")),
+        _ => return Err(anyhow!("tried to lookup entity in non-scope")),
       }
       cur = child
         .lookup_ident(*next)
-        .ok_or_else(|| format_err!("next segment not found in child scope"))?;
+        .ok_or_else(|| anyhow!("next segment not found in child scope"))?;
     }
     Ok(cur)
   }
@@ -406,7 +406,7 @@ impl FromAST {
           if e == &EntityId::Tag(t) {
             return Ok(());
           }
-          return Err(format_err!("tag declared with same name as entity"));
+          return Err(anyhow!("tag declared with same name as entity"));
         }
         #[allow(clippy::single_match)]
         match e {
@@ -422,9 +422,9 @@ impl FromAST {
   fn validate_name_collisions(&self, s: ScopeId, n: Ident) -> Result<(), Error> {
     if let Some(e) = self.lookup(self.get_scope(s).unwrap(), n) {
       if self.get_entity(e).unwrap().parent() == s {
-        Err(format_err!("name already declared in same scope"))
+        Err(anyhow!("name already declared in same scope"))
       } else {
-        Err(format_err!("name shadows entity in higher scope"))
+        Err(anyhow!("name shadows entity in higher scope"))
       }
     } else {
       Ok(())
