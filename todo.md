@@ -32,7 +32,5 @@ Potential syntactic sugar/library functionality:
 
 Next steps:
 
- 1. Scrap the start of semantic work
- 1. Rewrite the parser (replace the bespoke lexer with lalrpop's built-in)
- 1. Rewrite the samples, using the parser to check that they match the intent
+ 1. Rewrite the parser & samples to match the new language design
  1. Implement the language
